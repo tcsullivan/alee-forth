@@ -47,7 +47,8 @@ public:
 		state.dict.addDefinition(sub);
 		state.dict.add(CoreWords::HiddenWordLiteral);
 		state.dict.add(state.pop());
-                state.dict.add(CoreWords::findi("exit"));
+                state.dict.add(CoreWords::findi(";"));
+	        CoreWords::run(CoreWords::findi(";"), state);
                 break;
 	    default:
 		break;
