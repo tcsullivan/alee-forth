@@ -26,83 +26,84 @@ class Parser
 public:
     ParseStatus parse(State& state, std::string_view& str) {
         const auto end = str.find_first_of(" \t\n\r");
-	const auto sub = str.substr(0, end);
+        const auto sub = str.substr(0, end);
         if (sub.empty())
             return ParseStatus::Finished;
 
-	if (state.pass != Pass::None) {
-	    switch (state.pass) {
-	    case Pass::Comment:
+        if (state.pass != Pass::None) {
+            switch (state.pass) {
+            case Pass::Comment:
                 if (str.front() == ')')
-	            state.pass = Pass::None;
+                    state.pass = Pass::None;
 
-	        str = str.substr(1);
-		break;
-	    case Pass::Colon:
-		state.pass = Pass::None;
-                state.compiling = true;
-		state.dict.addDefinition(sub);
-		break;
-	    case Pass::Constant:
-		state.pass = Pass::None;
-                state.compiling = true;
-		state.dict.addDefinition(sub);
-		state.dict.add(CoreWords::HiddenWordLiteral);
-		state.dict.add(state.pop());
-                state.dict.add(CoreWords::findi(";"));
-	        CoreWords::run(CoreWords::findi(";"), state);
+                str = str.substr(1);
                 break;
-	    default:
-		break;
-	    }
-	} else {
-	    if (auto i = CoreWords::findi(sub); i >= 0) {
-		if (state.compiling)
+            case Pass::Colon:
+                state.pass = Pass::None;
+                    state.compiling = true;
+                state.dict.addDefinition(sub);
+                break;
+            case Pass::Constant:
+                state.pass = Pass::None;
+                state.compiling = true;
+                state.dict.addDefinition(sub);
+                state.dict.add(CoreWords::HiddenWordLiteral);
+                state.dict.add(state.pop());
+                state.dict.add(CoreWords::findi(";"));
+                CoreWords::run(CoreWords::findi(";"), state);
+                break;
+            default:
+                break;
+            }
+        } else {
+            if (auto i = CoreWords::findi(sub); i >= 0) {
+                if (state.compiling)
                     state.dict.add(i);
-		if (!state.compiling || sub.front() == ';')
-	            CoreWords::run(i, state);
-	    } else if (auto j = state.dict.find(sub); j > 0) {
-		auto e = state.dict.getexec(j);
-	        if (state.compiling) {
-		    if (state.dict.read(j) & CoreWords::Immediate) {
-		        state.compiling = false;
-	    	        Executor::fullexec(state, e);
-		        state.compiling = true;
-		    } else {
-		        state.dict.add(CoreWords::HiddenWordJump);
-	    	        state.dict.add(e);
-		    }
-		} else {
-	    	    Executor::fullexec(state, e);
-		}
-	    } else {
-	        char *p;
-	        const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, 10));
+                if (!state.compiling || sub.front() == ';')
+                    CoreWords::run(i, state);
+            } else if (auto j = state.dict.find(sub); j > 0) {
+                auto e = state.dict.getexec(j);
 
-	        if (p != sub.data()) {
-	    	    if (state.compiling) {
-		        state.dict.add(CoreWords::HiddenWordLiteral);
-		        state.dict.add(l);
-		    } else {
-	                state.push(l);
-		    }
-	        } else {
-	            return ParseStatus::Error;
-	        }
-	    }
+                if (state.compiling) {
+                    if (state.dict.read(j) & CoreWords::Immediate) {
+                        state.compiling = false;
+                        Executor::fullexec(state, e);
+                        state.compiling = true;
+                    } else {
+                        state.dict.add(CoreWords::HiddenWordJump);
+                        state.dict.add(e);
+                    }
+                } else {
+                    Executor::fullexec(state, e);
+                }
+            } else {
+                char *p;
+                const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, 10));
 
-	    if (end == std::string_view::npos)
+                if (p != sub.data()) {
+                    if (state.compiling) {
+                        state.dict.add(CoreWords::HiddenWordLiteral);
+                        state.dict.add(l);
+                    } else {
+                        state.push(l);
+                    }
+                } else {
+                    return ParseStatus::Error;
+                }
+            }
+
+            if (end == std::string_view::npos)
                 return ParseStatus::Finished;
         }
 
-	const auto next = str.find_first_not_of(" \t\n\r", end);
+        const auto next = str.find_first_not_of(" \t\n\r", end);
 
-	if (next == std::string_view::npos) {
+        if (next == std::string_view::npos) {
             return ParseStatus::Finished;
-	} else {
-	    str = str.substr(next);
-	    return ParseStatus::Continue;
-	}
+        } else {
+            str = str.substr(next);
+            return ParseStatus::Continue;
+        }
     }
 };
 

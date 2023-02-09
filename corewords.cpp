@@ -193,13 +193,13 @@ int CoreWords::op_shr(State& state) {
 }
 
 int CoreWords::op_comment(State& state) {
-	state.pass = Pass::Comment;
+    state.pass = Pass::Comment;
     return 0;
 }
 
 int CoreWords::op_colon(State& state) {
     state.pass = Pass::Colon;
-    state.pushr(state.dict.here); // this is for EXIT
+    state.pushr(state.dict.here);
     return 0;
 }
 
@@ -207,13 +207,13 @@ int CoreWords::op_semic(State& state) {
     if (!state.compiling) {
         state.ip = state.popr();
     } else {
-	auto begin = state.popr();
+        auto begin = state.popr();
 
-	state.dict.write(begin,
-	    (state.dict.read(begin) & 0x1F) |
-	    ((begin - state.dict.latest) << 6));
+        state.dict.write(begin,
+            (state.dict.read(begin) & 0x1F) |
+            ((begin - state.dict.latest) << 6));
 
-	state.dict.latest = begin;
+        state.dict.latest = begin;
         state.compiling = false;
     }
 
@@ -221,7 +221,7 @@ int CoreWords::op_semic(State& state) {
 }
 
 int CoreWords::op_here(State& state) {
-	state.push(state.dict.here);
+    state.push(state.dict.here);
     return 0;
 }
 
@@ -266,7 +266,7 @@ int CoreWords::findi(std::string_view str)
 
     std::string_view words (wordsarr, sizeof(wordsarr));
 
-	for (i = 0; i < words.size();) {
+    for (i = 0; i < words.size();) {
         const auto end = words.find('\0', i);
 
         if (words.compare(i, end - i, str) == 0)

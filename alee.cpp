@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     std::vector args (argv + 1, argv + argc);
     for (const auto& a : args) {
         std::ifstream file (a);
-	parseFile(parser, state, file);
+        parseFile(parser, state, file);
     }
 
     //std::cout << state.size() << ' ' << state.compiling << "> ";
@@ -49,7 +49,7 @@ int user_sys(State& state)
     switch (state.pop()) {
     case 0:
         std::cout << state.pop() << std::endl;
-	break;
+        break;
     }
 
     return 0;

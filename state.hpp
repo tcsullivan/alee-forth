@@ -44,51 +44,51 @@ public:
     constexpr State(Dictionary& d): dict(d) {}
 
     Cell beyondip() const {
-	return dict.read(ip + 1);
+        return dict.read(ip + 1);
     }
 
     void pushr(Cell value) {
-	if (rsize() == ReturnStackSize)
+        if (rsize() == ReturnStackSize)
             throw;
         *++rsp = value;
     }
 
     Cell popr() {
-	if (rsize() == 0)
+        if (rsize() == 0)
             throw;
-	return *rsp--;
+        return *rsp--;
     }
 
     void push(Cell value) {
-	if (size() == DataStackSize)
+        if (size() == DataStackSize)
             throw;
         *++dsp = value;
     }
 
     Cell pop() {
-	if (size() == 0)
+        if (size() == 0)
             throw;
-	return *dsp--;
+        return *dsp--;
     }
 
     Cell& top() {
-	if (size() == 0)
+        if (size() == 0)
             throw;
-	return *dsp;
+        return *dsp;
     }
 
     Cell& pick(std::size_t i) {
-	if (i >= size())
-	    throw;
-	return *(dsp - i);
+        if (i >= size())
+            throw;
+        return *(dsp - i);
     }
 
     std::size_t size() const noexcept {
-	return std::distance(dstack, static_cast<const Cell *>(dsp)) + 1;
+        return std::distance(dstack, static_cast<const Cell *>(dsp)) + 1;
     }
 
     std::size_t rsize() const noexcept {
-	return std::distance(rstack, static_cast<const Cell *>(rsp)) + 1;
+        return std::distance(rstack, static_cast<const Cell *>(rsp)) + 1;
     }
 };
 

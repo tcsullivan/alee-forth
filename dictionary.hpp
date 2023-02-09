@@ -33,58 +33,57 @@ struct Dictionary
     virtual int write(Addr, Cell) = 0;
 
     Addr allot(Cell amount) {
-	Addr old = here;
-	here += amount;
-	return old;
+        Addr old = here;
+        here += amount;
+        return old;
     }
 
     void add(Cell value) {
-    	write(here++, value);
+        write(here++, value);
     }
 
     void addDefinition(std::string_view str) {
         add(str.size());
-	for (char c : str)
-	    add(c);
+        for (char c : str)
+            add(c);
 
-	if (here & 1)
-	    allot(1);
+        if (here & 1)
+            allot(1);
     }
 
     bool issame(Addr addr, std::string_view str, std::size_t n) {
-	if (str.size() != n)
-	    return false;
+        if (str.size() != n)
+            return false;
 
         for (char c : str) {
-	    if (read(addr++) != c)
-		return false;
-	}
-	    
-	return true;
+            if (read(addr++) != c)
+                return false;
+        }
+    
+        return true;
     }
 
     Addr find(std::string_view str) {
         if (latest == 0)
-	    return 0;
+            return 0;
 
-	auto lt = latest;
-	do {
+        auto lt = latest;
+        do {
             const auto l = read(lt);
-	    const auto len = l & 0x1F;
+            const auto len = l & 0x1F;
 
-	    if (issame(lt + 1, str, len)) {
-	        return lt;
-	    } else {
-		lt -= l >> 6;
-	    }
-	} while (lt);
+            if (issame(lt + 1, str, len))
+                return lt;
+            else
+                lt -= l >> 6;
+        } while (lt);
 
-	return 0;
+        return 0;
     }
 
     Addr getexec(Addr addr) {
-	const auto len = read(addr) & 0x1F;
-	return ((addr + 1 + len) + 1) & ~1;
+        const auto len = read(addr) & 0x1F;
+        return ((addr + 1 + len) + 1) & ~1;
     }
 };
 

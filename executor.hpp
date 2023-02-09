@@ -21,22 +21,19 @@
 
 #include "corewords.hpp"
 
-//#include <iostream>
-
 class Executor
 {
 public:
     static int fullexec(State& state, Addr addr) {
         state.pushr(0);
-	state.ip = addr - 1;
+        state.ip = addr - 1;
 
-	do {
-	    ++state.ip;
-	    //std::cout << "-- " << state.rsize() << "e " << state.ip << std::endl;
-	    CoreWords::run(state.dict.read(state.ip), state);
-	} while (state.ip);
-
-	return 0;
+        do {
+            ++state.ip;
+            CoreWords::run(state.dict.read(state.ip), state);
+        } while (state.ip);
+        
+        return 0;
     }
 };
 

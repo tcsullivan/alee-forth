@@ -41,11 +41,11 @@ public:
 private:
     constexpr static char wordsarr[] =
         "drop\0dup\0swap\0pick\0sys\0"
-	"+\0-\0*\0/\0%\0"
-	"@\0!\0rot\0>r\0r>\0"
-	"=\0<\0allot\0&\0|\0"
-	"^\0<<\0>>\0(\0:\0"
-	";\0here\0exit\0imm\0const\0";
+        "+\0-\0*\0/\0%\0"
+        "@\0!\0rot\0>r\0r>\0"
+        "=\0<\0allot\0&\0|\0"
+        "^\0<<\0>>\0(\0:\0"
+        ";\0here\0exit\0imm\0const\0";
     // lit, jmp, jmp0, ', lits
 
     static Func get(int index);
