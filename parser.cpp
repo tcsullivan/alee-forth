@@ -77,7 +77,8 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
             }
         } else {
             char *p;
-            const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, 10));
+            const auto base = state.dict.read(0);
+            const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, base));
 
             if (p != sub.data()) {
                 if (state.compiling) {

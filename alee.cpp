@@ -50,6 +50,9 @@ int user_sys(State& state)
     case 0:
         std::cout << state.pop() << std::endl;
         break;
+    case 1:
+        std::cout << static_cast<char>(state.pop()) << std::endl;
+        break;
     }
 
     return 0;
@@ -63,7 +66,7 @@ void parseLine(Parser& parser, State& state, std::string_view line)
     } while (r == ParseStatus::Continue);
 
     if (r != ParseStatus::Finished)
-        std::cout << "r " << to_string(r) << std::endl;
+        std::cout << to_string(r) << ": " << line << std::endl;
 }
 
 void parseFile(Parser& parser, State& state, std::istream& file)

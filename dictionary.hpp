@@ -27,7 +27,7 @@
 class Dictionary
 {
 public:
-    Addr here = 1;
+    Addr here = 1; // address zero will be used for BASE.
     Addr latest = 0;
 
     virtual Cell read(Addr) const = 0;
