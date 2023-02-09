@@ -1,13 +1,21 @@
-CXXFLAGS += -g3 -ggdb -O0
+CXXFLAGS += -std=c++17 -g3 -ggdb -O0
 
-CXXFILES := corewords.cpp types.cpp
+CXXFILES := corewords.cpp dictionary.cpp executor.cpp parser.cpp state.cpp \
+	    types.cpp
 OBJFILES := $(subst .cpp,.o,$(CXXFILES))
+LIBFILE := libalee.a
 EXEFILE := alee
 
-all: alee
+all: $(EXEFILE)
 
-alee: $(OBJFILES)
+small: CXXFLAGS += -Os
+small: $(EXEFILE)
+
+$(EXEFILE): $(LIBFILE)
+
+$(LIBFILE): $(OBJFILES)
+	$(AR) cr $@ $(OBJFILES)
 
 clean:
-	rm -f alee $(OBJFILES)
+	rm -f $(EXEFILE) $(LIBFILE) $(OBJFILES)
 

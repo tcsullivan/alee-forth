@@ -16,46 +16,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ALEEFORTH_STATE_HPP
-#define ALEEFORTH_STATE_HPP
+#include "corewords.hpp"
+#include "executor.hpp"
 
-#include "dictionary.hpp"
-#include "types.hpp"
-
-#include <cstddef>
-
-constexpr unsigned DataStackSize = 12;
-constexpr unsigned ReturnStackSize = 12;
-
-class State
+int Executor::fullexec(State& state, Addr addr)
 {
-    Cell dstack[DataStackSize] = {};
-    Cell rstack[ReturnStackSize] = {};
-    Cell *dsp = dstack - 1;
-    Cell *rsp = rstack - 1;
+    state.pushr(0);
+    state.ip = addr - 1;
 
-public:
-    bool compiling = false;
-    Addr ip = 0;
-    Pass pass = Pass::None;
-    Dictionary& dict;
-
-    constexpr State(Dictionary& d): dict(d) {}
-
-    Cell beyondip() const;
-
-    void pushr(Cell);
-    Cell popr();
-
-    void push(Cell);
-    Cell pop();
-
-    Cell& top();
-    Cell& pick(std::size_t);
-
-    std::size_t size() const noexcept;
-    std::size_t rsize() const noexcept;
-};
-
-#endif // ALEEFORTH_STATE_HPP
+    do {
+        ++state.ip;
+        CoreWords::run(state.dict.read(state.ip), state);
+    } while (state.ip);
+    
+    return 0;
+}
 

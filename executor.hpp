@@ -19,22 +19,12 @@
 #ifndef ALEEFORTH_EXECUTOR_HPP
 #define ALEEFORTH_EXECUTOR_HPP
 
-#include "corewords.hpp"
+#include "types.hpp"
 
 class Executor
 {
 public:
-    static int fullexec(State& state, Addr addr) {
-        state.pushr(0);
-        state.ip = addr - 1;
-
-        do {
-            ++state.ip;
-            CoreWords::run(state.dict.read(state.ip), state);
-        } while (state.ip);
-        
-        return 0;
-    }
+    static int fullexec(State&, Addr);
 };
 
 #endif // ALEEFORTH_EXECUTOR_HPP

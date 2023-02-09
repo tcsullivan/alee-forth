@@ -34,9 +34,9 @@ public:
 
     constexpr static Cell Immediate = (1 << 5);
 
-    static int findi(std::string_view str);
-    static Func find(std::string_view str);
-    static void run(int i, State& state);
+    static int findi(std::string_view);
+    static Func find(std::string_view);
+    static void run(int, State&);
 
 private:
     constexpr static char wordsarr[] =
@@ -48,40 +48,40 @@ private:
         ";\0here\0exit\0imm\0const\0";
     // lit, jmp, jmp0, ', lits
 
-    static Func get(int index);
+    static Func get(int);
 
-    static int op_drop(State& state);
-    static int op_dup(State& state);
-    static int op_swap(State& state);
-    static int op_pick(State& state);
-    static int op_sys(State& state);
-    static int op_add(State& state);
-    static int op_sub(State& state);
-    static int op_mul(State& state);
-    static int op_div(State& state);
-    static int op_mod(State& state);
-    static int op_peek(State& state);
-    static int op_poke(State& state);
-    static int op_rot(State& state);
-    static int op_pushr(State& state);
-    static int op_popr(State& state);
-    static int op_eq(State& state);
-    static int op_lt(State& state);
-    static int op_allot(State& state);
-    static int op_and(State& state);
-    static int op_or(State& state);
-    static int op_xor(State& state);
-    static int op_shl(State& state);
-    static int op_shr(State& state);
-    static int op_comment(State& state);
-    static int op_colon(State& state);
-    static int op_semic(State& state);
-    static int op_here(State& state);
-    static int op_exit(State& state);
-    static int op_imm(State& state);
-    static int op_const(State& state);
-    static int op_literal(State& state);
-    static int op_jump(State& state);
+    static int op_drop(State&);
+    static int op_dup(State&);
+    static int op_swap(State&);
+    static int op_pick(State&);
+    static int op_sys(State&);
+    static int op_add(State&);
+    static int op_sub(State&);
+    static int op_mul(State&);
+    static int op_div(State&);
+    static int op_mod(State&);
+    static int op_peek(State&);
+    static int op_poke(State&);
+    static int op_rot(State&);
+    static int op_pushr(State&);
+    static int op_popr(State&);
+    static int op_eq(State&);
+    static int op_lt(State&);
+    static int op_allot(State&);
+    static int op_and(State&);
+    static int op_or(State&);
+    static int op_xor(State&);
+    static int op_shl(State&);
+    static int op_shr(State&);
+    static int op_comment(State&);
+    static int op_colon(State&);
+    static int op_semic(State&);
+    static int op_here(State&);
+    static int op_exit(State&);
+    static int op_imm(State&);
+    static int op_const(State&);
+    static int op_literal(State&);
+    static int op_jump(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

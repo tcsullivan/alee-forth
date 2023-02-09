@@ -43,7 +43,7 @@ enum class ParseStatus
     Error
 };
 
-std::string_view to_string(ParseStatus ps);
+std::string_view to_string(ParseStatus);
 
 #endif // ALEEFORTH_TYPES_HPP
 
