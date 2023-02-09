@@ -27,6 +27,8 @@ public:
     ParseStatus parse(State& state, std::string_view& str) {
         const auto end = str.find_first_of(" \t\n\r");
 	const auto sub = str.substr(0, end);
+        if (sub.empty())
+            return ParseStatus::Finished;
 
 	if (state.pass != Pass::None) {
 	    switch (state.pass) {
