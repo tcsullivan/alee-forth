@@ -27,7 +27,7 @@ int user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t VisibleWordCount = 31;             // size
+    constexpr static std::size_t VisibleWordCount = 32;             // size
     constexpr static auto HiddenWordLiteral = VisibleWordCount;     // index
     constexpr static auto HiddenWordJump    = VisibleWordCount + 1; // index
     constexpr static auto WordCount         = HiddenWordJump + 1;   // size
@@ -47,7 +47,7 @@ private:
         "=\0<\0allot\0&\0|\0"
         "^\0<<\0>>\0(\0:\0"
         ";\1here\0imm\0const\0"
-	"if\1then\1";
+	"if\1then\1else\1";
 
     static Func get(int);
 
@@ -84,6 +84,7 @@ private:
     static int op_jump(State&);
     static int op_if(State&);
     static int op_then(State&);
+    static int op_else(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

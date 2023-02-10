@@ -52,8 +52,9 @@ Func CoreWords::get(int index)
     case 28: return op_const;
     case 29: return op_if;
     case 30: return op_then;
-    case 31: return op_literal;
-    case 32: return op_jump;
+    case 31: return op_else;
+    case 32: return op_literal;
+    case 33: return op_jump;
     default: return nullptr;
     }
 }
@@ -273,7 +274,22 @@ int CoreWords::op_then(State& state)
 {
     if (state.compiling) {
         const auto ifaddr = state.pop();
+        if (state.dict.read(ifaddr) == 0)
+            state.dict.write(ifaddr, state.dict.here);
+    }
+
+    return 0;
+}
+
+int CoreWords::op_else(State& state)
+{
+    if (state.compiling) {
+        const auto ifaddr = state.pop();
+        state.push(state.dict.here);
+        state.dict.add(0);
         state.dict.write(ifaddr, state.dict.here);
+    } else {
+        state.ip = state.beyondip() - 1;
     }
 
     return 0;
