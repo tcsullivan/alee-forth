@@ -30,6 +30,8 @@
 : xor    ^ ;
 : lshift << ;
 : rshift >> ;
+: 2*     2 * ;
+: 2/     2 / ;
 
 : ,      here ! 1 allot ;
 : c!     ! ;
