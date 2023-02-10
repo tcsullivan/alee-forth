@@ -35,9 +35,6 @@ void Dictionary::addDefinition(std::string_view str)
     add(str.size());
     for (char c : str)
         add(c);
-
-    if (here & 1)
-        allot(1);
 }
 
 bool Dictionary::issame(Addr addr, std::string_view str, std::size_t n)
@@ -75,6 +72,6 @@ Addr Dictionary::find(std::string_view str)
 Addr Dictionary::getexec(Addr addr)
 {
     const auto len = read(addr) & 0x1F;
-    return ((addr + 1 + len) + 1) & ~1;
+    return addr + 1 + len;
 }
 

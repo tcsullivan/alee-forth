@@ -23,6 +23,8 @@
 #include <iostream>
 #include <vector>
 
+static bool okay = false;
+
 static void parseLine(Parser&, State&, std::string_view);
 static void parseFile(Parser&, State&, std::istream&);
 
@@ -38,6 +40,7 @@ int main(int argc, char *argv[])
         parseFile(parser, state, file);
     }
 
+    okay = true;
     //std::cout << state.size() << ' ' << state.compiling << "> ";
     parseFile(parser, state, std::cin);
 
@@ -65,8 +68,12 @@ void parseLine(Parser& parser, State& state, std::string_view line)
         r = parser.parse(state, line);
     } while (r == ParseStatus::Continue);
 
-    if (r != ParseStatus::Finished)
+    if (r == ParseStatus::Finished) {
+        if (okay)
+            std::cout << " ok" << std::endl;
+    } else {
         std::cout << to_string(r) << ": " << line << std::endl;
+    }
 }
 
 void parseFile(Parser& parser, State& state, std::istream& file)

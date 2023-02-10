@@ -48,11 +48,12 @@ Func CoreWords::get(int index)
     case 24: return op_colon;
     case 25: return op_semic;
     case 26: return op_here;
-    case 27: return op_exit;
-    case 28: return op_imm;
-    case 29: return op_const;
-    case 30: return op_literal;
-    case 31: return op_jump;
+    case 27: return op_imm;
+    case 28: return op_const;
+    case 29: return op_if;
+    case 30: return op_then;
+    case 31: return op_literal;
+    case 32: return op_jump;
     default: return nullptr;
     }
 }
@@ -225,12 +226,6 @@ int CoreWords::op_here(State& state) {
     return 0;
 }
 
-int CoreWords::op_exit(State& state)
-{
-    state.ip = state.popr();
-    return 0;
-}
-
 int CoreWords::op_imm(State& state)
 {
     state.dict.write(state.dict.latest,
@@ -259,6 +254,31 @@ int CoreWords::op_jump(State& state)
     return 0;
 }
 
+int CoreWords::op_if(State& state)
+{
+    if (state.compiling) {
+        state.push(state.dict.here);
+        state.dict.add(0);
+    } else {
+        if (state.pop())
+            ++state.ip;
+        else
+            state.ip = state.beyondip() - 1;
+    }
+
+    return 0;
+}
+
+int CoreWords::op_then(State& state)
+{
+    if (state.compiling) {
+        const auto ifaddr = state.pop();
+        state.dict.write(ifaddr, state.dict.here);
+    }
+
+    return 0;
+}
+
 int CoreWords::findi(std::string_view str)
 {
     std::size_t i;
@@ -267,26 +287,28 @@ int CoreWords::findi(std::string_view str)
     std::string_view words (wordsarr, sizeof(wordsarr));
 
     for (i = 0; i < words.size();) {
-        const auto end = words.find('\0', i);
+        const auto end = words.find_first_of({"\0\1", 2}, i);
 
         if (words.compare(i, end - i, str) == 0)
-            break;
+            return words[end] == '\0' ? wordsi : (wordsi | CoreImmediate);
 
         ++wordsi;
         i = end + 1;
     }
 
-    return wordsi < VisibleWordCount ? wordsi : -1;
+    return -1;
 }
 
 Func CoreWords::find(std::string_view str)
 {
     const auto i = findi(str);
-    return i >= 0 ? get(i) : nullptr;
+    return i >= 0 ? get(i & ~CoreWords::CoreImmediate) : nullptr;
 }
 
 void CoreWords::run(int i, State& state)
 {
+    i &= ~CoreWords::CoreImmediate;
+
     if (i >= 0 && i < WordCount)
         get(i)(state);
 }

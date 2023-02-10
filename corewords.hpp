@@ -27,12 +27,13 @@ int user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t VisibleWordCount = 30;  // size
-    constexpr static std::size_t HiddenWordLiteral = 30; // index
-    constexpr static std::size_t HiddenWordJump = 31;    // index
-    constexpr static std::size_t WordCount = 32;         // size
+    constexpr static std::size_t VisibleWordCount = 31;             // size
+    constexpr static auto HiddenWordLiteral = VisibleWordCount;     // index
+    constexpr static auto HiddenWordJump    = VisibleWordCount + 1; // index
+    constexpr static auto WordCount         = HiddenWordJump + 1;   // size
 
-    constexpr static Cell Immediate = (1 << 5);
+    constexpr static Cell Immediate     = (1 << 5);
+    constexpr static Cell CoreImmediate = (1 << 6);
 
     static int findi(std::string_view);
     static Func find(std::string_view);
@@ -45,8 +46,8 @@ private:
         "@\0!\0rot\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
         "^\0<<\0>>\0(\0:\0"
-        ";\0here\0exit\0imm\0const\0";
-    // lit, jmp, jmp0, ', lits
+        ";\1here\0imm\0const\0"
+	"if\1then\1";
 
     static Func get(int);
 
@@ -77,11 +78,12 @@ private:
     static int op_colon(State&);
     static int op_semic(State&);
     static int op_here(State&);
-    static int op_exit(State&);
     static int op_imm(State&);
     static int op_const(State&);
     static int op_literal(State&);
     static int op_jump(State&);
+    static int op_if(State&);
+    static int op_then(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

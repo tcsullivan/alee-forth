@@ -39,7 +39,7 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
             break;
         case Pass::Colon:
             state.pass = Pass::None;
-                state.compiling = true;
+            state.compiling = true;
             state.dict.addDefinition(sub);
             break;
         case Pass::Constant:
@@ -57,9 +57,9 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
     } else {
         if (auto i = CoreWords::findi(sub); i >= 0) {
             if (state.compiling)
-                state.dict.add(i);
-            if (!state.compiling || sub.front() == ';')
-                CoreWords::run(i, state);
+                state.dict.add(i & ~CoreWords::CoreImmediate);
+            if (!state.compiling || (i & CoreWords::CoreImmediate))
+                CoreWords::run(i & ~CoreWords::CoreImmediate, state);
         } else if (auto j = state.dict.find(sub); j > 0) {
             auto e = state.dict.getexec(j);
 
