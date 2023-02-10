@@ -20,6 +20,16 @@
 
 #include <iterator>
 
+bool State::compiling() const
+{
+    return dict.read(Dictionary::Compiling);
+}
+
+void State::compiling(bool yes)
+{
+    dict.write(Dictionary::Compiling, yes);
+}
+
 Cell State::beyondip() const
 {
     return dict.read(ip + 1);

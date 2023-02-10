@@ -53,8 +53,9 @@ Func CoreWords::get(int index)
     case 29: return op_if;
     case 30: return op_then;
     case 31: return op_else;
-    case 32: return op_literal;
-    case 33: return op_jump;
+    case 32: return op_depth;
+    case 33: return op_literal;
+    case 34: return op_jump;
     default: return nullptr;
     }
 }
@@ -206,7 +207,7 @@ int CoreWords::op_colon(State& state) {
 }
 
 int CoreWords::op_semic(State& state) {
-    if (!state.compiling) {
+    if (!state.compiling()) {
         state.ip = state.popr();
     } else {
         auto begin = state.popr();
@@ -216,7 +217,7 @@ int CoreWords::op_semic(State& state) {
             ((begin - state.dict.latest) << 6));
 
         state.dict.latest = begin;
-        state.compiling = false;
+        state.compiling(false);
     }
 
     return 0;
@@ -257,7 +258,7 @@ int CoreWords::op_jump(State& state)
 
 int CoreWords::op_if(State& state)
 {
-    if (state.compiling) {
+    if (state.compiling()) {
         state.push(state.dict.here);
         state.dict.add(0);
     } else {
@@ -272,7 +273,7 @@ int CoreWords::op_if(State& state)
 
 int CoreWords::op_then(State& state)
 {
-    if (state.compiling) {
+    if (state.compiling()) {
         const auto ifaddr = state.pop();
         if (state.dict.read(ifaddr) == 0)
             state.dict.write(ifaddr, state.dict.here);
@@ -283,7 +284,7 @@ int CoreWords::op_then(State& state)
 
 int CoreWords::op_else(State& state)
 {
-    if (state.compiling) {
+    if (state.compiling()) {
         const auto ifaddr = state.pop();
         state.push(state.dict.here);
         state.dict.add(0);
@@ -292,6 +293,12 @@ int CoreWords::op_else(State& state)
         state.ip = state.beyondip() - 1;
     }
 
+    return 0;
+}
+
+int CoreWords::op_depth(State& state)
+{
+    state.push(state.size());
     return 0;
 }
 

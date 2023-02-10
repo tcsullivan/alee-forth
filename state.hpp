@@ -35,12 +35,14 @@ class State
     Cell *rsp = rstack - 1;
 
 public:
-    bool compiling = false;
     Addr ip = 0;
     Pass pass = Pass::None;
     Dictionary& dict;
 
     constexpr State(Dictionary& d): dict(d) {}
+
+    bool compiling() const;
+    void compiling(bool);
 
     Cell beyondip() const;
 

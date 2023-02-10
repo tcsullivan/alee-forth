@@ -39,12 +39,12 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
             break;
         case Pass::Colon:
             state.pass = Pass::None;
-            state.compiling = true;
+            state.compiling(true);
             state.dict.addDefinition(sub);
             break;
         case Pass::Constant:
             state.pass = Pass::None;
-            state.compiling = true;
+            state.compiling(true);
             state.dict.addDefinition(sub);
             state.dict.add(CoreWords::HiddenWordLiteral);
             state.dict.add(state.pop());
@@ -56,18 +56,18 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
         }
     } else {
         if (auto i = CoreWords::findi(sub); i >= 0) {
-            if (state.compiling)
+            if (state.compiling())
                 state.dict.add(i & ~CoreWords::CoreImmediate);
-            if (!state.compiling || (i & CoreWords::CoreImmediate))
+            if (!state.compiling() || (i & CoreWords::CoreImmediate))
                 CoreWords::run(i & ~CoreWords::CoreImmediate, state);
         } else if (auto j = state.dict.find(sub); j > 0) {
             auto e = state.dict.getexec(j);
 
-            if (state.compiling) {
+            if (state.compiling()) {
                 if (state.dict.read(j) & CoreWords::Immediate) {
-                    state.compiling = false;
+                    state.compiling(false);
                     Executor::fullexec(state, e);
-                    state.compiling = true;
+                    state.compiling(true);
                 } else {
                     state.dict.add(CoreWords::HiddenWordJump);
                     state.dict.add(e);
@@ -81,7 +81,7 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
             const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, base));
 
             if (p != sub.data()) {
-                if (state.compiling) {
+                if (state.compiling()) {
                     state.dict.add(CoreWords::HiddenWordLiteral);
                     state.dict.add(l);
                 } else {
