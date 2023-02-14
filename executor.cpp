@@ -22,10 +22,10 @@
 int Executor::fullexec(State& state, Addr addr)
 {
     state.pushr(0);
-    state.ip = addr - 1;
+    state.ip = addr - sizeof(Cell);
 
     do {
-        ++state.ip;
+        state.ip += sizeof(Cell);
         CoreWords::run(state.dict.read(state.ip), state);
     } while (state.ip);
     

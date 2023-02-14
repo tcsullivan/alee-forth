@@ -20,6 +20,13 @@
 
 #include <iterator>
 
+struct pop {};
+struct push {};
+struct popr {};
+struct pushr {};
+struct top {};
+struct pick {};
+
 bool State::compiling() const
 {
     return dict.read(Dictionary::Compiling);
@@ -32,48 +39,48 @@ void State::compiling(bool yes)
 
 Cell State::beyondip() const
 {
-    return dict.read(ip + 1);
+    return dict.read(ip + sizeof(Cell));
 }
 
 void State::pushr(Cell value)
 {
     if (rsize() == ReturnStackSize)
-        throw;
+        throw ::pushr();
     *++rsp = value;
 }
 
 Cell State::popr()
 {
     if (rsize() == 0)
-        throw;
+        throw ::popr();
     return *rsp--;
 }
 
 void State::push(Cell value)
 {
     if (size() == DataStackSize)
-        throw;
+        throw ::push();
     *++dsp = value;
 }
 
 Cell State::pop()
 {
     if (size() == 0)
-        throw;
+        throw ::pop();
     return *dsp--;
 }
 
 Cell& State::top()
 {
     if (size() == 0)
-        throw;
+        throw ::top();
     return *dsp;
 }
 
 Cell& State::pick(std::size_t i)
 {
     if (i >= size())
-        throw;
+        throw ::pick();
     return *(dsp - i);
 }
 

@@ -122,13 +122,20 @@ int CoreWords::op_mod(State& state) {
 }
 
 int CoreWords::op_peek(State& state) {
-    state.push(state.dict.read(state.pop()));
+    if (auto w = state.pop(); w == 1)
+        state.push(state.dict.readbyte(state.pop()));
+    else
+        state.push(state.dict.read(state.pop()));
     return 0;
 }
 
 int CoreWords::op_poke(State& state) {
+    const auto w = state.pop();
     const auto addr = state.pop();
-    state.dict.write(addr, state.pop());
+    if (w == 1)
+        state.dict.writebyte(addr, state.pop());
+    else
+        state.dict.write(addr, state.pop());
     return 0;
 }
 
@@ -202,7 +209,7 @@ int CoreWords::op_comment(State& state) {
 
 int CoreWords::op_colon(State& state) {
     state.pass = Pass::Colon;
-    state.pushr(state.dict.here);
+    state.pushr(state.dict.alignhere());
     return 0;
 }
 
@@ -238,21 +245,21 @@ int CoreWords::op_imm(State& state)
 int CoreWords::op_const(State& state)
 {
     state.pass = Pass::Constant;
-    state.pushr(state.dict.here);
+    state.pushr(state.dict.alignhere());
     return 0;
 }
 
 int CoreWords::op_literal(State& state)
 {
     state.push(state.beyondip());
-    ++state.ip;
+    state.ip += sizeof(Cell);
     return 0;
 }
 
 int CoreWords::op_jump(State& state)
 {
-    state.pushr(state.ip + 1);
-    state.ip = state.beyondip() - 1;
+    state.pushr(state.ip + sizeof(Cell));
+    state.ip = state.beyondip() - sizeof(Cell);
     return 0;
 }
 
@@ -263,9 +270,9 @@ int CoreWords::op_if(State& state)
         state.dict.add(0);
     } else {
         if (state.pop())
-            ++state.ip;
+            state.ip += sizeof(Cell);
         else
-            state.ip = state.beyondip() - 1;
+            state.ip = state.beyondip() - sizeof(Cell);
     }
 
     return 0;
@@ -290,7 +297,7 @@ int CoreWords::op_else(State& state)
         state.dict.add(0);
         state.dict.write(ifaddr, state.dict.here);
     } else {
-        state.ip = state.beyondip() - 1;
+        state.ip = state.beyondip() - sizeof(Cell);
     }
 
     return 0;

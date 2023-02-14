@@ -22,20 +22,25 @@
 #include "types.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <string_view>
 
 class Dictionary
 {
 public:
-    constexpr static Addr Base = 0;
-    constexpr static Addr Compiling = 1;
+    constexpr static Addr Base      = 0 * sizeof(Cell);
+    constexpr static Addr Compiling = 1 * sizeof(Cell);
+    constexpr static Addr Begin     = 2 * sizeof(Cell);
 
-    Addr here = 2;
-    Addr latest = 0;
+    Addr here = Begin;
+    Addr latest = Begin;
 
     virtual Cell read(Addr) const = 0;
     virtual int write(Addr, Cell) = 0;
+    virtual uint8_t readbyte(Addr) const = 0;
+    virtual int writebyte(Addr, uint8_t) = 0;
 
+    Addr alignhere();
     Addr allot(Cell);
     void add(Cell);
     void addDefinition(std::string_view);

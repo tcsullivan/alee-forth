@@ -27,7 +27,15 @@ Addr Dictionary::allot(Cell amount)
 
 void Dictionary::add(Cell value)
 {
-    write(here++, value);
+    write(allot(sizeof(Cell)), value);
+}
+
+Addr Dictionary::alignhere()
+{
+    if (here & (sizeof(Cell) - sizeof(uint8_t)))
+        here = (here + sizeof(Cell)) & ~(sizeof(Cell) - sizeof(uint8_t));
+
+    return here;
 }
 
 void Dictionary::addDefinition(std::string_view str)
@@ -43,8 +51,10 @@ bool Dictionary::issame(Addr addr, std::string_view str, std::size_t n)
         return false;
 
     for (char c : str) {
-        if (read(addr++) != c)
+        if (read(addr) != c)
             return false;
+
+        addr += sizeof(Cell);
     }
 
     return true;
@@ -55,16 +65,17 @@ Addr Dictionary::find(std::string_view str)
     if (latest == 0)
         return 0;
 
-    auto lt = latest;
+    Addr lt = latest, oldlt;
     do {
+        oldlt = lt;
         const auto l = read(lt);
         const auto len = l & 0x1F;
 
-        if (issame(lt + 1, str, len))
+        if (issame(lt + sizeof(Cell), str, len))
             return lt;
         else
             lt -= l >> 6;
-    } while (lt);
+    } while (lt != oldlt);
 
     return 0;
 }
@@ -72,6 +83,6 @@ Addr Dictionary::find(std::string_view str)
 Addr Dictionary::getexec(Addr addr)
 {
     const auto len = read(addr) & 0x1F;
-    return addr + 1 + len;
+    return addr + (1 + len) * sizeof(Cell);
 }
 

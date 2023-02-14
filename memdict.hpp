@@ -25,14 +25,23 @@ constexpr unsigned long int MemDictSize = 4096;
 
 class MemDict : public Dictionary
 {
-    Cell dict[MemDictSize];
+    uint8_t dict[MemDictSize];
 
 public:
     virtual Cell read(Addr addr) const final {
-        return dict[addr];
+        return *reinterpret_cast<const Cell *>(dict + addr);
     }
 
     virtual int write(Addr addr, Cell value) final {
+        *reinterpret_cast<Cell *>(dict + addr) = value;
+        return 0;
+    }
+
+    virtual uint8_t readbyte(Addr addr) const final {
+        return dict[addr];
+    }
+
+    virtual int writebyte(Addr addr, uint8_t value) final {
         dict[addr] = value;
         return 0;
     }

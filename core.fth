@@ -1,6 +1,21 @@
 ( : variable create 0 , ; )
 ( : create here const ; )
 
+: !       2 _! ;
+: @       2 _@ ;
+: ,       here ! 2 allot ;
+: cell+   2 + ;
+: cells   2 * ;
+
+: c!      1 _! ;
+: c@      1 _@ ;
+: c,      here c! 1 allot ;
+: char+   1+ ;
+: chars   ;
+
+: align   here 1 & if 1 allot then ;
+: aligned dup 1 & if 1 + then ;
+
 ( set decimal numbers )
 10 0 !
 
@@ -11,6 +26,8 @@
 : -rot    rot rot ;
 : nip     swap drop ;
 : tuck    swap over ;
+
+: +!      swap over @ + swap ! ;
 
 : and     & ;
 : or      | ;
@@ -35,15 +52,6 @@
 : 2swap   rot >r rot r> ;
 
 : r@      r> dup >r ;
-: ,       here ! 1 allot ;
-: +!      swap over @ + swap ! ;
-: c!      ! ;
-: c,      , ;
-: c@      @ ;
-: cell+   1+ ;
-: cells   ;
-: char+   1+ ;
-: chars   ;
 : 2!      swap over ! cell+ ! ;
 : 2@      dup cell+ @ swap @ ;
 
@@ -61,7 +69,4 @@
 : abs     dup 0< if negate then ;
 : min     2dup <= if drop else nip then ;
 : max     2dup <= if nip else drop then ;
-
-: align ;
-: aligned ;
 

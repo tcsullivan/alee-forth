@@ -43,11 +43,11 @@ private:
     constexpr static char wordsarr[] =
         "drop\0dup\0swap\0pick\0sys\0"
         "+\0-\0*\0/\0%\0"
-        "@\0!\0rot\0>r\0r>\0"
+        "_@\0_!\0rot\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
         "^\0<<\0>>\0(\0:\0"
         ";\1here\0imm\0const\0"
-	"if\1then\1else\1depth\0";
+        "if\1then\1else\1depth\0";
 
     static Func get(int);
 
