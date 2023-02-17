@@ -1,7 +1,6 @@
 CXXFLAGS += -std=c++17 -g3 -ggdb -O0
 
-CXXFILES := corewords.cpp dictionary.cpp executor.cpp parser.cpp state.cpp \
-	    types.cpp
+CXXFILES := corewords.cpp dictionary.cpp parser.cpp state.cpp types.cpp
 OBJFILES := $(subst .cpp,.o,$(CXXFILES))
 LIBFILE := libalee.a
 EXEFILE := alee

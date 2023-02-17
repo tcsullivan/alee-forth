@@ -45,6 +45,8 @@ public:
     bool compiling() const;
     void compiling(bool);
 
+    void execute(Addr);
+
     Cell beyondip() const;
 
     void pushr(Cell);

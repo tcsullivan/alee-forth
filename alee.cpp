@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int user_sys(State& state)
+void user_sys(State& state)
 {
     switch (state.pop()) {
     case 0:
@@ -69,16 +69,11 @@ int user_sys(State& state)
         std::cout << static_cast<char>(state.pop()) << std::endl;
         break;
     }
-
-    return 0;
 }
 
 void parseLine(Parser& parser, State& state, std::string_view line)
 {
-    ParseStatus r;
-    do {
-        r = parser.parse(state, line);
-    } while (r == ParseStatus::Continue);
+    auto r = parser.parse(state, line);
 
     if (r == ParseStatus::Finished) {
         if (okay)

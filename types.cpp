@@ -22,8 +22,7 @@ std::string_view to_string(ParseStatus ps)
 {
     switch (ps) {
     case ParseStatus::Finished: return "Finished";
-    case ParseStatus::Continue: return "Continue";
-    case ParseStatus::Error: return "Error";
+    case ParseStatus::NotAWord: return "Not a word";
     default: return "???";
     }
 }

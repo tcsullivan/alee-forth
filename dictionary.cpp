@@ -47,21 +47,6 @@ void Dictionary::addDefinition(Word word)
         writebyte(allot(1), readbyte(word.start + i));
 }
 
-bool Dictionary::issame(Addr addr, std::string_view str, std::size_t n)
-{
-    if (str.size() != n)
-        return false;
-
-    for (char c : str) {
-        if (read(addr) != c)
-            return false;
-
-        addr += sizeof(Cell);
-    }
-
-    return true;
-}
-
 Addr Dictionary::find(Word word)
 {
     if (latest == 0)

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "corewords.hpp"
 #include "state.hpp"
 
 #include <iterator>
@@ -35,6 +36,17 @@ bool State::compiling() const
 void State::compiling(bool yes)
 {
     dict.write(Dictionary::Compiling, yes);
+}
+
+void State::execute(Addr addr)
+{
+    pushr(0);
+    ip = addr - sizeof(Cell);
+
+    do {
+        ip += sizeof(Cell);
+        CoreWords::run(dict.read(ip), *this);
+    } while (ip);
 }
 
 Cell State::beyondip() const

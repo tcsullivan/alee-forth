@@ -17,7 +17,6 @@
  */
 
 #include "corewords.hpp"
-#include "executor.hpp"
 #include "parser.hpp"
 
 #include <cctype>
@@ -40,7 +39,7 @@ ParseStatus Parser::parseSource(State& state)
 {
     auto word = state.dict.input();
     while (word.size() > 0) {
-        if (auto ret = parseWord(state, word); ret == ParseStatus::Error)
+        if (auto ret = parseWord(state, word); ret != ParseStatus::Finished)
             return ret;
 
         word = state.dict.input();
@@ -52,11 +51,10 @@ ParseStatus Parser::parseSource(State& state)
 ParseStatus Parser::parseWord(State& state, Word word)
 {
     if (auto i = CoreWords::findi(state, word); i >= 0) {
-        if (state.compiling()) {
+        if (state.compiling())
             state.dict.add(i & ~CoreWords::CoreImmediate);
-        } else if (state.dict.equal(word, ":")) {
+        else if (state.dict.equal(word, ":"))
             state.compiling(true);
-        }
 
         if (!state.compiling() || (i & CoreWords::CoreImmediate))
             CoreWords::run(i & ~CoreWords::CoreImmediate, state);
@@ -66,14 +64,14 @@ ParseStatus Parser::parseWord(State& state, Word word)
         if (state.compiling()) {
             if (state.dict.read(j) & CoreWords::Immediate) {
                 state.compiling(false);
-                Executor::fullexec(state, e);
+                state.execute(e);
                 state.compiling(true);
             } else {
                 state.dict.add(CoreWords::HiddenWordJump);
                 state.dict.add(e);
             }
         } else {
-            Executor::fullexec(state, e);
+            state.execute(e);
         }
     } else {
         char buf[word.size()];
@@ -82,7 +80,7 @@ ParseStatus Parser::parseWord(State& state, Word word)
 
         char *p;
         const auto base = state.dict.read(0);
-        const auto l = static_cast<Cell>(std::strtol(buf, &p, base));
+        const Cell l = std::strtol(buf, &p, base);
 
         if (p != buf) {
             if (state.compiling()) {
@@ -92,27 +90,10 @@ ParseStatus Parser::parseWord(State& state, Word word)
                 state.push(l);
             }
         } else {
-            return ParseStatus::Error;
+            return ParseStatus::NotAWord;
         }
     }
 
     return ParseStatus::Finished;
 }
 
-        //case Pass::Colon:
-        //    state.pass = Pass::None;
-        //    state.compiling(true);
-        //    state.dict.addDefinition(sub);
-        //    break;
-        //case Pass::Constant:
-        //    state.pass = Pass::None;
-        //    state.compiling(true);
-        //    state.dict.addDefinition(sub);
-        //    state.dict.add(CoreWords::HiddenWordLiteral);
-        //    state.dict.add(state.pop());
-        //    state.dict.add(CoreWords::findi(";"));
-        //    CoreWords::run(CoreWords::findi(";"), state);
-        //    break;
-        //default:
-        //    break;
-        //}

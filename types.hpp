@@ -26,7 +26,7 @@ struct State;
 
 using Addr = uint16_t;
 using Cell = int16_t;
-using Func = int (*)(State&);
+using Func = void (*)(State&);
 
 struct Word
 {
@@ -41,8 +41,7 @@ struct Word
 enum class ParseStatus
 {
     Finished,
-    Continue,
-    Error
+    NotAWord
 };
 
 std::string_view to_string(ParseStatus);

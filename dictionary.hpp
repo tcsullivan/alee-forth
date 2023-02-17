@@ -34,27 +34,25 @@ public:
     constexpr static Addr InputCells = 80; // bytes!
     constexpr static Addr Begin      = Input + sizeof(Cell) + InputCells;
 
-    Word input();
-    bool equal(Word, std::string_view) const;
-    bool equal(Word, Word) const;
-
     Addr here = Begin;
     Addr latest = Begin;
 
     virtual Cell read(Addr) const = 0;
-    virtual int write(Addr, Cell) = 0;
+    virtual void write(Addr, Cell) = 0;
     virtual uint8_t readbyte(Addr) const = 0;
-    virtual int writebyte(Addr, uint8_t) = 0;
+    virtual void writebyte(Addr, uint8_t) = 0;
 
     Addr alignhere();
     Addr allot(Cell);
     void add(Cell);
     void addDefinition(Word);
+
     Addr find(Word);
     Addr getexec(Addr);
+    Word input();
 
-private:
-    bool issame(Addr, std::string_view, std::size_t);
+    bool equal(Word, std::string_view) const;
+    bool equal(Word, Word) const;
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

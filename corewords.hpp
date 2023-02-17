@@ -22,7 +22,7 @@
 #include "types.hpp"
 #include "state.hpp"
 
-int user_sys(State&);
+void user_sys(State&);
 
 class CoreWords
 {
@@ -51,43 +51,43 @@ private:
 
     static Func get(int);
 
-    static int op_drop(State&);
-    static int op_dup(State&);
-    static int op_swap(State&);
-    static int op_pick(State&);
-    static int op_sys(State&);
-    static int op_add(State&);
-    static int op_sub(State&);
-    static int op_mul(State&);
-    static int op_div(State&);
-    static int op_mod(State&);
-    static int op_peek(State&);
-    static int op_poke(State&);
-    static int op_rot(State&);
-    static int op_pushr(State&);
-    static int op_popr(State&);
-    static int op_eq(State&);
-    static int op_lt(State&);
-    static int op_allot(State&);
-    static int op_and(State&);
-    static int op_or(State&);
-    static int op_xor(State&);
-    static int op_shl(State&);
-    static int op_shr(State&);
-    static int op_comment(State&);
-    static int op_colon(State&);
-    static int op_semic(State&);
-    static int op_here(State&);
-    static int op_imm(State&);
-    static int op_const(State&);
-    static int op_literal(State&);
-    static int op_jump(State&);
-    static int op_if(State&);
-    static int op_then(State&);
-    static int op_else(State&);
-    static int op_depth(State&);
-    static int op_key(State&);
-    static int op_word(State&);
+    static void op_drop(State&);
+    static void op_dup(State&);
+    static void op_swap(State&);
+    static void op_pick(State&);
+    static void op_sys(State&);
+    static void op_add(State&);
+    static void op_sub(State&);
+    static void op_mul(State&);
+    static void op_div(State&);
+    static void op_mod(State&);
+    static void op_peek(State&);
+    static void op_poke(State&);
+    static void op_rot(State&);
+    static void op_pushr(State&);
+    static void op_popr(State&);
+    static void op_eq(State&);
+    static void op_lt(State&);
+    static void op_allot(State&);
+    static void op_and(State&);
+    static void op_or(State&);
+    static void op_xor(State&);
+    static void op_shl(State&);
+    static void op_shr(State&);
+    static void op_comment(State&);
+    static void op_colon(State&);
+    static void op_semic(State&);
+    static void op_here(State&);
+    static void op_imm(State&);
+    static void op_const(State&);
+    static void op_literal(State&);
+    static void op_jump(State&);
+    static void op_if(State&);
+    static void op_then(State&);
+    static void op_else(State&);
+    static void op_depth(State&);
+    static void op_key(State&);
+    static void op_word(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP
