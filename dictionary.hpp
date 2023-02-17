@@ -28,9 +28,15 @@
 class Dictionary
 {
 public:
-    constexpr static Addr Base      = 0 * sizeof(Cell);
-    constexpr static Addr Compiling = 1 * sizeof(Cell);
-    constexpr static Addr Begin     = 2 * sizeof(Cell);
+    constexpr static Addr Base       = 0;
+    constexpr static Addr Compiling  = Base + sizeof(Cell);
+    constexpr static Addr Input      = Compiling + sizeof(Cell); // len data...
+    constexpr static Addr InputCells = 80; // bytes!
+    constexpr static Addr Begin      = Input + sizeof(Cell) + InputCells;
+
+    Word input();
+    bool equal(Word, std::string_view) const;
+    bool equal(Word, Word) const;
 
     Addr here = Begin;
     Addr latest = Begin;
@@ -43,8 +49,8 @@ public:
     Addr alignhere();
     Addr allot(Cell);
     void add(Cell);
-    void addDefinition(std::string_view);
-    Addr find(std::string_view);
+    void addDefinition(Word);
+    Addr find(Word);
     Addr getexec(Addr);
 
 private:

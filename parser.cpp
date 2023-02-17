@@ -20,89 +20,99 @@
 #include "executor.hpp"
 #include "parser.hpp"
 
+#include <cctype>
 #include <cstdlib>
 
 ParseStatus Parser::parse(State& state, std::string_view& str)
 {
-    const auto end = str.find_first_of(" \t\n\r");
-    const auto sub = str.substr(0, end);
-    if (sub.empty())
-        return ParseStatus::Finished;
+    auto addr = Dictionary::Input;
+    state.dict.write(addr, str.size() + 1);
 
-    if (state.pass != Pass::None) {
-        switch (state.pass) {
-        case Pass::Comment:
-            if (str.front() == ')')
-                state.pass = Pass::None;
+    addr += sizeof(Cell) + Dictionary::InputCells - str.size() - 1;
+    for (char c : str)
+        state.dict.writebyte(addr++, c);
+    state.dict.writebyte(addr, '\0');
 
-            str = str.substr(1);
-            break;
-        case Pass::Colon:
-            state.pass = Pass::None;
-            state.compiling(true);
-            state.dict.addDefinition(sub);
-            break;
-        case Pass::Constant:
-            state.pass = Pass::None;
-            state.compiling(true);
-            state.dict.addDefinition(sub);
-            state.dict.add(CoreWords::HiddenWordLiteral);
-            state.dict.add(state.pop());
-            state.dict.add(CoreWords::findi(";"));
-            CoreWords::run(CoreWords::findi(";"), state);
-            break;
-        default:
-            break;
-        }
-    } else {
-        if (auto i = CoreWords::findi(sub); i >= 0) {
-            if (state.compiling())
-                state.dict.add(i & ~CoreWords::CoreImmediate);
-            if (!state.compiling() || (i & CoreWords::CoreImmediate))
-                CoreWords::run(i & ~CoreWords::CoreImmediate, state);
-        } else if (auto j = state.dict.find(sub); j > 0) {
-            auto e = state.dict.getexec(j);
-
-            if (state.compiling()) {
-                if (state.dict.read(j) & CoreWords::Immediate) {
-                    state.compiling(false);
-                    Executor::fullexec(state, e);
-                    state.compiling(true);
-                } else {
-                    state.dict.add(CoreWords::HiddenWordJump);
-                    state.dict.add(e);
-                }
-            } else {
-                Executor::fullexec(state, e);
-            }
-        } else {
-            char *p;
-            const auto base = state.dict.read(0);
-            const auto l = static_cast<Cell>(std::strtol(sub.data(), &p, base));
-
-            if (p != sub.data()) {
-                if (state.compiling()) {
-                    state.dict.add(CoreWords::HiddenWordLiteral);
-                    state.dict.add(l);
-                } else {
-                    state.push(l);
-                }
-            } else {
-                return ParseStatus::Error;
-            }
-        }
-
-        if (end == std::string_view::npos)
-            return ParseStatus::Finished;
-    }
-
-    const auto next = str.find_first_not_of(" \t\n\r", end);
-
-    if (next == std::string_view::npos) {
-        return ParseStatus::Finished;
-    } else {
-        str = str.substr(next);
-        return ParseStatus::Continue;
-    }
+    return parseSource(state);
 }
 
+ParseStatus Parser::parseSource(State& state)
+{
+    auto word = state.dict.input();
+    while (word.size() > 0) {
+        if (auto ret = parseWord(state, word); ret == ParseStatus::Error)
+            return ret;
+
+        word = state.dict.input();
+    }
+
+    return ParseStatus::Finished;
+}
+
+ParseStatus Parser::parseWord(State& state, Word word)
+{
+    if (auto i = CoreWords::findi(state, word); i >= 0) {
+        if (state.compiling()) {
+            state.dict.add(i & ~CoreWords::CoreImmediate);
+        } else if (state.dict.equal(word, ":")) {
+            state.compiling(true);
+        }
+
+        if (!state.compiling() || (i & CoreWords::CoreImmediate))
+            CoreWords::run(i & ~CoreWords::CoreImmediate, state);
+    } else if (auto j = state.dict.find(word); j > 0) {
+        auto e = state.dict.getexec(j);
+
+        if (state.compiling()) {
+            if (state.dict.read(j) & CoreWords::Immediate) {
+                state.compiling(false);
+                Executor::fullexec(state, e);
+                state.compiling(true);
+            } else {
+                state.dict.add(CoreWords::HiddenWordJump);
+                state.dict.add(e);
+            }
+        } else {
+            Executor::fullexec(state, e);
+        }
+    } else {
+        char buf[word.size()];
+        for (unsigned i = 0; i < word.size(); ++i)
+            buf[i] = state.dict.readbyte(word.start + i);
+
+        char *p;
+        const auto base = state.dict.read(0);
+        const auto l = static_cast<Cell>(std::strtol(buf, &p, base));
+
+        if (p != buf) {
+            if (state.compiling()) {
+                state.dict.add(CoreWords::HiddenWordLiteral);
+                state.dict.add(l);
+            } else {
+                state.push(l);
+            }
+        } else {
+            return ParseStatus::Error;
+        }
+    }
+
+    return ParseStatus::Finished;
+}
+
+        //case Pass::Colon:
+        //    state.pass = Pass::None;
+        //    state.compiling(true);
+        //    state.dict.addDefinition(sub);
+        //    break;
+        //case Pass::Constant:
+        //    state.pass = Pass::None;
+        //    state.compiling(true);
+        //    state.dict.addDefinition(sub);
+        //    state.dict.add(CoreWords::HiddenWordLiteral);
+        //    state.dict.add(state.pop());
+        //    state.dict.add(CoreWords::findi(";"));
+        //    CoreWords::run(CoreWords::findi(";"), state);
+        //    break;
+        //default:
+        //    break;
+        //}

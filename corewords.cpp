@@ -46,7 +46,7 @@ Func CoreWords::get(int index)
     case 22: return op_shr;
     case 23: return op_comment;
     case 24: return op_colon;
-    case 25: return op_semic;
+    case 25: return op_semic; // :267
     case 26: return op_here;
     case 27: return op_imm;
     case 28: return op_const;
@@ -203,13 +203,24 @@ int CoreWords::op_shr(State& state) {
 }
 
 int CoreWords::op_comment(State& state) {
-    state.pass = Pass::Comment;
+    do {
+        op_key(state);
+    } while (state.pop() != ')');
     return 0;
 }
 
 int CoreWords::op_colon(State& state) {
-    state.pass = Pass::Colon;
-    state.pushr(state.dict.alignhere());
+    if (state.compiling()) {
+        Word word = state.dict.input();
+        while (word.size() == 0) {
+            state.input(state);
+            word = state.dict.input();
+        }
+
+        state.pushr(state.dict.alignhere());
+        state.dict.addDefinition(word);
+    }
+
     return 0;
 }
 
@@ -244,8 +255,22 @@ int CoreWords::op_imm(State& state)
 
 int CoreWords::op_const(State& state)
 {
-    state.pass = Pass::Constant;
-    state.pushr(state.dict.alignhere());
+    if (state.compiling()) {
+        Word word = state.dict.input();
+        while (word.size() == 0) {
+            state.input(state);
+            word = state.dict.input();
+        }
+
+        state.pushr(state.dict.alignhere());
+        state.dict.addDefinition(word);
+        state.dict.add(CoreWords::HiddenWordLiteral);
+        state.dict.add(state.pop());
+        state.dict.add(25 | CoreImmediate);
+        op_semic(state);
+        state.compiling(false);
+    }
+
     return 0;
 }
 
@@ -309,7 +334,22 @@ int CoreWords::op_depth(State& state)
     return 0;
 }
 
-int CoreWords::findi(std::string_view str)
+int CoreWords::op_key(State& state)
+{
+    auto len = state.dict.read(Dictionary::Input);
+    while (len <= 0)
+        state.input(state);
+
+    state.dict.write(Dictionary::Input, len - 1);
+    Addr addr = Dictionary::Input + sizeof(Cell) +
+                Dictionary::InputCells - len;
+    Cell val = state.dict.readbyte(addr);
+
+    state.push(val);
+    return 0;
+}
+
+int CoreWords::findi(State& state, Word word)
 {
     std::size_t i;
     int wordsi = 0;
@@ -319,7 +359,7 @@ int CoreWords::findi(std::string_view str)
     for (i = 0; i < words.size();) {
         const auto end = words.find_first_of({"\0\1", 2}, i);
 
-        if (words.compare(i, end - i, str) == 0)
+        if (state.dict.equal(word, words.substr(i, end - i)))
             return words[end] == '\0' ? wordsi : (wordsi | CoreImmediate);
 
         ++wordsi;
@@ -329,9 +369,9 @@ int CoreWords::findi(std::string_view str)
     return -1;
 }
 
-Func CoreWords::find(std::string_view str)
+Func CoreWords::find(State& state, Word word)
 {
-    const auto i = findi(str);
+    const auto i = findi(state, word);
     return i >= 0 ? get(i & ~CoreWords::CoreImmediate) : nullptr;
 }
 

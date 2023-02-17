@@ -28,12 +28,14 @@ using Addr = uint16_t;
 using Cell = int16_t;
 using Func = int (*)(State&);
 
-enum class Pass
+struct Word
 {
-    None,
-    Comment,
-    Colon,
-    Constant
+    Addr start = 0;
+    Addr end = 0;
+
+    unsigned size() const noexcept {
+        return end - start;
+    }
 };
 
 enum class ParseStatus

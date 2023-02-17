@@ -35,8 +35,8 @@ public:
     constexpr static Cell Immediate     = (1 << 5);
     constexpr static Cell CoreImmediate = (1 << 6);
 
-    static int findi(std::string_view);
-    static Func find(std::string_view);
+    static int findi(State&, Word);
+    static Func find(State&, Word);
     static void run(int, State&);
 
 private:
@@ -45,7 +45,7 @@ private:
         "+\0-\0*\0/\0%\0"
         "_@\0_!\0rot\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
-        "^\0<<\0>>\0(\0:\0"
+        "^\0<<\0>>\0(\0:\1"
         ";\1here\0imm\0const\0"
         "if\1then\1else\1depth\0";
 
@@ -86,6 +86,8 @@ private:
     static int op_then(State&);
     static int op_else(State&);
     static int op_depth(State&);
+    static int op_key(State&);
+    static int op_word(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

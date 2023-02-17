@@ -36,10 +36,11 @@ class State
 
 public:
     Addr ip = 0;
-    Pass pass = Pass::None;
     Dictionary& dict;
+    void (*input)(State&);
 
-    constexpr State(Dictionary& d): dict(d) {}
+    constexpr State(Dictionary& d, void (*i)(State&)):
+        dict(d), input(i) {}
 
     bool compiling() const;
     void compiling(bool);

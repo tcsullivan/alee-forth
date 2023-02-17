@@ -28,10 +28,23 @@ static bool okay = false;
 static void parseLine(Parser&, State&, std::string_view);
 static void parseFile(Parser&, State&, std::istream&);
 
+static void readchar(State& state)
+{
+    auto len = state.dict.read(Dictionary::Input);
+    Addr addr = Dictionary::Input + sizeof(Cell) +
+                Dictionary::InputCells - len - 1;
+
+    for (Addr i = 0; i < len; ++i, ++addr)
+        state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
+
+    state.dict.writebyte(addr, std::cin.get());
+    state.dict.write(Dictionary::Input, len + 1);
+}
+
 int main(int argc, char *argv[])
 {
     MemDict dict;
-    State state (dict);
+    State state (dict, readchar);
     Parser parser;
 
     std::vector args (argv + 1, argv + argc);
@@ -41,7 +54,6 @@ int main(int argc, char *argv[])
     }
 
     okay = true;
-    //std::cout << state.size() << ' ' << state.compiling << "> ";
     parseFile(parser, state, std::cin);
 
     return 0;

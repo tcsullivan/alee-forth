@@ -18,6 +18,8 @@
 
 #include "dictionary.hpp"
 
+#include <cctype>
+
 Addr Dictionary::allot(Cell amount)
 {
     Addr old = here;
@@ -38,11 +40,11 @@ Addr Dictionary::alignhere()
     return here;
 }
 
-void Dictionary::addDefinition(std::string_view str)
+void Dictionary::addDefinition(Word word)
 {
-    add(str.size());
-    for (char c : str)
-        add(c);
+    add(word.size());
+    for (unsigned i = 0; i < word.size(); ++i)
+        writebyte(allot(1), readbyte(word.start + i));
 }
 
 bool Dictionary::issame(Addr addr, std::string_view str, std::size_t n)
@@ -60,7 +62,7 @@ bool Dictionary::issame(Addr addr, std::string_view str, std::size_t n)
     return true;
 }
 
-Addr Dictionary::find(std::string_view str)
+Addr Dictionary::find(Word word)
 {
     if (latest == 0)
         return 0;
@@ -68,10 +70,14 @@ Addr Dictionary::find(std::string_view str)
     Addr lt = latest, oldlt;
     do {
         oldlt = lt;
-        const auto l = read(lt);
-        const auto len = l & 0x1F;
+        const Cell l = read(lt);
+        const Addr len = l & 0x1F;
+        const Word lw {
+            static_cast<Addr>(lt + sizeof(Cell)),
+            static_cast<Addr>(lt + sizeof(Cell) + len)
+        };
 
-        if (issame(lt + sizeof(Cell), str, len))
+        if (equal(word, lw))
             return lt;
         else
             lt -= l >> 6;
@@ -83,6 +89,62 @@ Addr Dictionary::find(std::string_view str)
 Addr Dictionary::getexec(Addr addr)
 {
     const auto len = read(addr) & 0x1F;
-    return addr + (1 + len) * sizeof(Cell);
+    return addr + sizeof(Cell) + len;
+}
+
+Word Dictionary::input()
+{
+    const auto len = read(Dictionary::Input);
+    if (len == 0)
+        return {};
+
+    Addr wordstart = Dictionary::Input + sizeof(Cell) + Dictionary::InputCells
+                     - len;
+    Addr wordend = wordstart;
+
+    auto cnt = len;
+    while (cnt) {
+        auto b = readbyte(wordend);
+        if (isspace(b) || b == '\0') {
+            if (wordstart != wordend) {
+                Word word {wordstart, wordend};
+                writebyte(Dictionary::Input, cnt - 1);
+                return word;
+            } else {
+                ++wordstart;
+            }
+        }
+
+        ++wordend;
+        --cnt;
+    }
+
+    return {};
+}
+
+bool Dictionary::equal(Word word, std::string_view sv) const
+{
+    if (sv.size() != word.end - word.start)
+        return false;
+
+    for (unsigned i = 0; i < sv.size(); ++i) {
+        if (sv[i] != readbyte(word.start + i))
+            return false;
+    }
+
+    return true;
+}
+
+bool Dictionary::equal(Word word, Word other) const
+{
+    if (word.size() != other.size())
+        return false;
+
+    for (unsigned i = 0; i < word.size(); ++i) {
+        if (readbyte(word.start + i) != readbyte(other.start + i))
+            return false;
+    }
+
+    return true;
 }
 
