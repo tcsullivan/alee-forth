@@ -1,6 +1,9 @@
 ( : variable create 0 , ; )
 ( : create here const ; )
 
+: 1+      1 + ;
+: 1-      1 - ;
+
 : !       2 _! ;
 : @       2 _@ ;
 : ,       here ! 2 allot ;
@@ -14,7 +17,7 @@
 : chars   ;
 
 : align   here 1 & if 1 allot then ;
-: aligned dup 1 & if 1 + then ;
+: aligned dup 1 & if 1+ then ;
 
 ( set decimal numbers )
 10 0 !
@@ -38,14 +41,6 @@
 : 2*      2 * ;
 : 2/      2 / ;
 
-: 0=      0 = ;
-: 0<      0 < ;
-: <=      2dup < -rot = and ;
-: >       <= 0= ;
-
-: 1+      1 + ;
-: 1-      1 - ;
-
 : 2drop   drop drop ;
 : 2dup    over over ;
 : 2over   3 pick 3 pick ;
@@ -54,6 +49,11 @@
 : r@      r> dup >r ;
 : 2!      swap over ! cell+ ! ;
 : 2@      dup cell+ @ swap @ ;
+
+: 0=      0 = ;
+: 0<      0 < ;
+: <=      2dup - 1- 0< ;
+: >       <= 0= ;
 
 : cr      9 emit ;
 : bl      32 ;

@@ -74,15 +74,16 @@ ParseStatus Parser::parseWord(State& state, Word word)
             state.execute(e);
         }
     } else {
-        char buf[word.size()];
+        char buf[word.size() + 1];
         for (unsigned i = 0; i < word.size(); ++i)
             buf[i] = state.dict.readbyte(word.start + i);
+        buf[word.size()] = '\0';
 
         char *p;
         const auto base = state.dict.read(0);
         const Cell l = std::strtol(buf, &p, base);
 
-        if (p != buf) {
+        if (std::distance(buf, p) == word.size()) {
             if (state.compiling()) {
                 state.dict.add(CoreWords::HiddenWordLiteral);
                 state.dict.add(l);
