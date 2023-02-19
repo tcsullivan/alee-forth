@@ -40,13 +40,18 @@ void State::compiling(bool yes)
 
 void State::execute(Addr addr)
 {
-    pushr(0);
-    ip = addr - sizeof(Cell);
+    if (addr < Dictionary::Begin) {
+        // Must be a core-word
+        CoreWords::run(addr, *this);
+    } else {
+        pushr(0);
+        ip = addr - sizeof(Cell);
 
-    do {
-        ip += sizeof(Cell);
-        CoreWords::run(dict.read(ip), *this);
-    } while (ip);
+        do {
+            ip += sizeof(Cell);
+            CoreWords::run(dict.read(ip), *this);
+        } while (ip);
+    }
 }
 
 Cell State::beyondip() const

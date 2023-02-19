@@ -29,10 +29,11 @@ class Dictionary
 {
 public:
     constexpr static Addr Base       = 0;
-    constexpr static Addr Compiling  = Base + sizeof(Cell);
-    constexpr static Addr Input      = Compiling + sizeof(Cell); // len data...
+    constexpr static Addr Compiling  = sizeof(Cell);
+    constexpr static Addr Postpone   = sizeof(Cell) * 2;
+    constexpr static Addr Input      = sizeof(Cell) * 3; // len data...
     constexpr static Addr InputCells = 80; // bytes!
-    constexpr static Addr Begin      = Input + sizeof(Cell) + InputCells;
+    constexpr static Addr Begin      = sizeof(Cell) * 4 + InputCells;
 
     Addr here = Begin;
     Addr latest = Begin;

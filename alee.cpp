@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
     State state (dict, readchar);
     Parser parser;
 
+    dict.write(Dictionary::Base, 10);
+    dict.write(Dictionary::Compiling, 0);
+    dict.write(Dictionary::Postpone, 0);
+
     std::vector args (argv + 1, argv + argc);
     for (const auto& a : args) {
         std::ifstream file (a);

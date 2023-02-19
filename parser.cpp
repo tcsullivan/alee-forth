@@ -22,6 +22,8 @@
 #include <cctype>
 #include <cstdlib>
 
+#include <iostream>
+
 ParseStatus Parser::parse(State& state, std::string_view& str)
 {
     auto addr = Dictionary::Input;
@@ -50,25 +52,42 @@ ParseStatus Parser::parseSource(State& state)
 
 ParseStatus Parser::parseWord(State& state, Word word)
 {
-    if (auto i = CoreWords::findi(state, word); i >= 0) {
-        if (state.compiling())
-            state.dict.add(i & ~CoreWords::CoreImmediate);
-        else if (state.dict.equal(word, ":"))
-            state.compiling(true);
+    // TODO unify core-word and defined-word parsing/execution.
 
-        if (!state.compiling() || (i & CoreWords::CoreImmediate))
-            CoreWords::run(i & ~CoreWords::CoreImmediate, state);
+    if (auto i = CoreWords::findi(state, word); i >= 0) {
+        auto p = state.dict.read(Dictionary::Postpone);
+        auto imm = (i & CoreWords::Compiletime);
+
+        if (state.compiling() || p) {
+            if (p || !imm) {
+                state.dict.add(i & ~CoreWords::Compiletime);
+
+                if (p)
+                    state.dict.write(Dictionary::Postpone, 0);
+            } else if (imm) {
+                CoreWords::run(i & ~CoreWords::Compiletime, state);
+            }
+        } else {
+            if (state.dict.equal(word, ":"))
+                state.compiling(true);
+
+            CoreWords::run(i & ~CoreWords::Compiletime, state);
+        }
     } else if (auto j = state.dict.find(word); j > 0) {
         auto e = state.dict.getexec(j);
+        auto p = state.dict.read(Dictionary::Postpone);
 
-        if (state.compiling()) {
-            if (state.dict.read(j) & CoreWords::Immediate) {
-                state.compiling(false);
-                state.execute(e);
-                state.compiling(true);
-            } else {
+        if (state.compiling() || p) {
+            auto imm = state.dict.read(j) & CoreWords::Immediate;
+
+            if (p || !imm) {
                 state.dict.add(CoreWords::HiddenWordJump);
                 state.dict.add(e);
+
+                if (p)
+                    state.dict.write(Dictionary::Postpone, 0);
+            } else if (imm) {
+                state.execute(e);
             }
         } else {
             state.execute(e);
@@ -85,12 +104,13 @@ ParseStatus Parser::parseWord(State& state, Word word)
 
         if (std::distance(buf, p) == word.size()) {
             if (state.compiling()) {
-                state.dict.add(CoreWords::HiddenWordLiteral);
+                state.dict.add(CoreWords::findi("_lit"));
                 state.dict.add(l);
             } else {
                 state.push(l);
             }
         } else {
+            std::cout << "word not found: " << buf << std::endl;
             return ParseStatus::NotAWord;
         }
     }
