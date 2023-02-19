@@ -32,11 +32,17 @@ void Dictionary::add(Cell value)
     write(allot(sizeof(Cell)), value);
 }
 
+Addr Dictionary::aligned(Addr addr) const noexcept
+{
+    if (addr & (sizeof(Cell) - sizeof(uint8_t)))
+        addr = (addr + sizeof(Cell)) & ~(sizeof(Cell) - sizeof(uint8_t));
+
+    return addr;
+}
+
 Addr Dictionary::alignhere()
 {
-    if (here & (sizeof(Cell) - sizeof(uint8_t)))
-        here = (here + sizeof(Cell)) & ~(sizeof(Cell) - sizeof(uint8_t));
-
+    here = aligned(here);
     return here;
 }
 
@@ -45,13 +51,12 @@ void Dictionary::addDefinition(Word word)
     add(word.size());
     for (unsigned i = 0; i < word.size(); ++i)
         writebyte(allot(1), readbyte(word.start + i));
+
+    alignhere();
 }
 
 Addr Dictionary::find(Word word)
 {
-    if (latest == 0)
-        return 0;
-
     Addr lt = latest, oldlt;
     do {
         oldlt = lt;
@@ -74,7 +79,7 @@ Addr Dictionary::find(Word word)
 Addr Dictionary::getexec(Addr addr)
 {
     const auto len = read(addr) & 0x1F;
-    return addr + sizeof(Cell) + len;
+    return aligned(addr + sizeof(Cell) + len);
 }
 
 Word Dictionary::input()

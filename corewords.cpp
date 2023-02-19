@@ -185,7 +185,7 @@ void CoreWords::op_tick(State& state) {
     if (auto i = CoreWords::findi(state, word); i >= 0) {
         xt = i & ~CoreWords::Compiletime;
     } else if (auto j = state.dict.find(word); j > 0) {
-        xt = state.dict.getexec(j) - sizeof(Cell);
+        xt = state.dict.getexec(j);
     }
 
     state.push(xt);
@@ -256,7 +256,7 @@ void CoreWords::op_literal(State& state)
 void CoreWords::op_jump(State& state)
 {
     state.pushr(state.ip + sizeof(Cell));
-    state.ip = state.beyondip() - sizeof(Cell);
+    op_jmp(state);
 }
 
 void CoreWords::op_jmp(State& state)
@@ -280,8 +280,10 @@ void CoreWords::op_depth(State& state)
 void CoreWords::op_key(State& state)
 {
     auto len = state.dict.read(Dictionary::Input);
-    while (len <= 0)
+    while (len <= 0) {
         state.input(state);
+        len = state.dict.read(Dictionary::Input);
+    }
 
     state.dict.write(Dictionary::Input, len - 1);
     Addr addr = Dictionary::Input + sizeof(Cell) +
@@ -337,11 +339,16 @@ Func CoreWords::find(State& state, Word word)
     return i >= 0 ? get(i & ~Compiletime) : nullptr;
 }
 
-void CoreWords::run(int i, State& state)
+struct corewords_run {};
+
+bool CoreWords::run(int i, State& state)
 {
     i &= ~Compiletime;
 
-    if (i >= 0 && i < WordCount)
+    bool isaword = i >= 0 && i < WordCount;
+    if (isaword)
         get(i)(state);
+
+    return isaword;
 }
 

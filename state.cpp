@@ -49,7 +49,12 @@ void State::execute(Addr addr)
 
         do {
             ip += sizeof(Cell);
-            CoreWords::run(dict.read(ip), *this);
+
+            const auto ins = dict.read(ip);
+            if (!CoreWords::run(ins, *this)) {
+                pushr(ip);
+                ip = ins - sizeof(Cell);
+            }
         } while (ip);
     }
 }

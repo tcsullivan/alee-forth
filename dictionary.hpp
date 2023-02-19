@@ -44,6 +44,7 @@ public:
     virtual void writebyte(Addr, uint8_t) = 0;
 
     Addr alignhere();
+    Addr aligned(Addr) const noexcept;
     Addr allot(Cell);
     void add(Cell);
     void addDefinition(Word);

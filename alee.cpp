@@ -67,10 +67,10 @@ void user_sys(State& state)
 {
     switch (state.pop()) {
     case 0:
-        std::cout << state.pop() << std::endl;
+        std::cout << state.pop() << ' ';
         break;
     case 1:
-        std::cout << static_cast<char>(state.pop()) << std::endl;
+        std::cout << static_cast<char>(state.pop());
         break;
     }
 }
@@ -81,7 +81,7 @@ void parseLine(Parser& parser, State& state, std::string_view line)
 
     if (r == ParseStatus::Finished) {
         if (okay)
-            std::cout << " ok" << std::endl;
+            std::cout << "ok" << std::endl;
     } else {
         std::cout << to_string(r) << ": " << line << std::endl;
     }
