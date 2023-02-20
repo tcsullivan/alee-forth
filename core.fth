@@ -29,8 +29,18 @@
 : char+    1+ ;
 : chars    ;
 
-: 2r>      r> r> swap ;
-: 2>r      swap >r >r ;
+: base     0 ;
+: state    2 ;
+: decimal  1 1+ base ! 1010 base ! ;
+
+: postpone 1 4 ! ; imm
+: [']      ' postpone literal ; imm
+: [        0 state ! ; imm
+: ]        1 state ! ;
+
+: 2r>      ['] r> , ['] r> , ['] swap , ; imm
+: 2>r      ['] swap , ['] >r , ['] >r , ; imm
+: r@       ['] r> , ['] dup , ['] >r , ; imm
 
 : 2!       swap over ! cell+ ! ;
 : 2@       dup cell+ @ swap @ ;
@@ -40,29 +50,21 @@
 : 0<       0 < ;
 : <=       - 1- 0< ;
 : >        <= 0= ;
-
-: base     0 ;
-: state    2 ;
-: decimal  1 1+ base ! 1010 base ! ;
-
-: postpone 1 4 ! ; imm
-: [']      ' postpone literal ; imm
-
-: r@       ['] r> , ['] dup , ['] >r , ; imm
+: <>       = 0= ;
 
 : if       ['] _jmp0 , here 0 , ; imm
 : then     here swap ! ; imm
 : else     ['] _jmp , here 0 , here rot ! ; imm
 
-: begin    here 0 ; imm
-: while    1+ postpone if swap ; imm
-: repeat   ['] _jmp , if swap , postpone then else , then ; imm
-: until    drop ['] _jmp0 , , ; imm
+: begin    0 here ; imm
+: while    swap 1+ swap postpone if -rot ; imm
+: repeat   ['] _jmp , , if postpone then then ; imm
+: until    ['] _jmp0 , , drop ; imm
 
-: do       ['] swap , ['] >r , ['] >r , here ; imm
-: +loop    ['] r> , ['] r> , ['] swap , ['] rot , ['] + , ['] 2dup ,
-           ['] swap , ['] >r , ['] >r , ['] - , ['] 0= ,
-           ['] _jmp0 , , ['] r> , ['] r> , ['] swap , ['] 2drop , ; imm
+: do       postpone 2>r here ; imm
+: +loop    postpone 2r> ['] rot , ['] + , ['] 2dup ,
+           postpone 2>r ['] - , ['] 0= , ['] _jmp0 , ,
+           postpone 2r> ['] 2drop , ; imm
 : loop     1 postpone literal postpone +loop ; imm
 : i        postpone r@ ; imm 
 
@@ -81,6 +83,7 @@
 : cr       9 emit ;
 : bl       32 ;
 : space    bl emit ;
+: spaces   begin dup 0 > while space 1- repeat ;
 
 : ?dup     dup if dup then ;
 
@@ -88,3 +91,13 @@
 : abs      dup 0< if negate then ;
 : min      2dup <= if drop else nip then ;
 : max      2dup <= if nip else drop then ;
+
+: word     here -1 cells over ! dup cell+ rot begin key 2dup <> while
+           2 pick c! swap char+ swap repeat
+           2drop over - over +!  ;
+: count    dup cell+ swap @ ;
+: char     bl word cell+ c@ ;
+: [char]   char postpone literal ; imm
+
+: type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat ;
+: ."       [char] " word count type ;

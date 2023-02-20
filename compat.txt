@@ -15,7 +15,7 @@ yes 6.1.0140 +LOOP
 yes 6.1.0150 ,
 yes 6.1.0160 -
 yes 6.1.0180 .
-    6.1.0190 ."
+yes 6.1.0190 ."
 yes 6.1.0230 /
     6.1.0240 /MOD
 yes 6.1.0250 0<
@@ -58,11 +58,11 @@ yes 6.1.0860 C,
 yes 6.1.0870 C@
 yes 6.1.0880 CELL+
 yes 6.1.0890 CELLS
-    6.1.0895 CHAR
+yes 6.1.0895 CHAR
 yes 6.1.0897 CHAR+
 yes 6.1.0898 CHARS
     6.1.0950 CONSTANT
-    6.1.0980 COUNT
+yes 6.1.0980 COUNT
 yes 6.1.0990 CR
     6.1.1000 CREATE
 yes 6.1.1170 DECIMAL
@@ -114,11 +114,11 @@ yes 6.1.2162 RSHIFT
     6.1.2214 SM/REM
     6.1.2216 SOURCE
 yes 6.1.2220 SPACE
-    6.1.2230 SPACES
+yes 6.1.2230 SPACES
 yes 6.1.2250 STATE
 yes 6.1.2260 SWAP
 yes 6.1.2270 THEN
-    6.1.2310 TYPE
+yes 6.1.2310 TYPE
     6.1.2320 U.
     6.1.2340 U<
     6.1.2360 UM*
@@ -127,10 +127,10 @@ yes 6.1.2270 THEN
 yes 6.1.2390 UNTIL
     6.1.2410 VARIABLE
 yes 6.1.2430 WHILE
-    6.1.2450 WORD
+yes 6.1.2450 WORD
 yes 6.1.2490 XOR
-    6.1.2500 [
+yes 6.1.2500 [
 yes 6.1.2510 [']
-    6.1.2520 [CHAR]
-    6.1.2540 ]
+yes 6.1.2520 [CHAR]
+yes 6.1.2540 ]
 
