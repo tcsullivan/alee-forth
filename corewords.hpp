@@ -29,7 +29,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t VisibleWordCount = 38;             // size
+    constexpr static std::size_t VisibleWordCount = 37;             // size
     constexpr static auto HiddenWordJump    = VisibleWordCount;     // index
     constexpr static auto WordCount         = VisibleWordCount + 1; // size
 
@@ -50,7 +50,7 @@ private:
         "_@\0_!\0rot\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
         "^\0<<\0>>\0(\0:\1"
-        ";\1here\0imm\0const\0depth\0"
+        ";\1here\0const\0depth\0"
         "key\0exit\0'\0execute\0_jmp\0"
         "_jmp0\0_lit\0literal\1";
 
@@ -83,7 +83,6 @@ private:
     static void op_colon(State&);
     static void op_semic(State&);
     static void op_here(State&);
-    static void op_imm(State&);
     static void op_const(State&);
     static void op_lit(State&);
     static void op_jump(State&);

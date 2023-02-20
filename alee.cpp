@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
     Parser parser;
 
     dict.write(Dictionary::Base, 10);
+    dict.write(Dictionary::Latest, Dictionary::Begin);
     dict.write(Dictionary::Compiling, 0);
     dict.write(Dictionary::Postpone, 0);
 
@@ -81,7 +82,7 @@ void parseLine(Parser& parser, State& state, std::string_view line)
 
     if (r == ParseStatus::Finished) {
         if (okay)
-            std::cout << "ok" << std::endl;
+            std::cout << (state.compiling() ? "compiled" : "ok") << std::endl;
     } else {
         std::cout << to_string(r) << ": " << line << std::endl;
     }

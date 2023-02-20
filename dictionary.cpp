@@ -57,7 +57,7 @@ void Dictionary::addDefinition(Word word)
 
 Addr Dictionary::find(Word word)
 {
-    Addr lt = latest, oldlt;
+    Addr lt = latest(), oldlt;
     do {
         oldlt = lt;
         const Cell l = read(lt);

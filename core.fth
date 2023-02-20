@@ -30,10 +30,13 @@
 : chars    ;
 
 : base     0 ;
-: state    2 ;
+: _latest  1 cells ;
+: state    2 cells ;
 : decimal  1 1+ base ! 1010 base ! ;
 
-: postpone 1 4 ! ; imm
+: imm      _latest @ dup @ 1 5 << | swap ! ;
+
+: postpone 1 3 cells ! ; imm
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
 : ]        1 state ! ;
@@ -101,3 +104,16 @@
 
 : type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat ;
 : ."       [char] " word count type ;
+
+: create   align here bl word count nip cell+ allot align
+           ['] _lit , here 3 cells + , ['] exit , 0 ,
+           dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
+: does>    _latest @
+           dup @ 31 & + cell+ aligned
+           2 cells +
+           ['] _jmp over ! cell+
+           here swap ! ] ;
+
+: variable create 1 cells allot ;
+: constant create , does> ['] @ , postpone ; ;
+( TODO fix compile-time does>... above should simply be "does> @ ;" )

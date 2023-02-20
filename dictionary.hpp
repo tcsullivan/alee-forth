@@ -29,14 +29,17 @@ class Dictionary
 {
 public:
     constexpr static Addr Base       = 0;
-    constexpr static Addr Compiling  = sizeof(Cell);
-    constexpr static Addr Postpone   = sizeof(Cell) * 2;
-    constexpr static Addr Input      = sizeof(Cell) * 3; // len data...
+    constexpr static Addr Latest     = sizeof(Cell);
+    constexpr static Addr Compiling  = sizeof(Cell) * 2;
+    constexpr static Addr Postpone   = sizeof(Cell) * 3;
+    constexpr static Addr Input      = sizeof(Cell) * 4; // len data...
     constexpr static Addr InputCells = 80; // bytes!
-    constexpr static Addr Begin      = sizeof(Cell) * 4 + InputCells;
+    constexpr static Addr Begin      = sizeof(Cell) * 5 + InputCells;
 
     Addr here = Begin;
-    Addr latest = Begin;
+
+    Addr latest() { return read(Latest); }
+    void latest(Addr l) { write(Latest, l); }
 
     virtual Cell read(Addr) const = 0;
     virtual void write(Addr, Cell) = 0;

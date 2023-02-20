@@ -23,12 +23,12 @@ Func CoreWords::get(int index)
     static const Func ops[WordCount] = {
         op_drop,  op_dup,  op_swap,    op_pick,    op_sys,
         op_add,   op_sub,  op_mul,     op_div,     op_mod,
-        op_peek,  op_poke, op_rot,     op_pushr,   op_popr,
+ /*10*/ op_peek,  op_poke, op_rot,     op_pushr,   op_popr,
         op_eq,    op_lt,   op_allot,   op_and,     op_or,
-        op_xor,   op_shl,  op_shr,     op_comment, op_colon,
-        op_semic, op_here, op_imm,     op_const,   op_depth,
-        op_key,   op_exit, op_tick,    op_execute, op_jmp,
-        op_jmp0,  op_lit,  op_literal,
+ /*20*/ op_xor,   op_shl,  op_shr,     op_comment, op_colon,
+        op_semic, op_here, op_const,   op_depth,   op_key,
+ /*30*/ op_exit,  op_tick, op_execute, op_jmp,     op_jmp0,
+        op_lit,  op_literal,
         op_jump
     };
 
@@ -169,8 +169,12 @@ void CoreWords::op_colon(State& state) {
             word = state.dict.input();
         }
 
-        state.pushr(state.dict.alignhere());
+        const auto start = state.dict.alignhere();
         state.dict.addDefinition(word);
+        state.dict.write(start,
+            (state.dict.read(start) & 0x1F) |
+            ((start - state.dict.latest()) << 6));
+        state.dict.latest(start);
     }
 }
 
@@ -202,26 +206,12 @@ void CoreWords::op_exit(State& state) {
 void CoreWords::op_semic(State& state) {
     if (state.compiling()) {
         state.dict.add(findi("exit"));
-
-        auto begin = state.popr();
-
-        state.dict.write(begin,
-            (state.dict.read(begin) & 0x1F) |
-            ((begin - state.dict.latest) << 6));
-
-        state.dict.latest = begin;
         state.compiling(false);
     }
 }
 
 void CoreWords::op_here(State& state) {
     state.push(state.dict.here);
-}
-
-void CoreWords::op_imm(State& state)
-{
-    state.dict.write(state.dict.latest,
-        state.dict.read(state.dict.latest) | Immediate);
 }
 
 void CoreWords::op_const(State& state)
@@ -338,8 +328,6 @@ Func CoreWords::find(State& state, Word word)
     const auto i = findi(state, word);
     return i >= 0 ? get(i & ~Compiletime) : nullptr;
 }
-
-struct corewords_run {};
 
 bool CoreWords::run(int i, State& state)
 {
