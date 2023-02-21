@@ -116,9 +116,9 @@
 : create   align here bl word count nip cell+ allot align
            ['] _lit , here 3 cells + , ['] exit , 0 ,
            dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
-: does>    _latest @
-           dup @ 31 & + cell+ aligned
-           2 cells +
+: _latword _latest @
+           dup @ 31 & + cell+ aligned ;
+: does>    _latword 2 cells +
            ['] _jmp over ! cell+
            here swap ! ] ;
 : >body    cell+ @ ;
@@ -132,3 +132,10 @@
 
 : quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
 : abort    begin depth 0 > while drop repeat quit ;
+
+: recurse  _latword , ; imm
+
+: move     begin dup 0 > while
+           rot dup @ >r cell+
+           rot r> over ! cell+
+           rot 1- repeat drop 2drop ;
