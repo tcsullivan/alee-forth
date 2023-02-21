@@ -40,7 +40,7 @@ void State::compiling(bool yes)
 
 void State::execute(Addr addr)
 {
-    if (addr < Dictionary::Begin) {
+    if (addr < CoreWords::WordCount) {
         // Must be a core-word
         CoreWords::run(addr, *this);
     } else {
@@ -51,7 +51,9 @@ void State::execute(Addr addr)
             ip += sizeof(Cell);
 
             const auto ins = dict.read(ip);
-            if (!CoreWords::run(ins, *this)) {
+            if (ins < CoreWords::WordCount) {
+                CoreWords::run(ins, *this);
+            } else {
                 pushr(ip);
                 ip = ins - sizeof(Cell);
             }

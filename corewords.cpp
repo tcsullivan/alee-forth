@@ -321,14 +321,9 @@ Func CoreWords::find(State& state, Word word)
     return i >= 0 ? get(i & ~Compiletime) : nullptr;
 }
 
-bool CoreWords::run(int i, State& state)
+void CoreWords::run(int i, State& state)
 {
-    i &= ~Compiletime;
-
-    bool isaword = i >= 0 && i < WordCount;
-    if (isaword)
+    if (i >= 0 && i < WordCount)
         get(i)(state);
-
-    return isaword;
 }
 

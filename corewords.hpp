@@ -37,7 +37,7 @@ public:
     static int findi(std::string_view);
     static int findi(State&, Word);
     static Func find(State&, Word);
-    static bool run(int, State&);
+    static void run(int, State&);
 
 private:
     // Ends with '\0': regular word

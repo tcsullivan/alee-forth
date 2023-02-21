@@ -66,9 +66,10 @@
 : until    ['] _jmp0 , , drop ; imm
 
 : do       postpone 2>r here ; imm
+: unloop   postpone 2r> ['] 2drop , ; imm
 : +loop    postpone 2r> ['] rot , ['] + , ['] 2dup ,
            postpone 2>r ['] - , ['] 0= , ['] _jmp0 , ,
-           postpone 2r> ['] 2drop , ; imm
+           postpone unloop ; imm
 : loop     1 postpone literal postpone +loop ; imm
 : i        postpone r@ ; imm 
 
