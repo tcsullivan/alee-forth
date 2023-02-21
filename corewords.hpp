@@ -29,7 +29,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 37;
+    constexpr static std::size_t WordCount = 38;
 
     constexpr static Cell Immediate   = (1 << 5);
     constexpr static Cell Compiletime = (1 << 6);
@@ -50,7 +50,7 @@ private:
         "^\0<<\0>>\0(\0:\1"
         ";\1here\0const\0depth\0"
         "key\0exit\0'\0execute\0_jmp\0"
-        "_jmp0\0_lit\0literal\1";
+        "_jmp0\0_lit\0literal\1_rdepth\0";
 
     static Func get(int);
 
@@ -84,6 +84,7 @@ private:
     static void op_const(State&);
     static void op_lit(State&);
     static void op_depth(State&);
+    static void op_rdepth(State&);
     static void op_key(State&);
     static void op_exit(State&);
     static void op_tick(State&);

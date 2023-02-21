@@ -21,14 +21,14 @@
 Func CoreWords::get(int index)
 {
     static const Func ops[WordCount] = {
-        op_drop,  op_dup,    op_swap,    op_pick,    op_sys,
-        op_add,   op_sub,    op_mul,     op_div,     op_mod,
- /*10*/ op_peek,  op_poke,   op_rot,     op_pushr,   op_popr,
-        op_eq,    op_lt,     op_allot,   op_and,     op_or,
- /*20*/ op_xor,   op_shl,    op_shr,     op_comment, op_colon,
-        op_semic, op_here,   op_const,   op_depth,   op_key,
- /*30*/ op_exit,  op_tick,   op_execute, op_jmp,     op_jmp0,
-        op_lit,   op_literal
+        op_drop,  op_dup,     op_swap,    op_pick,    op_sys,
+        op_add,   op_sub,     op_mul,     op_div,     op_mod,
+ /*10*/ op_peek,  op_poke,    op_rot,     op_pushr,   op_popr,
+        op_eq,    op_lt,      op_allot,   op_and,     op_or,
+ /*20*/ op_xor,   op_shl,     op_shr,     op_comment, op_colon,
+        op_semic, op_here,    op_const,   op_depth,   op_key,
+ /*30*/ op_exit,  op_tick,    op_execute, op_jmp,     op_jmp0,
+        op_lit,   op_literal, op_rdepth
     };
 
     return index >= 0 && index < WordCount ? ops[index] : nullptr;
@@ -257,6 +257,11 @@ void CoreWords::op_jmp0(State& state)
 void CoreWords::op_depth(State& state)
 {
     state.push(state.size());
+}
+
+void CoreWords::op_rdepth(State& state)
+{
+    state.push(state.rsize());
 }
 
 void CoreWords::op_key(State& state)

@@ -88,7 +88,7 @@
 : cr       9 emit ;
 : bl       32 ;
 : space    bl emit ;
-: spaces   begin dup 0 > while space 1- repeat ;
+: spaces   begin dup 0 > while space 1- repeat drop ;
 
 : ?dup     dup if dup then ;
 
@@ -104,8 +104,14 @@
 : char     bl word cell+ c@ ;
 : [char]   char postpone literal ; imm
 
-: type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat ;
-: ."       [char] " word count type ;
+: type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
+: s"       state @ if ['] _jmp , here 0 , then
+           [char] " word count
+           state @ 0= if exit then
+           dup cell+ allot
+           rot here swap !
+           swap postpone literal postpone literal ; imm
+: ."       postpone s" state @ if ['] type , else type then ; imm
 
 : create   align here bl word count nip cell+ allot align
            ['] _lit , here 3 cells + , ['] exit , 0 ,
@@ -123,3 +129,6 @@
 
 : >in      _input 80 chars + cell+ _input @ - 4 chars - ;
 : source   _input @ 6 chars + >in 3 chars - swap ;
+
+: quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
+: abort    begin depth 0 > while drop repeat quit ;
