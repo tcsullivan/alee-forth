@@ -31,6 +31,7 @@ public:
 private:
     ParseStatus parseSource(State&);
     ParseStatus parseWord(State&, Word);
+    ParseStatus parseNumber(State&, Word);
 };
 
 #endif // ALEEFORTH_PARSER_HPP

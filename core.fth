@@ -31,12 +31,13 @@
 
 : base     0 ;
 : _latest  1 cells ;
+: imm      _latest @ dup @ 1 5 << | swap ! ;
 : state    2 cells ;
+: postpone 1 3 cells ! ; imm
+: _input   4 cells ;
+
 : decimal  1 1+ base ! 1010 base ! ;
 
-: imm      _latest @ dup @ 1 5 << | swap ! ;
-
-: postpone 1 3 cells ! ; imm
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
 : ]        1 state ! ;
@@ -113,7 +114,11 @@
            2 cells +
            ['] _jmp over ! cell+
            here swap ! ] ;
+: >body    cell+ @ ;
 
 : variable create 1 cells allot ;
 : constant create , does> ['] @ , postpone ; ;
 ( TODO fix compile-time does>... above should simply be "does> @ ;" )
+
+: >in      _input 80 chars + cell+ _input @ - 4 chars - ;
+: source   _input @ 6 chars + >in 3 chars - swap ;

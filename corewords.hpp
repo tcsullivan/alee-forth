@@ -29,9 +29,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t VisibleWordCount = 37;             // size
-    constexpr static auto HiddenWordJump    = VisibleWordCount;     // index
-    constexpr static auto WordCount         = VisibleWordCount + 1; // size
+    constexpr static std::size_t WordCount = 37;
 
     constexpr static Cell Immediate   = (1 << 5);
     constexpr static Cell Compiletime = (1 << 6);
@@ -85,7 +83,6 @@ private:
     static void op_here(State&);
     static void op_const(State&);
     static void op_lit(State&);
-    static void op_jump(State&);
     static void op_depth(State&);
     static void op_key(State&);
     static void op_exit(State&);

@@ -21,15 +21,14 @@
 Func CoreWords::get(int index)
 {
     static const Func ops[WordCount] = {
-        op_drop,  op_dup,  op_swap,    op_pick,    op_sys,
-        op_add,   op_sub,  op_mul,     op_div,     op_mod,
- /*10*/ op_peek,  op_poke, op_rot,     op_pushr,   op_popr,
-        op_eq,    op_lt,   op_allot,   op_and,     op_or,
- /*20*/ op_xor,   op_shl,  op_shr,     op_comment, op_colon,
-        op_semic, op_here, op_const,   op_depth,   op_key,
- /*30*/ op_exit,  op_tick, op_execute, op_jmp,     op_jmp0,
-        op_lit,  op_literal,
-        op_jump
+        op_drop,  op_dup,    op_swap,    op_pick,    op_sys,
+        op_add,   op_sub,    op_mul,     op_div,     op_mod,
+ /*10*/ op_peek,  op_poke,   op_rot,     op_pushr,   op_popr,
+        op_eq,    op_lt,     op_allot,   op_and,     op_or,
+ /*20*/ op_xor,   op_shl,    op_shr,     op_comment, op_colon,
+        op_semic, op_here,   op_const,   op_depth,   op_key,
+ /*30*/ op_exit,  op_tick,   op_execute, op_jmp,     op_jmp0,
+        op_lit,   op_literal
     };
 
     return index >= 0 && index < WordCount ? ops[index] : nullptr;
@@ -162,20 +161,19 @@ void CoreWords::op_comment(State& state) {
 }
 
 void CoreWords::op_colon(State& state) {
-    if (state.compiling()) {
-        Word word = state.dict.input();
-        while (word.size() == 0) {
-            state.input(state);
-            word = state.dict.input();
-        }
-
-        const auto start = state.dict.alignhere();
-        state.dict.addDefinition(word);
-        state.dict.write(start,
-            (state.dict.read(start) & 0x1F) |
-            ((start - state.dict.latest()) << 6));
-        state.dict.latest(start);
+    Word word = state.dict.input();
+    while (word.size() == 0) {
+        state.input(state);
+        word = state.dict.input();
     }
+
+    const auto start = state.dict.alignhere();
+    state.dict.addDefinition(word);
+    state.dict.write(start,
+        (state.dict.read(start) & 0x1F) |
+        ((start - state.dict.latest()) << 6));
+    state.dict.latest(start);
+    state.compiling(true);
 }
 
 void CoreWords::op_tick(State& state) {
@@ -241,12 +239,6 @@ void CoreWords::op_literal(State& state)
         state.dict.add(findi("_lit"));
         state.dict.add(state.pop());
     }
-}
-
-void CoreWords::op_jump(State& state)
-{
-    state.pushr(state.ip + sizeof(Cell));
-    op_jmp(state);
 }
 
 void CoreWords::op_jmp(State& state)

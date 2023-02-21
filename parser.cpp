@@ -52,69 +52,58 @@ ParseStatus Parser::parseSource(State& state)
 
 ParseStatus Parser::parseWord(State& state, Word word)
 {
-    // TODO unify core-word and defined-word parsing/execution.
+    int ins, imm;
 
-    if (auto i = CoreWords::findi(state, word); i >= 0) {
-        auto p = state.dict.read(Dictionary::Postpone);
-        auto imm = (i & CoreWords::Compiletime);
+    ins = CoreWords::findi(state, word);
+    if (ins < 0) {
+        ins = state.dict.find(word);
 
-        if (state.compiling() || p) {
-            if (p || !imm) {
-                state.dict.add(i & ~CoreWords::Compiletime);
-
-                if (p)
-                    state.dict.write(Dictionary::Postpone, 0);
-            } else if (imm) {
-                CoreWords::run(i & ~CoreWords::Compiletime, state);
-            }
+        if (ins <= 0) {
+            return parseNumber(state, word);
         } else {
-            if (state.dict.equal(word, ":"))
-                state.compiling(true);
-
-            CoreWords::run(i & ~CoreWords::Compiletime, state);
-        }
-    } else if (auto j = state.dict.find(word); j > 0) {
-        auto e = state.dict.getexec(j);
-        auto p = state.dict.read(Dictionary::Postpone);
-
-        if (state.compiling() || p) {
-            auto imm = state.dict.read(j) & CoreWords::Immediate;
-
-            if (p || !imm) {
-                state.dict.add(CoreWords::HiddenWordJump);
-                state.dict.add(e);
-
-                if (p)
-                    state.dict.write(Dictionary::Postpone, 0);
-            } else if (imm) {
-                state.execute(e);
-            }
-        } else {
-            state.execute(e);
+            imm = state.dict.read(ins) & CoreWords::Immediate;
+            ins = state.dict.getexec(ins);
         }
     } else {
-        char buf[word.size() + 1];
-        for (unsigned i = 0; i < word.size(); ++i)
-            buf[i] = state.dict.readbyte(word.start + i);
-        buf[word.size()] = '\0';
+        imm = ins & CoreWords::Compiletime;
+        ins &= ~CoreWords::Compiletime;
+    }
 
-        char *p;
-        const auto base = state.dict.read(0);
-        const Cell l = std::strtol(buf, &p, base);
-
-        if (std::distance(buf, p) == word.size()) {
-            if (state.compiling()) {
-                state.dict.add(CoreWords::findi("_lit"));
-                state.dict.add(l);
-            } else {
-                state.push(l);
-            }
-        } else {
-            std::cout << "word not found: " << buf << std::endl;
-            return ParseStatus::NotAWord;
-        }
+    if (state.dict.read(Dictionary::Postpone)) {
+        state.dict.add(ins);
+        state.dict.write(Dictionary::Postpone, 0);
+    } else if (state.compiling() && !imm) {
+        state.dict.add(ins);
+    } else {
+        state.execute(ins);
     }
 
     return ParseStatus::Finished;
+}
+
+ParseStatus Parser::parseNumber(State& state, Word word)
+{
+    char buf[word.size() + 1];
+    for (unsigned i = 0; i < word.size(); ++i)
+        buf[i] = state.dict.readbyte(word.start + i);
+    buf[word.size()] = '\0';
+
+    char *p;
+    const auto base = state.dict.read(0);
+    const Cell l = std::strtol(buf, &p, base);
+
+    if (std::distance(buf, p) == word.size()) {
+        if (state.compiling()) {
+            state.dict.add(CoreWords::findi("_lit"));
+            state.dict.add(l);
+        } else {
+            state.push(l);
+        }
+
+        return ParseStatus::Finished;
+    } else {
+        std::cout << "word not found: " << buf << std::endl;
+        return ParseStatus::NotAWord;
+    }
 }
 

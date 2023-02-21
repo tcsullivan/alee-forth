@@ -36,8 +36,8 @@ yes 6.1.0480 <
     6.1.0490 <#
 yes 6.1.0530 =
 yes 6.1.0540 >
-    6.1.0550 >BODY
-    6.1.0560 >IN
+yes 6.1.0550 >BODY
+yes 6.1.0560 >IN
     6.1.0570 >NUMBER
 yes 6.1.0580 >R
 yes 6.1.0630 ?DUP
@@ -112,7 +112,7 @@ yes 6.1.2162 RSHIFT
     6.1.2170 S>D
     6.1.2210 SIGN
     6.1.2214 SM/REM
-    6.1.2216 SOURCE
+yes 6.1.2216 SOURCE
 yes 6.1.2220 SPACE
 yes 6.1.2230 SPACES
 yes 6.1.2250 STATE
