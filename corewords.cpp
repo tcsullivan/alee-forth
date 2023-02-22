@@ -21,14 +21,13 @@
 Func CoreWords::get(int index)
 {
     static const Func ops[WordCount] = {
-        op_drop,  op_dup,     op_swap,    op_pick,    op_sys,
-        op_add,   op_sub,     op_mul,     op_div,     op_mod,
- /*10*/ op_peek,  op_poke,    op_rot,     op_pushr,   op_popr,
-        op_eq,    op_lt,      op_allot,   op_and,     op_or,
- /*20*/ op_xor,   op_shl,     op_shr,     op_comment, op_colon,
-        op_semic, op_here,    op_const,   op_depth,   op_key,
- /*30*/ op_exit,  op_tick,    op_execute, op_jmp,     op_jmp0,
-        op_lit,   op_literal, op_rdepth
+        op_drop,  op_dup,   op_swap,  op_pick,    op_sys,
+        op_add,   op_sub,   op_mul,   op_div,     op_mod,
+ /*10*/ op_peek,  op_poke,  op_pushr, op_popr,    op_eq,
+        op_lt,    op_allot, op_and,   op_or,      op_xor,
+ /*20*/ op_shl,   op_shr,   op_colon, op_semic,   op_here,
+        op_depth, op_key,   op_exit,  op_tick,    op_execute,
+ /*30*/ op_jmp,   op_jmp0,  op_lit,   op_literal, op_rdepth
     };
 
     return index >= 0 && index < WordCount ? ops[index] : nullptr;
@@ -102,11 +101,6 @@ void CoreWords::op_poke(State& state) {
         state.dict.write(addr, state.pop());
 }
 
-void CoreWords::op_rot(State& state) {
-    std::swap(state.pick(2), state.pick(1));
-    std::swap(state.pick(1), state.pick(0));
-}
-
 void CoreWords::op_pushr(State& state) {
     state.pushr(state.pop());
 }
@@ -152,12 +146,6 @@ void CoreWords::op_shl(State& state) {
 void CoreWords::op_shr(State& state) {
     const auto a = state.pop();
     state.top() >>= a;
-}
-
-void CoreWords::op_comment(State& state) {
-    do {
-        op_key(state);
-    } while (state.pop() != ')');
 }
 
 void CoreWords::op_colon(State& state) {
@@ -210,21 +198,6 @@ void CoreWords::op_semic(State& state) {
 
 void CoreWords::op_here(State& state) {
     state.push(state.dict.here);
-}
-
-void CoreWords::op_const(State& state)
-{
-    Word word = state.dict.input();
-    while (word.size() == 0) {
-        state.input(state);
-        word = state.dict.input();
-    }
-
-    state.pushr(state.dict.alignhere());
-    state.dict.addDefinition(word);
-    state.dict.add(findi("_lit"));
-    state.dict.add(state.pop());
-    op_semic(state);
 }
 
 void CoreWords::op_lit(State& state)

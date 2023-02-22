@@ -1,6 +1,3 @@
-( : variable create 0 , ; )
-( : create here const ; )
-
 : .        0 sys ;
 : emit     1 sys ;
 
@@ -14,6 +11,7 @@
 : cells    2 * ;
 
 : over     1 pick ;
+: rot      >r swap r> swap ;
 : -rot     rot rot ;
 : nip      swap drop ;
 : tuck     swap over ;
@@ -105,6 +103,8 @@
 : char     bl word cell+ c@ ;
 : [char]   char postpone literal ; imm
 
+: (        begin [char] ) key <> while repeat ; imm
+
 : type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
 : s"       state @ if ['] _jmp , here 0 , then
            [char] " word count
@@ -128,8 +128,8 @@
 : constant create , does> ['] @ , postpone ; ;
 ( TODO fix compile-time does>... above should simply be "does> @ ;" )
 
--1 constant true 
-0  constant false 
+-1 constant true
+0  constant false
 
 : >in      _input 80 chars + cell+ _input @ - 4 chars - ;
 : source   _input @ 6 chars + >in 3 chars - swap ;

@@ -37,7 +37,8 @@ static void readchar(State& state)
     for (Addr i = 0; i < len; ++i, ++addr)
         state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
 
-    state.dict.writebyte(addr, std::cin.get());
+    auto c = std::cin.get();
+    state.dict.writebyte(addr, c ? c : ' ');
     state.dict.write(Dictionary::Input, len + 1);
 }
 

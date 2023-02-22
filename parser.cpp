@@ -32,7 +32,7 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
     addr += sizeof(Cell) + Dictionary::InputCells - str.size() - 1;
     for (char c : str)
         state.dict.writebyte(addr++, c);
-    state.dict.writebyte(addr, '\0');
+    state.dict.writebyte(addr, ' ');
 
     return parseSource(state);
 }

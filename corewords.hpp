@@ -29,7 +29,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 38;
+    constexpr static std::size_t WordCount = 35;
 
     constexpr static Cell Immediate   = (1 << 5);
     constexpr static Cell Compiletime = (1 << 6);
@@ -45,10 +45,10 @@ private:
     constexpr static char wordsarr[] =
         "drop\0dup\0swap\0pick\0sys\0"
         "+\0-\0*\0/\0%\0"
-        "_@\0_!\0rot\0>r\0r>\0"
+        "_@\0_!\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
-        "^\0<<\0>>\0(\1:\1"
-        ";\1here\0const\0depth\0"
+        "^\0<<\0>>\0:\1"
+        ";\1here\0depth\0"
         "key\0exit\0'\0execute\0_jmp\0"
         "_jmp0\0_lit\0literal\1_rdepth\0";
 
@@ -66,7 +66,6 @@ private:
     static void op_mod(State&);
     static void op_peek(State&);
     static void op_poke(State&);
-    static void op_rot(State&);   // : rot >r swap r> swap ;
     static void op_pushr(State&);
     static void op_popr(State&);
     static void op_eq(State&);
@@ -77,11 +76,9 @@ private:
     static void op_xor(State&);
     static void op_shl(State&);
     static void op_shr(State&);
-    static void op_comment(State&);
     static void op_colon(State&);
     static void op_semic(State&);
     static void op_here(State&);
-    static void op_const(State&);
     static void op_lit(State&);
     static void op_depth(State&);
     static void op_rdepth(State&);
@@ -91,7 +88,7 @@ private:
     static void op_execute(State&);
     static void op_jmp(State&);
     static void op_jmp0(State&);
-    static void op_literal(State&); // : literal ['] _lit , , ; imm
+    static void op_literal(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

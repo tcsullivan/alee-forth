@@ -95,7 +95,7 @@ Word Dictionary::input()
     auto cnt = len;
     while (cnt) {
         auto b = readbyte(wordend);
-        if (isspace(b) || b == '\0') {
+        if (isspace(b)) {
             if (wordstart != wordend) {
                 Word word {wordstart, wordend};
                 writebyte(Dictionary::Input, cnt - 1);
