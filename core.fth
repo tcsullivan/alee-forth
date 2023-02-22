@@ -70,6 +70,7 @@
            postpone unloop ; imm
 : loop     1 postpone literal postpone +loop ; imm
 : i        postpone r@ ; imm 
+: j        postpone 2r> postpone r@ ['] -rot , postpone 2>r ; imm
 
 : align    here 1 & if 1 allot then ;
 : aligned  dup 1 & if 1+ then ;

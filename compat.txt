@@ -86,7 +86,7 @@ yes 6.1.1680 I
 yes 6.1.1700 IF
 yes 6.1.1710 IMMEDIATE (as "imm")
 yes 6.1.1720 INVERT
-    6.1.1730 J 
+yes 6.1.1730 J
 yes 6.1.1750 KEY
     6.1.1760 LEAVE
 yes 6.1.1780 LITERAL
