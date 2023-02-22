@@ -47,7 +47,7 @@ private:
         "+\0-\0*\0/\0%\0"
         "_@\0_!\0rot\0>r\0r>\0"
         "=\0<\0allot\0&\0|\0"
-        "^\0<<\0>>\0(\0:\1"
+        "^\0<<\0>>\0(\1:\1"
         ";\1here\0const\0depth\0"
         "key\0exit\0'\0execute\0_jmp\0"
         "_jmp0\0_lit\0literal\1_rdepth\0";

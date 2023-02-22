@@ -81,6 +81,7 @@
 : xor      ^ ;
 : lshift   << ;
 : rshift   >> ;
+: invert   -1 ^ ;
 : mod      % ;
 : 2*       2 * ;
 : 2/       2 / ;
@@ -127,6 +128,9 @@
 : constant create , does> ['] @ , postpone ; ;
 ( TODO fix compile-time does>... above should simply be "does> @ ;" )
 
+-1 constant true 
+0  constant false 
+
 : >in      _input 80 chars + cell+ _input @ - 4 chars - ;
 : source   _input @ 6 chars + >in 3 chars - swap ;
 
@@ -139,3 +143,15 @@
            rot dup @ >r cell+
            rot r> over ! cell+
            rot 1- repeat drop 2drop ;
+: fill     ( c-addr u char -- )
+           -rot begin dup 0 > while
+           >r 2dup c! char+ r> 1- repeat
+           2drop drop ;
+
+: environment? 2drop false ;
+
+: accept   over >r begin dup 0 > while
+           key dup 32 < if
+           2drop r> - 1 chars / 0 else
+           dup emit rot 2dup c! char+ nip swap 1- then
+           repeat drop ;
