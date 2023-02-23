@@ -94,6 +94,8 @@ void parseFile(Parser& parser, State& state, std::istream& file)
     while (file.good()) {
         std::string line;
         std::getline(file, line);
+        if (line == "bye")
+            exit(0);
         parseLine(parser, state, line);
     }
 }

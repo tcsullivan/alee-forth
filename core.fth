@@ -90,7 +90,7 @@
 : 2*       2 * ;
 : 2/       2 / ;
 
-: cr       9 emit ;
+: cr       10 emit ;
 : bl       32 ;
 : space    bl emit ;
 : spaces   begin dup 0 > while space 1- repeat drop ;
@@ -119,7 +119,14 @@
            dup cell+ allot
            rot here swap !
            swap postpone literal postpone literal ; imm
+: c"       state @ if ['] _jmp , here 0 , then
+           [char] " word
+           state @ 0= if exit then
+           dup count nip allot
+           here rot !
+           postpone literal ; imm
 : ."       postpone s" state @ if ['] type , else type then ; imm
+: .(       [char] ) word count type ; imm
 
 : create   align here bl word count nip cell+ allot align
            ['] _lit , here 3 cells + , ['] exit dup , ,
@@ -134,6 +141,7 @@
 : >body    cell+ @ ;
 : compile, postpone literal postpone execute ;
 
+: buffer:  create allot ;
 : variable create 1 cells allot ;
 : constant create , does> @ ;
 : value    constant ;
@@ -156,12 +164,13 @@
 : recurse  _latword , ; imm
 
 : move     begin dup 0 > while
-           rot dup @ >r cell+
-           rot r> over ! cell+
+           rot dup @ >r 1+
+           rot r> over ! 1+
            rot 1- repeat drop 2drop ;
 : fill     -rot begin dup 0 > while
            >r 2dup c! char+ r> 1- repeat
            2drop drop ;
+: erase    begin dup 0 > while swap 0 over ! 1+ swap 1- repeat ;
 : roll     dup if swap >r 1- recurse r> swap exit then drop ;
 
 : environment? 2drop false ;

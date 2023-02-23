@@ -136,7 +136,7 @@ yes 6.1.2540 ]
 
 6.2 Core extension words
 
-    6.2.0200 .(
+yes 6.2.0200 .(
     6.2.0210 .R
 yes 6.2.0260 0<>
 yes 6.2.0280 0>
@@ -148,8 +148,8 @@ yes 6.2.0500 <>
     6.2.0620 ?DO
 yes 6.2.0698 ACTION-OF
 yes 6.2.0700 AGAIN
-    6.2.0825 BUFFER:
-    6.2.0855 C"
+yes 6.2.0825 BUFFER:
+yes 6.2.0855 C"
     6.2.0873 CASE
 yes 6.2.0945 COMPILE,
 yes 6.2.1173 DEFER
@@ -157,7 +157,7 @@ yes 6.2.1175 DEFER!
 yes 6.2.1177 DEFER@
     6.2.1342 ENDCASE
     6.2.1343 ENDOF
-    6.2.1350 ERASE
+yes 6.2.1350 ERASE
 yes 6.2.1485 FALSE
 yes 6.2.1660 HEX
     6.2.1675 HOLDS
