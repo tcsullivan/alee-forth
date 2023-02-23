@@ -1,14 +1,16 @@
+: cell+    2 + ;
+: cells    2 * ;
+
+
 : .        0 sys ;
 : emit     1 sys ;
 
 : 1+       1 + ;
 : 1-       1 - ;
 
-: !        2 _! ;
-: @        2 _@ ;
-: ,        here ! 2 allot ;
-: cell+    2 + ;
-: cells    2 * ;
+: !        1 _! ;
+: @        1 _@ ;
+: ,        here ! 1 cells allot ;
 
 : over     1 pick ;
 : rot      >r swap r> swap ;
@@ -21,8 +23,8 @@
 : 2over    3 pick 3 pick ;
 : 2swap    rot >r rot r> ;
 
-: c!       1 _! ;
-: c@       1 _@ ;
+: c!       0 _! ;
+: c@       0 _@ ;
 : c,       here c! 1 allot ;
 : char+    1+ ;
 : chars    ;
@@ -77,8 +79,8 @@
 : i        postpone r@ ; imm 
 : j        postpone 2r> postpone r@ ['] -rot , postpone 2>r ; imm
 
-: align    here 1 & if 1 allot then ;
-: aligned  dup 1 & if 1+ then ;
+: align    here 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
+: aligned  dup 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
 
 : and      & ;
 : or       | ;

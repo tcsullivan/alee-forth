@@ -54,19 +54,20 @@ ParseStatus Parser::parseWord(State& state, Word word)
 {
     int ins, imm;
 
-    ins = CoreWords::findi(state, word);
-    if (ins < 0) {
-        ins = state.dict.find(word);
+    ins = state.dict.find(word);
 
-        if (ins <= 0) {
+    if (ins <= 0) {
+        ins = CoreWords::findi(state, word);
+
+        if (ins < 0) {
             return parseNumber(state, word);
         } else {
-            imm = state.dict.read(ins) & CoreWords::Immediate;
-            ins = state.dict.getexec(ins);
+            imm = ins & CoreWords::Compiletime;
+            ins &= ~CoreWords::Compiletime;
         }
     } else {
-        imm = ins & CoreWords::Compiletime;
-        ins &= ~CoreWords::Compiletime;
+        imm = state.dict.read(ins) & CoreWords::Immediate;
+        ins = state.dict.getexec(ins);
     }
 
     if (state.dict.read(Dictionary::Postpone)) {

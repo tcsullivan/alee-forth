@@ -18,239 +18,183 @@
 
 #include "corewords.hpp"
 
-Func CoreWords::get(int index)
+void CoreWords::run(unsigned int index, State& state)
 {
-    static const Func ops[WordCount] = {
-        op_drop,  op_dup,   op_swap,  op_pick,    op_sys,
-        op_add,   op_sub,   op_mul,   op_div,     op_mod,
- /*10*/ op_peek,  op_poke,  op_pushr, op_popr,    op_eq,
-        op_lt,    op_allot, op_and,   op_or,      op_xor,
- /*20*/ op_shl,   op_shr,   op_colon, op_semic,   op_here,
-        op_depth, op_key,   op_exit,  op_tick,    op_execute,
- /*30*/ op_jmp,   op_jmp0,  op_lit,   op_literal, op_rdepth
+    auto getword = [&state] {
+        auto word = state.dict.input();
+        while (word.size() == 0) {
+            state.input(state);
+            word = state.dict.input();
+        }
+        return word;
+    };
+    auto newdef = [](Dictionary& dict, Word word) {
+        auto addr = dict.alignhere();
+        dict.addDefinition(word);
+        dict.write(addr,
+            (dict.read(addr) & 0x1F) |
+            ((addr - dict.latest()) << 6));
+        dict.latest(addr);
+    };
+    auto tick = [&state](Word word) {
+        if (auto j = state.dict.find(word); j > 0)
+            state.push(state.dict.getexec(j));
+        else if (auto i = CoreWords::findi(state, word); i >= 0)
+            state.push(i & ~CoreWords::Compiletime);
+        else
+            state.push(0);
     };
 
-    return index >= 0 && index < WordCount ? ops[index] : nullptr;
-}
+    Cell cell;
 
-void CoreWords::op_drop(State& state)
-{
-    state.pop();
-}
-
-void CoreWords::op_dup(State& state)
-{
-    state.push(state.top());
-}
-
-void CoreWords::op_swap(State& state)
-{
-    std::swap(state.top(), state.pick(1));
-}
-
-void CoreWords::op_pick(State& state)
-{
-    state.push(state.pick(state.pop()));
-}
-
-void CoreWords::op_sys(State& state)
-{
-    return user_sys(state);
-}
-
-void CoreWords::op_add(State& state)
-{
-    const auto a = state.pop();
-    state.top() += a;
-}
-
-void CoreWords::op_sub(State& state)
-{
-    const auto a = state.pop();
-    state.top() -= a;
-}
-
-void CoreWords::op_mul(State& state) {
-    const auto a = state.pop();
-    state.top() *= a;
-}
-
-void CoreWords::op_div(State& state) {
-    const auto a = state.pop();
-    state.top() /= a;
-}
-
-void CoreWords::op_mod(State& state) {
-    const auto a = state.pop();
-    state.top() %= a;
-}
-
-void CoreWords::op_peek(State& state) {
-    if (auto w = state.pop(); w == 1)
-        state.push(state.dict.readbyte(state.pop()));
-    else
-        state.push(state.dict.read(state.pop()));
-}
-
-void CoreWords::op_poke(State& state) {
-    const auto w = state.pop();
-    const auto addr = state.pop();
-    if (w == 1)
-        state.dict.writebyte(addr, state.pop());
-    else
-        state.dict.write(addr, state.pop());
-}
-
-void CoreWords::op_pushr(State& state) {
-    state.pushr(state.pop());
-}
-
-void CoreWords::op_popr(State& state) {
-    state.push(state.popr());
-}
-
-void CoreWords::op_eq(State& state) {
-    const auto a = state.pop();
-    state.top() = state.top() == a;
-}
-
-void CoreWords::op_lt(State& state) {
-    const auto a = state.pop();
-    state.top() = state.top() < a;
-}
-
-void CoreWords::op_allot(State& state) {
-    state.dict.allot(state.pop());
-}
-
-void CoreWords::op_and(State& state) {
-    const auto a = state.pop();
-    state.top() &= a;
-}
-
-void CoreWords::op_or(State& state) {
-    const auto a = state.pop();
-    state.top() |= a;
-}
-
-void CoreWords::op_xor(State& state) {
-    const auto a = state.pop();
-    state.top() ^= a;
-}
-
-void CoreWords::op_shl(State& state) {
-    const auto a = state.pop();
-    state.top() <<= a;
-}
-
-void CoreWords::op_shr(State& state) {
-    const auto a = state.pop();
-    state.top() >>= a;
-}
-
-void CoreWords::op_colon(State& state) {
-    Word word = state.dict.input();
-    while (word.size() == 0) {
-        state.input(state);
-        word = state.dict.input();
-    }
-
-    const auto start = state.dict.alignhere();
-    state.dict.addDefinition(word);
-    state.dict.write(start,
-        (state.dict.read(start) & 0x1F) |
-        ((start - state.dict.latest()) << 6));
-    state.dict.latest(start);
-    state.compiling(true);
-}
-
-void CoreWords::op_tick(State& state) {
-    Word word = state.dict.input();
-    while (word.size() == 0) {
-        state.input(state);
-        word = state.dict.input();
-    }
-
-    Cell xt = 0;
-    if (auto i = CoreWords::findi(state, word); i >= 0) {
-        xt = i & ~CoreWords::Compiletime;
-    } else if (auto j = state.dict.find(word); j > 0) {
-        xt = state.dict.getexec(j);
-    }
-
-    state.push(xt);
-}
-
-void CoreWords::op_execute(State& state) {
-    state.execute(state.pop());
-}
-
-void CoreWords::op_exit(State& state) {
-    state.ip = state.popr();
-}
-
-void CoreWords::op_semic(State& state) {
-    if (state.compiling()) {
+    switch (index) {
+    default:
+        // must be calling a defined subroutine
+        state.pushr(state.ip);
+        state.ip = index - sizeof(Cell);
+        break;
+    case 0: // drop
+        state.pop();
+        break;
+    case 1: // dup
+        state.push(state.top());
+        break;
+    case 2: // swap
+        std::swap(state.top(), state.pick(1));
+        break;
+    case 3: // pick
+        state.push(state.pick(state.pop()));
+        break;
+    case 4: // sys
+        user_sys(state);
+        break;
+    case 5: // add
+        cell = state.pop();
+        state.top() += cell;
+        break;
+    case 6: // sub
+        cell = state.pop();
+        state.top() -= cell;
+        break;
+    case 7: // mul
+        cell = state.pop();
+        state.top() *= cell;
+        break;
+    case 8: // div
+        cell = state.pop();
+        state.top() /= cell;
+        break;
+    case 9: // mod
+        cell = state.pop();
+        state.top() %= cell;
+        break;
+    case 10: // peek
+        if (state.pop())
+            state.push(state.dict.read(state.pop()));
+        else
+            state.push(state.dict.readbyte(state.pop()));
+        break;
+    case 11: // poke
+        cell = state.pop();
+        if (auto addr = state.pop(); cell)
+            state.dict.write(addr, state.pop());
+        else
+            state.dict.writebyte(addr, state.pop());
+        break;
+    case 12: // pushr
+        state.pushr(state.pop());
+        break;
+    case 13: // popr
+        state.push(state.popr());
+        break;
+    case 14: // equal
+        cell = state.pop();
+        state.top() = state.top() == cell;
+        break;
+    case 15: // lt
+        cell = state.pop();
+        state.top() = state.top() < cell;
+        break;
+    case 16: // allot
+        state.dict.allot(state.pop());
+        break;
+    case 17: // and
+        cell = state.pop();
+        state.top() &= cell;
+        break;
+    case 18: // or
+        cell = state.pop();
+        state.top() |= cell;
+        break;
+    case 19: // xor
+        cell = state.pop();
+        state.top() ^= cell;
+        break;
+    case 20: // shl
+        cell = state.pop();
+        state.top() <<= cell;
+        break;
+    case 21: // shr
+        cell = state.pop();
+        state.top() >>= cell;
+        break;
+    case 22: // colon
+        newdef(state.dict, getword());
+        state.compiling(true);
+        break;
+    case 23: // tick
+        tick(getword());
+        break;
+    case 24: // execute
+        state.execute(state.pop());
+        break;
+    case 25: // exit
+        state.ip = state.popr();
+        break;
+    case 26: // semic
         state.dict.add(findi("exit"));
         state.compiling(false);
-    }
-}
-
-void CoreWords::op_here(State& state) {
-    state.push(state.dict.here);
-}
-
-void CoreWords::op_lit(State& state)
-{
-    state.push(state.beyondip());
-    state.ip += sizeof(Cell);
-}
-
-void CoreWords::op_literal(State& state)
-{
-    if (state.compiling()) {
+        break;
+    case 27: // here
+        state.push(state.dict.here);
+        break;
+    case 28: // _lit
+        state.push(state.beyondip());
+        break;
+    case 29: // literal
         state.dict.add(findi("_lit"));
         state.dict.add(state.pop());
+        break;
+    case 30: // _jmp
+        state.ip = state.beyondip() - sizeof(Cell);
+        break;
+    case 31: // _jmp0
+        if (state.pop())
+            state.beyondip();
+        else
+            state.ip = state.beyondip() - sizeof(Cell);
+        break;
+    case 32: // depth
+        state.push(state.size());
+        break;
+    case 33: // _rdepth
+        state.push(state.rsize());
+        break;
+    case 34: // key
+        cell = state.dict.read(Dictionary::Input);
+        while (cell <= 0) {
+            state.input(state);
+            cell = state.dict.read(Dictionary::Input);
+        }
+
+        state.dict.write(Dictionary::Input, cell - 1);
+
+        state.push(
+            state.dict.readbyte(
+                Dictionary::Input + sizeof(Cell) +
+                Dictionary::InputCells - cell));
+        break;
     }
-}
-
-void CoreWords::op_jmp(State& state)
-{
-    state.ip = state.beyondip() - sizeof(Cell);
-}
-
-void CoreWords::op_jmp0(State& state)
-{
-    if (state.pop())
-        state.ip += sizeof(Cell);
-    else
-        op_jmp(state);
-}
-
-void CoreWords::op_depth(State& state)
-{
-    state.push(state.size());
-}
-
-void CoreWords::op_rdepth(State& state)
-{
-    state.push(state.rsize());
-}
-
-void CoreWords::op_key(State& state)
-{
-    auto len = state.dict.read(Dictionary::Input);
-    while (len <= 0) {
-        state.input(state);
-        len = state.dict.read(Dictionary::Input);
-    }
-
-    state.dict.write(Dictionary::Input, len - 1);
-    Addr addr = Dictionary::Input + sizeof(Cell) +
-                Dictionary::InputCells - len;
-    Cell val = state.dict.readbyte(addr);
-
-    state.push(val);
 }
 
 int CoreWords::findi(std::string_view word)
@@ -291,17 +235,5 @@ int CoreWords::findi(State& state, Word word)
     }
 
     return -1;
-}
-
-Func CoreWords::find(State& state, Word word)
-{
-    const auto i = findi(state, word);
-    return i >= 0 ? get(i & ~Compiletime) : nullptr;
-}
-
-void CoreWords::run(int i, State& state)
-{
-    if (i >= 0 && i < WordCount)
-        get(i)(state);
 }
 

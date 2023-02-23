@@ -10,6 +10,9 @@ all: $(EXEFILE)
 small: CXXFLAGS += -Os
 small: $(EXEFILE)
 
+fast: CXXFLAGS += -O3 -march=native -mtune=native
+fast: $(EXEFILE)
+
 $(EXEFILE): $(LIBFILE)
 
 $(LIBFILE): $(OBJFILES)

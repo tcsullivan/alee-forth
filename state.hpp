@@ -24,20 +24,19 @@
 
 #include <cstddef>
 
-constexpr unsigned DataStackSize = 12;
-constexpr unsigned ReturnStackSize = 12;
+constexpr unsigned DataStackSize = 8;
+constexpr unsigned ReturnStackSize = 8;
 
-class State
+struct State
 {
+    Addr ip = 0;
+    Dictionary& dict;
+    void (*input)(State&);
+
     Cell dstack[DataStackSize] = {};
     Cell rstack[ReturnStackSize] = {};
     Cell *dsp = dstack - 1;
     Cell *rsp = rstack - 1;
-
-public:
-    Addr ip = 0;
-    Dictionary& dict;
-    void (*input)(State&);
 
     constexpr State(Dictionary& d, void (*i)(State&)):
         dict(d), input(i) {}
@@ -47,19 +46,56 @@ public:
 
     void execute(Addr);
 
-    Cell beyondip() const;
-
-    void pushr(Cell);
-    Cell popr();
-
-    void push(Cell);
-    Cell pop();
-
-    Cell& top();
-    Cell& pick(std::size_t);
-
     std::size_t size() const noexcept;
     std::size_t rsize() const noexcept;
+
+    inline void push(Cell value) {
+        if (dsp == dstack + DataStackSize - 1)
+            throw exc_push();
+        *++dsp = value;
+    }
+
+    inline Cell pop() {
+        if (dsp < dstack)
+            throw exc_pop();
+        return *dsp--;
+    }
+
+    inline Cell beyondip() {
+        ip += sizeof(Cell);
+        return dict.read(ip);
+    }
+
+    inline void pushr(Cell value) {
+        if (rsp == rstack + ReturnStackSize - 1)
+            throw exc_pushr();
+        *++rsp = value;
+    }
+
+    inline Cell popr() {
+        if (rsp < rstack)
+            throw exc_popr();
+        return *rsp--;
+    }
+
+    inline Cell& top() {
+        if (dsp < dstack)
+            throw exc_top();
+        return *dsp;
+    }
+
+    inline Cell& pick(std::size_t i) {
+        if (dsp - i < dstack)
+            throw exc_pick();
+        return *(dsp - i);
+    }
+
+    struct exc_pop {};
+    struct exc_push {};
+    struct exc_popr {};
+    struct exc_pushr {};
+    struct exc_top {};
+    struct exc_pick {};
 };
 
 #endif // ALEEFORTH_STATE_HPP

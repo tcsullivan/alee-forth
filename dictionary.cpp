@@ -34,8 +34,9 @@ void Dictionary::add(Cell value)
 
 Addr Dictionary::aligned(Addr addr) const noexcept
 {
-    if (addr & (sizeof(Cell) - sizeof(uint8_t)))
-        addr = (addr + sizeof(Cell)) & ~(sizeof(Cell) - sizeof(uint8_t));
+    auto unaligned = addr & (sizeof(Cell) - sizeof(uint8_t));
+    if (unaligned)
+        addr += sizeof(Cell) - unaligned;
 
     return addr;
 }

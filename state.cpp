@@ -21,13 +21,6 @@
 
 #include <iterator>
 
-struct pop {};
-struct push {};
-struct popr {};
-struct pushr {};
-struct top {};
-struct pick {};
-
 bool State::compiling() const
 {
     return dict.read(Dictionary::Compiling);
@@ -41,7 +34,6 @@ void State::compiling(bool yes)
 void State::execute(Addr addr)
 {
     if (addr < CoreWords::WordCount) {
-        // Must be a core-word
         CoreWords::run(addr, *this);
     } else {
         pushr(0);
@@ -49,63 +41,9 @@ void State::execute(Addr addr)
 
         do {
             ip += sizeof(Cell);
-
-            const auto ins = dict.read(ip);
-            if (ins < CoreWords::WordCount) {
-                CoreWords::run(ins, *this);
-            } else {
-                pushr(ip);
-                ip = ins - sizeof(Cell);
-            }
+            CoreWords::run(dict.read(ip), *this);
         } while (ip);
     }
-}
-
-Cell State::beyondip() const
-{
-    return dict.read(ip + sizeof(Cell));
-}
-
-void State::pushr(Cell value)
-{
-    if (rsize() == ReturnStackSize)
-        throw ::pushr();
-    *++rsp = value;
-}
-
-Cell State::popr()
-{
-    if (rsize() == 0)
-        throw ::popr();
-    return *rsp--;
-}
-
-void State::push(Cell value)
-{
-    if (size() == DataStackSize)
-        throw ::push();
-    *++dsp = value;
-}
-
-Cell State::pop()
-{
-    if (size() == 0)
-        throw ::pop();
-    return *dsp--;
-}
-
-Cell& State::top()
-{
-    if (size() == 0)
-        throw ::top();
-    return *dsp;
-}
-
-Cell& State::pick(std::size_t i)
-{
-    if (i >= size())
-        throw ::pick();
-    return *(dsp - i);
 }
 
 std::size_t State::size() const noexcept

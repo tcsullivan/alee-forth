@@ -36,8 +36,7 @@ public:
 
     static int findi(std::string_view);
     static int findi(State&, Word);
-    static Func find(State&, Word);
-    static void run(int, State&);
+    static void run(unsigned int, State&);
 
 private:
     // Ends with '\0': regular word
@@ -45,50 +44,11 @@ private:
     constexpr static char wordsarr[] =
         "drop\0dup\0swap\0pick\0sys\0"
         "+\0-\0*\0/\0%\0"
-        "_@\0_!\0>r\0r>\0"
-        "=\0<\0allot\0&\0|\0"
-        "^\0<<\0>>\0:\1"
-        ";\1here\0depth\0"
-        "key\0exit\0'\0execute\0_jmp\0"
-        "_jmp0\0_lit\0literal\1_rdepth\0";
-
-    static Func get(int);
-
-    static void op_drop(State&);
-    static void op_dup(State&);
-    static void op_swap(State&);
-    static void op_pick(State&);
-    static void op_sys(State&);
-    static void op_add(State&);
-    static void op_sub(State&);
-    static void op_mul(State&);
-    static void op_div(State&);
-    static void op_mod(State&);
-    static void op_peek(State&);
-    static void op_poke(State&);
-    static void op_pushr(State&);
-    static void op_popr(State&);
-    static void op_eq(State&);
-    static void op_lt(State&);
-    static void op_allot(State&);
-    static void op_and(State&);
-    static void op_or(State&);
-    static void op_xor(State&);
-    static void op_shl(State&);
-    static void op_shr(State&);
-    static void op_colon(State&);
-    static void op_semic(State&);
-    static void op_here(State&);
-    static void op_lit(State&);
-    static void op_depth(State&);
-    static void op_rdepth(State&);
-    static void op_key(State&);
-    static void op_exit(State&);
-    static void op_tick(State&);
-    static void op_execute(State&);
-    static void op_jmp(State&);
-    static void op_jmp0(State&);
-    static void op_literal(State&);
+        "_@\0_!\0>r\0r>\0=\0"
+        "<\0allot\0&\0|\0^\0"
+        "<<\0>>\0:\0'\0execute\0"
+        "exit\0;\1here\0_lit\0literal\1"
+        "_jmp\0_jmp0\0depth\0_rdepth\0key\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP
