@@ -35,6 +35,7 @@
 : _input   4 cells ;
 
 : decimal  1 1+ base ! 1010 base ! ;
+: hex      1 1+ base ! 10000 base ! ;
 
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
@@ -42,6 +43,7 @@
 
 : 2r>      ['] r> , ['] r> , ['] swap , ; imm
 : 2>r      ['] swap , ['] >r , ['] >r , ; imm
+: 2r@      ['] r> , ['] r> , ['] 2dup , ['] >r , ['] >r , ['] swap , ; imm
 : r@       ['] r> , ['] dup , ['] >r , ; imm
 
 : 2!       swap over ! cell+ ! ;
@@ -53,6 +55,8 @@
 : <=       - 1- 0< ;
 : >        <= 0= ;
 : <>       = 0= ;
+: 0<>      0= 0= ;
+: 0>       0 > ;
 
 : if       ['] _jmp0 , here 0 , ; imm
 : then     here swap ! ; imm
@@ -62,6 +66,7 @@
 : while    swap 1+ swap postpone if -rot ; imm
 : repeat   ['] _jmp , , if postpone then then ; imm
 : until    ['] _jmp0 , , drop ; imm
+: again    postpone repeat ; imm
 
 : do       postpone 2>r here ; imm
 : unloop   postpone 2r> ['] 2drop , ; imm
@@ -105,6 +110,7 @@
 : [char]   char postpone literal ; imm
 
 : (        begin [char] ) key <> while repeat ; imm
+: \        _input @ begin dup 0 > while key drop 1- repeat drop ; imm
 
 : type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
 : s"       state @ if ['] _jmp , here 0 , then
@@ -116,21 +122,30 @@
 : ."       postpone s" state @ if ['] type , else type then ; imm
 
 : create   align here bl word count nip cell+ allot align
-           ['] _lit , here 3 cells + , ['] exit , 0 ,
+           ['] _lit , here 3 cells + , ['] exit dup , ,
            dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
 : _latword _latest @
            dup @ 31 & + cell+ aligned ;
-: does>    _latword 2 cells +
+: _does>   _latword 2 cells +
            ['] _jmp over ! cell+
-           here swap ! ] ;
+           r@ 1 cells - @ swap ! ;
+: does>    ['] _jmp , here 2 cells + dup , 2 cells + ,
+           ['] _does> , ['] exit , ; imm
 : >body    cell+ @ ;
+: compile, postpone literal postpone execute ;
 
 : variable create 1 cells allot ;
-: constant create , does> ['] @ , postpone ; ;
-( TODO fix compile-time does>... above should simply be "does> @ ;" )
+: constant create , does> @ ;
+: value    constant ;
+: to       ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm
+: defer    create does> @ execute ;
+: defer@   >body @ ;
+: defer!   >body ! ;
+: is       state @ if postpone ['] postpone defer! else ' defer! then ; imm
+: action-of state @ if postpone ['] postpone defer@ else ' defer@ then ; imm
 
 -1 constant true
-0  constant false
+0 constant false
 
 : >in      _input 80 chars + cell+ _input @ - 4 chars - ;
 : source   _input @ 6 chars + >in 3 chars - swap ;
@@ -144,15 +159,17 @@
            rot dup @ >r cell+
            rot r> over ! cell+
            rot 1- repeat drop 2drop ;
-: fill     ( c-addr u char -- )
-           -rot begin dup 0 > while
+: fill     -rot begin dup 0 > while
            >r 2dup c! char+ r> 1- repeat
            2drop drop ;
+: roll     dup if swap >r 1- recurse r> swap exit then drop ;
 
 : environment? 2drop false ;
 
 : accept   over >r begin dup 0 > while
-           key dup 32 < if
-           2drop r> - 1 chars / 0 else
-           dup emit rot 2dup c! char+ nip swap 1- then
-           repeat drop ;
+           key dup 32 < if 2drop 0
+           else dup emit rot 2dup c! char+ nip swap 1- then
+           repeat drop r> - 1 chars / ;
+
+: marker   create _latest @ , here , does>
+           dup @ _latest ! cell+ @ here swap - allot ;

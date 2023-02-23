@@ -6,9 +6,9 @@ Alee is a portable and concise Forth implementation in modern C++. Its primary a
 
 ## Compatibility
 
-A base dictionary is being built following the "core" [glossary](https://forth-standard.org/standard/core). Progress on implementation of these words is documented in `compat.txt`.
+A base dictionary is being built by working through the "core" and "core extension" [glossaries](https://forth-standard.org/standard/core). These word lists are included in `compat.txt`, with "yes" indicating that the word is implemented either in `core.fth` or within Alee itself.
 
-A `sys` is available which links to a C++ function for user-defined functionality.
+A `sys` word is available to provide access to user-defined C++ functions.
 
 ## Building
 
