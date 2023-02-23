@@ -115,7 +115,7 @@ Word Dictionary::input()
 
 bool Dictionary::equal(Word word, std::string_view sv) const
 {
-    if (sv.size() != word.end - word.start)
+    if (sv.size() != static_cast<Addr>(word.end - word.start))
         return false;
 
     for (unsigned i = 0; i < sv.size(); ++i) {
