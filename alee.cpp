@@ -65,6 +65,27 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+static void save(State& state)
+{
+    std::ofstream file ("alee.dat", std::ios::binary);
+
+    if (file.good()) {
+        for (Addr i = 0; i < state.dict.here; ++i)
+            file.put(state.dict.readbyte(i));
+    }
+}
+
+static void load(State& state)
+{
+    std::ifstream file ("alee.dat", std::ios::binary);
+
+    Addr i = 0;
+    while (file.good())
+        state.dict.writebyte(i++, file.get());
+
+    state.dict.here = i - 1;
+}
+
 void user_sys(State& state)
 {
     switch (state.pop()) {
@@ -73,6 +94,12 @@ void user_sys(State& state)
         break;
     case 1:
         std::cout << static_cast<char>(state.pop());
+        break;
+    case 2:
+        save(state);
+        break;
+    case 3:
+        load(state);
         break;
     }
 }

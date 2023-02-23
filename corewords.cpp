@@ -146,7 +146,7 @@ void CoreWords::run(unsigned int index, State& state)
         tick(getword());
         break;
     case 24: // execute
-        state.execute(state.pop());
+        run(state.pop(), state);
         break;
     case 25: // exit
         state.ip = state.popr();
