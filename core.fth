@@ -36,8 +36,8 @@
 : postpone 1 3 cells ! ; imm
 : _input   4 cells ;
 
-: decimal  1 1+ base ! 1010 base ! ;
-: hex      1 1+ base ! 10000 base ! ;
+: decimal  10 base ! ;
+: hex      16 base ! ;
 
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
