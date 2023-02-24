@@ -50,8 +50,8 @@ Addr Dictionary::alignhere()
 void Dictionary::addDefinition(Word word)
 {
     add(word.size());
-    for (unsigned i = 0; i < word.size(); ++i)
-        writebyte(allot(1), readbyte(word.start + i));
+    for (auto w = word.start; w != word.end; ++w)
+        writebyte(allot(1), readbyte(w));
 
     alignhere();
 }
@@ -85,29 +85,27 @@ Addr Dictionary::getexec(Addr addr)
 
 Word Dictionary::input()
 {
-    const auto len = read(Dictionary::Input);
-    if (len == 0)
-        return {};
+    auto len = read(Dictionary::Input);
+    if (len != 0) {
+        Addr wordstart = Dictionary::Input + sizeof(Cell) + Dictionary::InputCells
+                         - len;
+        Addr wordend = wordstart;
 
-    Addr wordstart = Dictionary::Input + sizeof(Cell) + Dictionary::InputCells
-                     - len;
-    Addr wordend = wordstart;
+        while (len) {
+            auto b = readbyte(wordend);
 
-    auto cnt = len;
-    while (cnt) {
-        auto b = readbyte(wordend);
-        if (isspace(b)) {
-            if (wordstart != wordend) {
-                Word word {wordstart, wordend};
-                writebyte(Dictionary::Input, cnt - 1);
-                return word;
-            } else {
+            if (isspace(b)) {
+                if (wordstart != wordend) {
+                    writebyte(Dictionary::Input, len - 1);
+                    return {wordstart, wordend};
+                }
+
                 ++wordstart;
             }
-        }
 
-        ++wordend;
-        --cnt;
+            ++wordend;
+            --len;
+        }
     }
 
     return {};
@@ -115,12 +113,14 @@ Word Dictionary::input()
 
 bool Dictionary::equal(Word word, std::string_view sv) const
 {
-    if (sv.size() != static_cast<Addr>(word.end - word.start))
+    if (word.size() != sv.size())
         return false;
 
-    for (unsigned i = 0; i < sv.size(); ++i) {
-        if (sv[i] != readbyte(word.start + i))
+    for (auto w = word.start; w != word.end; ++w) {
+        if (readbyte(w) != sv.front())
             return false;
+
+        sv = sv.substr(1);
     }
 
     return true;
@@ -131,9 +131,12 @@ bool Dictionary::equal(Word word, Word other) const
     if (word.size() != other.size())
         return false;
 
-    for (unsigned i = 0; i < word.size(); ++i) {
-        if (readbyte(word.start + i) != readbyte(other.start + i))
+    auto w = word.start, o = other.start;
+    while (w != word.end) {
+        if (readbyte(w) != readbyte(o))
             return false;
+
+        ++w, ++o;
     }
 
     return true;

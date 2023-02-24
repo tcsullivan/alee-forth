@@ -20,13 +20,14 @@
 #define ALEEFORTH_TYPES_HPP
 
 #include <cstdint>
-#include <string_view>
 
 struct State;
 
 using Addr = uint16_t;
 using Cell = int16_t;
 using Func = void (*)(State&);
+
+constexpr unsigned int MaxCellNumberChars = 6; // -32768
 
 struct Word
 {
@@ -37,14 +38,6 @@ struct Word
         return end - start;
     }
 };
-
-enum class ParseStatus
-{
-    Finished,
-    NotAWord
-};
-
-std::string_view to_string(ParseStatus);
 
 #endif // ALEEFORTH_TYPES_HPP
 

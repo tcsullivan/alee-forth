@@ -26,12 +26,14 @@
 class Parser
 {
 public:
-    ParseStatus parse(State&, std::string_view&);
+    constexpr static int UnknownWord = -1;
+
+    int parse(State&, std::string_view&);
 
 private:
-    ParseStatus parseSource(State&);
-    ParseStatus parseWord(State&, Word);
-    ParseStatus parseNumber(State&, Word);
+    int parseSource(State&);
+    int parseWord(State&, Word);
+    int parseNumber(State&, Word);
 };
 
 #endif // ALEEFORTH_PARSER_HPP

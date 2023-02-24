@@ -25,22 +25,9 @@
 
 static bool okay = false;
 
+static void readchar(State& state);
 static void parseLine(Parser&, State&, std::string_view);
 static void parseFile(Parser&, State&, std::istream&);
-
-static void readchar(State& state)
-{
-    auto len = state.dict.read(Dictionary::Input);
-    Addr addr = Dictionary::Input + sizeof(Cell) +
-                Dictionary::InputCells - len - 1;
-
-    for (Addr i = 0; i < len; ++i, ++addr)
-        state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
-
-    auto c = std::cin.get();
-    state.dict.writebyte(addr, c ? c : ' ');
-    state.dict.write(Dictionary::Input, len + 1);
-}
 
 int main(int argc, char *argv[])
 {
@@ -63,6 +50,20 @@ int main(int argc, char *argv[])
     parseFile(parser, state, std::cin);
 
     return 0;
+}
+
+static void readchar(State& state)
+{
+    auto len = state.dict.read(Dictionary::Input);
+    Addr addr = Dictionary::Input + sizeof(Cell) +
+                Dictionary::InputCells - len - 1;
+
+    for (Addr i = 0; i < len; ++i, ++addr)
+        state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
+
+    auto c = std::cin.get();
+    state.dict.writebyte(addr, c ? c : ' ');
+    state.dict.write(Dictionary::Input, len + 1);
 }
 
 static void save(State& state)
@@ -106,13 +107,17 @@ void user_sys(State& state)
 
 void parseLine(Parser& parser, State& state, std::string_view line)
 {
-    auto r = parser.parse(state, line);
-
-    if (r == ParseStatus::Finished) {
+    if (auto r = parser.parse(state, line); r == 0) {
         if (okay)
             std::cout << (state.compiling() ? "compiled" : "ok") << std::endl;
     } else {
-        std::cout << to_string(r) << ": " << line << std::endl;
+        switch (r) {
+        case Parser::UnknownWord:
+            std::cout << "word not found in: " << line << std::endl;
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -123,6 +128,7 @@ void parseFile(Parser& parser, State& state, std::istream& file)
         std::getline(file, line);
         if (line == "bye")
             exit(0);
+
         parseLine(parser, state, line);
     }
 }

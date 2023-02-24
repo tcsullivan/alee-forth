@@ -22,9 +22,7 @@
 #include <cctype>
 #include <cstdlib>
 
-#include <iostream>
-
-ParseStatus Parser::parse(State& state, std::string_view& str)
+int Parser::parse(State& state, std::string_view& str)
 {
     auto addr = Dictionary::Input;
     state.dict.write(addr, str.size() + 1);
@@ -37,20 +35,20 @@ ParseStatus Parser::parse(State& state, std::string_view& str)
     return parseSource(state);
 }
 
-ParseStatus Parser::parseSource(State& state)
+int Parser::parseSource(State& state)
 {
     auto word = state.dict.input();
     while (word.size() > 0) {
-        if (auto ret = parseWord(state, word); ret != ParseStatus::Finished)
+        if (auto ret = parseWord(state, word); ret)
             return ret;
 
         word = state.dict.input();
     }
 
-    return ParseStatus::Finished;
+    return 0;
 }
 
-ParseStatus Parser::parseWord(State& state, Word word)
+int Parser::parseWord(State& state, Word word)
 {
     int ins, imm;
 
@@ -79,21 +77,22 @@ ParseStatus Parser::parseWord(State& state, Word word)
         state.execute(ins);
     }
 
-    return ParseStatus::Finished;
+    return 0;
 }
 
-ParseStatus Parser::parseNumber(State& state, Word word)
+int Parser::parseNumber(State& state, Word word)
 {
-    char buf[word.size() + 1];
-    for (unsigned i = 0; i < word.size(); ++i)
+    char buf[MaxCellNumberChars + 1];
+    unsigned i;
+    for (i = 0; i < std::min(MaxCellNumberChars, word.size()); ++i)
         buf[i] = state.dict.readbyte(word.start + i);
-    buf[word.size()] = '\0';
+    buf[i] = '\0';
 
     char *p;
     const auto base = state.dict.read(0);
     const Cell l = std::strtol(buf, &p, base);
 
-    if (std::distance(buf, p) == word.size()) {
+    if (static_cast<Addr>(std::distance(buf, p)) == word.size()) {
         if (state.compiling()) {
             state.dict.add(CoreWords::findi("_lit"));
             state.dict.add(l);
@@ -101,10 +100,9 @@ ParseStatus Parser::parseNumber(State& state, Word word)
             state.push(l);
         }
 
-        return ParseStatus::Finished;
+        return 0;
     } else {
-        std::cout << "word not found: " << buf << std::endl;
-        return ParseStatus::NotAWord;
+        return UnknownWord;
     }
 }
 
