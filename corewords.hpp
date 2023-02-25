@@ -41,7 +41,7 @@ private:
     // Ends with '\1': compile-only word
     constexpr static char wordsarr[] =
         "drop\0dup\0swap\0pick\0sys\0"
-        "+\0-\0*\0/\0%\0"
+        "+\0-\0m*\0_/\0_%\0"
         "_@\0_!\0>r\0r>\0=\0"
         "<\0allot\0&\0|\0^\0"
         "<<\0>>\0:\0'\0execute\0"

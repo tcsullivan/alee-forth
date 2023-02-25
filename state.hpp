@@ -25,8 +25,8 @@
 #include <csetjmp>
 #include <cstddef>
 
-constexpr unsigned DataStackSize = 8;
-constexpr unsigned ReturnStackSize = 8;
+constexpr unsigned DataStackSize = 16;
+constexpr unsigned ReturnStackSize = 16;
 
 struct State
 {

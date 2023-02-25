@@ -115,6 +115,20 @@ void parseLine(Parser& parser, State& state, const std::string& line)
         case Parser::UnknownWord:
             std::cout << "word not found in: " << line << std::endl;
             break;
+        case static_cast<int>(State::Error::push):
+            std::cout << "stack overflow" << std::endl;
+            break;
+        case static_cast<int>(State::Error::pushr):
+            std::cout << "return stack overflow" << std::endl;
+            break;
+        case static_cast<int>(State::Error::popr):
+            std::cout << "return stack underflow" << std::endl;
+            break;
+        case static_cast<int>(State::Error::pop):
+        case static_cast<int>(State::Error::top):
+        case static_cast<int>(State::Error::pick):
+            std::cout << "stack underflow" << std::endl;
+            break;
         default:
             std::cout << "error: " << r << std::endl;
             break;

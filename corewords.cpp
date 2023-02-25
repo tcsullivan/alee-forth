@@ -49,6 +49,7 @@ void CoreWords::run(unsigned int index, State& state)
     };
 
     Cell cell;
+    DoubleCell dcell;
 
     switch (index) {
     default:
@@ -79,17 +80,23 @@ void CoreWords::run(unsigned int index, State& state)
         cell = state.pop();
         state.top() -= cell;
         break;
-    case 7: // mul
+    case 7: // mul ( n n -- d )
         cell = state.pop();
-        state.top() *= cell;
+        dcell = state.pop() * cell;
+        state.push(dcell);
+        state.push(dcell >> (sizeof(Cell) * 8));
         break;
-    case 8: // div
+    case 8: // div ( d n -- n )
         cell = state.pop();
-        state.top() /= cell;
+        dcell = state.pop() << (sizeof(Cell) * 8);
+        dcell |= state.pop();
+        state.push(dcell / cell);
         break;
-    case 9: // mod
+    case 9: // mod ( d n -- n )
         cell = state.pop();
-        state.top() %= cell;
+        dcell = state.pop() << (sizeof(Cell) * 8);
+        dcell |= state.pop();
+        state.push(dcell % cell);
         break;
     case 10: // peek
         if (state.pop())

@@ -25,6 +25,7 @@ struct State;
 
 using Addr = uint16_t;
 using Cell = int16_t;
+using DoubleCell = int32_t;
 using Func = void (*)(State&);
 
 constexpr unsigned int MaxCellNumberChars = 6; // -32768

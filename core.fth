@@ -1,6 +1,9 @@
+: *        m* drop ;
+: /        0 swap _/ ;
+: %        0 swap _% ;
+
 : cell+    2 + ;
 : cells    2 * ;
-
 
 : .        0 sys ;
 : emit     1 sys ;
@@ -91,6 +94,15 @@
 : mod      % ;
 : 2*       2 * ;
 : 2/       2 / ;
+
+: /mod     2dup % -rot / ;
+: s>d      1 m* ;
+: */       >r m* r> _/ ;
+: */mod    >r m* 2dup r@ _% r> _/ ;
+: sm/rem   >r 2dup r@ _% -rot r> _/ ;
+: fm/mod   2dup dup >r ^ >r sm/rem swap dup
+           if r> 0< if r> + swap 1- else swap r> drop then
+           else swap 2r> 2drop then ;
 
 : cr       10 emit ;
 : bl       32 ;

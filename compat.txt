@@ -7,8 +7,8 @@ yes 6.1.0010 !
 yes 6.1.0070 '
 yes 6.1.0080 (
 yes 6.1.0090 *
-    6.1.0100 */
-    6.1.0110 */MOD
+yes 6.1.0100 */
+yes 6.1.0110 */MOD
 yes 6.1.0120
 yes 6.1.0130 +!
 yes 6.1.0140 +LOOP
@@ -17,7 +17,7 @@ yes 6.1.0160 -
 yes 6.1.0180 .
 yes 6.1.0190 ."
 yes 6.1.0230 /
-    6.1.0240 /MOD
+yes 6.1.0240 /MOD
 yes 6.1.0250 0<
 yes 6.1.0270 0=
 yes 6.1.0290 1+
@@ -79,7 +79,7 @@ yes 6.1.1370 EXECUTE
 yes 6.1.1380 EXIT
 yes 6.1.1540 FILL
     6.1.1550 FIND
-    6.1.1561 FM/MOD
+yes 6.1.1561 FM/MOD
 yes 6.1.1650 HERE
     6.1.1670 HOLD
 yes 6.1.1680 I
@@ -92,7 +92,7 @@ yes 6.1.1750 KEY
 yes 6.1.1780 LITERAL
 yes 6.1.1800 LOOP
 yes 6.1.1805 LSHIFT
-    6.1.1810 M*
+yes 6.1.1810 M*
 yes 6.1.1870 MAX
 yes 6.1.1880 MIN
 yes 6.1.1890 MOD
@@ -109,9 +109,9 @@ yes 6.1.2140 REPEAT
 yes 6.1.2160 ROT
 yes 6.1.2162 RSHIFT
 yes 6.1.2165 S"
-    6.1.2170 S>D
+yes 6.1.2170 S>D
     6.1.2210 SIGN
-    6.1.2214 SM/REM
+yes 6.1.2214 SM/REM
 yes 6.1.2216 SOURCE
 yes 6.1.2220 SPACE
 yes 6.1.2230 SPACES
