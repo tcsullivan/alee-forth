@@ -28,14 +28,16 @@ class Dictionary
 {
 public:
     constexpr static Addr Base       = 0;
-    constexpr static Addr Latest     = sizeof(Cell);
-    constexpr static Addr Compiling  = sizeof(Cell) * 2;
-    constexpr static Addr Postpone   = sizeof(Cell) * 3;
-    constexpr static Addr Input      = sizeof(Cell) * 4; // len data...
+    constexpr static Addr Here       = sizeof(Cell);
+    constexpr static Addr Latest     = sizeof(Cell) * 2;
+    constexpr static Addr Compiling  = sizeof(Cell) * 3;
+    constexpr static Addr Postpone   = sizeof(Cell) * 4;
+    constexpr static Addr Input      = sizeof(Cell) * 5; // len data...
     constexpr static Addr InputCells = 80; // bytes!
-    constexpr static Addr Begin      = sizeof(Cell) * 5 + InputCells;
+    constexpr static Addr Begin      = sizeof(Cell) * 6 + InputCells;
 
-    Addr here = Begin;
+    Addr here() const noexcept { return read(Here); }
+    void here(Addr l) noexcept { write(Here, l); }
 
     Addr latest() const noexcept { return read(Latest); }
     void latest(Addr l) noexcept { write(Latest, l); }

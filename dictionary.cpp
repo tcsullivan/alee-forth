@@ -23,8 +23,8 @@
 
 Addr Dictionary::allot(Cell amount) noexcept
 {
-    Addr old = here;
-    here += amount;
+    Addr old = here();
+    here(old + amount);
     return old;
 }
 
@@ -44,8 +44,8 @@ Addr Dictionary::aligned(Addr addr) const noexcept
 
 Addr Dictionary::alignhere() noexcept
 {
-    here = aligned(here);
-    return here;
+    here(aligned(here()));
+    return here();
 }
 
 void Dictionary::addDefinition(Word word) noexcept

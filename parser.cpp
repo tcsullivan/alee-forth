@@ -62,8 +62,8 @@ int Parser::parseWord(State& state, Word word)
         if (ins < 0) {
             return parseNumber(state, word);
         } else {
-            imm = ins & CoreWords::Compiletime;
-            ins &= ~CoreWords::Compiletime;
+            imm = ins & CoreWords::Immediate;
+            ins &= ~CoreWords::Immediate;
         }
     } else {
         imm = state.dict.read(ins) & CoreWords::Immediate;

@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     Parser parser;
 
     dict.write(Dictionary::Base, 10);
+    dict.write(Dictionary::Here, Dictionary::Begin);
     dict.write(Dictionary::Latest, Dictionary::Begin);
     dict.write(Dictionary::Compiling, 0);
     dict.write(Dictionary::Postpone, 0);
@@ -71,7 +72,7 @@ static void save(State& state)
     std::ofstream file ("alee.dat", std::ios::binary);
 
     if (file.good()) {
-        for (Addr i = 0; i < state.dict.here; ++i)
+        for (Addr i = 0; i < state.dict.here(); ++i)
             file.put(state.dict.readbyte(i));
     }
 }
@@ -83,8 +84,6 @@ static void load(State& state)
     Addr i = 0;
     while (file.good())
         state.dict.writebyte(i++, file.get());
-
-    state.dict.here = i - 1;
 }
 
 void user_sys(State& state)

@@ -27,10 +27,9 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 35;
+    constexpr static std::size_t WordCount = 32;
 
-    constexpr static Cell Immediate   = (1 << 5);
-    constexpr static Cell Compiletime = (1 << 6);
+    constexpr static Cell Immediate = (1 << 5);
 
     static int findi(const char *);
     static int findi(State&, Word);
@@ -40,13 +39,13 @@ private:
     // Ends with '\0': regular word
     // Ends with '\1': compile-only word
     constexpr static char wordsarr[] =
-        "drop\0dup\0swap\0pick\0sys\0"
+        "_lit\0drop\0dup\0swap\0pick\0sys\0"
         "+\0-\0m*\0_/\0_%\0"
         "_@\0_!\0>r\0r>\0=\0"
-        "<\0allot\0&\0|\0^\0"
+        "<\0&\0|\0^\0"
         "<<\0>>\0:\0'\0execute\0"
-        "exit\0;\1here\0_lit\0literal\1"
-        "_jmp\0_jmp0\0depth\0_rdepth\0key\0";
+        "exit\0;\1_jmp\0"
+        "_jmp0\0depth\0_rdepth\0key\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

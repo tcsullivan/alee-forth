@@ -13,6 +13,17 @@
 
 : !        1 _! ;
 : @        1 _@ ;
+: +!       dup >r swap r> @ + swap ! ;
+
+: base     0 ;
+: here     1 cells @ ;
+: allot    1 cells +! ;
+: _latest  2 cells ;
+: imm      _latest @ dup @ 1 5 << | swap ! ;
+: state    3 cells ;
+: postpone 1 4 cells ! ; imm
+: _input   5 cells ;
+
 : ,        here ! 1 cells allot ;
 
 : over     1 pick ;
@@ -32,16 +43,10 @@
 : char+    1+ ;
 : chars    ;
 
-: base     0 ;
-: _latest  1 cells ;
-: imm      _latest @ dup @ 1 5 << | swap ! ;
-: state    2 cells ;
-: postpone 1 3 cells ! ; imm
-: _input   4 cells ;
-
 : decimal  10 base ! ;
 : hex      16 base ! ;
 
+: literal  0 , , ; imm
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
 : ]        1 state ! ;
@@ -53,7 +58,6 @@
 
 : 2!       swap over ! cell+ ! ;
 : 2@       dup cell+ @ swap @ ;
-: +!       swap over @ + swap ! ;
 
 : 0=       0 = ;
 : 0<       0 < ;
