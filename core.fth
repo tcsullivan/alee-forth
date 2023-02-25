@@ -73,11 +73,14 @@
 : until    ['] _jmp0 , , drop ; imm
 : again    postpone repeat ; imm
 
-: do       postpone 2>r here ; imm
+: do       ['] _lit , here 0 , ['] >r , postpone 2>r here ; imm
 : unloop   postpone 2r> ['] 2drop , ; imm
+: leave    postpone unloop postpone 2r>
+           ['] drop , ['] >r , ['] exit , ; imm
 : +loop    postpone 2r> ['] rot , ['] + , ['] 2dup ,
            postpone 2>r ['] - , ['] 0= , ['] _jmp0 , ,
-           postpone unloop ; imm
+           postpone unloop
+           here swap ! ['] r> , ['] drop , ; imm
 : loop     1 postpone literal postpone +loop ; imm
 : i        postpone r@ ; imm 
 : j        postpone 2r> postpone r@ ['] -rot , postpone 2>r ; imm
