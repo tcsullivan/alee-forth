@@ -21,26 +21,29 @@
 
 #include "dictionary.hpp"
 
-constexpr unsigned long int MemDictSize = 4096;
+#ifndef MEMDICTSIZE
+#define MEMDICTSIZE (4096)
+#endif
+constexpr unsigned long int MemDictSize = MEMDICTSIZE;
 
 class MemDict : public Dictionary
 {
     uint8_t dict[MemDictSize];
 
 public:
-    virtual Cell read(Addr addr) const final {
+    virtual Cell read(Addr addr) const noexcept final {
         return *reinterpret_cast<const Cell *>(dict + addr);
     }
 
-    virtual void write(Addr addr, Cell value) final {
+    virtual void write(Addr addr, Cell value) noexcept final {
         *reinterpret_cast<Cell *>(dict + addr) = value;
     }
 
-    virtual uint8_t readbyte(Addr addr) const final {
+    virtual uint8_t readbyte(Addr addr) const noexcept final {
         return dict[addr];
     }
 
-    virtual void writebyte(Addr addr, uint8_t value) final {
+    virtual void writebyte(Addr addr, uint8_t value) noexcept final {
         dict[addr] = value;
     }
 };

@@ -1,4 +1,5 @@
 .*
 *.o
 alee
+alee-msp430
 libalee.a

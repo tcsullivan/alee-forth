@@ -23,7 +23,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string_view>
 
 class Dictionary
 {
@@ -38,26 +37,26 @@ public:
 
     Addr here = Begin;
 
-    Addr latest() { return read(Latest); }
-    void latest(Addr l) { write(Latest, l); }
+    Addr latest() const noexcept { return read(Latest); }
+    void latest(Addr l) noexcept { write(Latest, l); }
 
-    virtual Cell read(Addr) const = 0;
-    virtual void write(Addr, Cell) = 0;
-    virtual uint8_t readbyte(Addr) const = 0;
-    virtual void writebyte(Addr, uint8_t) = 0;
+    virtual Cell read(Addr) const noexcept = 0;
+    virtual void write(Addr, Cell) noexcept = 0;
+    virtual uint8_t readbyte(Addr) const noexcept = 0;
+    virtual void writebyte(Addr, uint8_t) noexcept = 0;
 
-    Addr alignhere();
+    Addr alignhere() noexcept;
     Addr aligned(Addr) const noexcept;
-    Addr allot(Cell);
-    void add(Cell);
-    void addDefinition(Word);
+    Addr allot(Cell) noexcept;
+    void add(Cell) noexcept;
+    void addDefinition(Word) noexcept;
 
-    Addr find(Word);
-    Addr getexec(Addr);
-    Word input();
+    Addr find(Word) noexcept;
+    Addr getexec(Addr) noexcept;
+    Word input() noexcept;
 
-    bool equal(Word, std::string_view) const;
-    bool equal(Word, Word) const;
+    bool equal(Word, const char *, unsigned) const noexcept;
+    bool equal(Word, Word) const noexcept;
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

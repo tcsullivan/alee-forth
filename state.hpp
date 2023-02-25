@@ -22,6 +22,7 @@
 #include "dictionary.hpp"
 #include "types.hpp"
 
+#include <csetjmp>
 #include <cstddef>
 
 constexpr unsigned DataStackSize = 8;
@@ -29,6 +30,16 @@ constexpr unsigned ReturnStackSize = 8;
 
 struct State
 {
+    enum class Error : int {
+        none,
+        push,
+        pop,
+        pushr,
+        popr,
+        top,
+        pick
+    };
+
     Addr ip = 0;
     Dictionary& dict;
     void (*input)(State&);
@@ -38,26 +49,28 @@ struct State
     Cell *dsp = dstack - 1;
     Cell *rsp = rstack - 1;
 
+    std::jmp_buf jmpbuf = {};
+
     constexpr State(Dictionary& d, void (*i)(State&)):
         dict(d), input(i) {}
 
     bool compiling() const;
     void compiling(bool);
 
-    void execute(Addr);
+    Error execute(Addr);
 
     std::size_t size() const noexcept;
     std::size_t rsize() const noexcept;
 
     inline void push(Cell value) {
         if (dsp == dstack + DataStackSize - 1)
-            throw exc_push();
+            std::longjmp(jmpbuf, static_cast<int>(Error::push));
         *++dsp = value;
     }
 
     inline Cell pop() {
         if (dsp < dstack)
-            throw exc_pop();
+            std::longjmp(jmpbuf, static_cast<int>(Error::pop));
         return *dsp--;
     }
 
@@ -68,34 +81,27 @@ struct State
 
     inline void pushr(Cell value) {
         if (rsp == rstack + ReturnStackSize - 1)
-            throw exc_pushr();
+            std::longjmp(jmpbuf, static_cast<int>(Error::pushr));
         *++rsp = value;
     }
 
     inline Cell popr() {
         if (rsp < rstack)
-            throw exc_popr();
+            std::longjmp(jmpbuf, static_cast<int>(Error::popr));
         return *rsp--;
     }
 
     inline Cell& top() {
         if (dsp < dstack)
-            throw exc_top();
+            std::longjmp(jmpbuf, static_cast<int>(Error::top));
         return *dsp;
     }
 
     inline Cell& pick(std::size_t i) {
         if (dsp - i < dstack)
-            throw exc_pick();
+            std::longjmp(jmpbuf, static_cast<int>(Error::pick));
         return *(dsp - i);
     }
-
-    struct exc_pop {};
-    struct exc_push {};
-    struct exc_popr {};
-    struct exc_pushr {};
-    struct exc_top {};
-    struct exc_pick {};
 };
 
 #endif // ALEEFORTH_STATE_HPP

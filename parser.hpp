@@ -28,7 +28,7 @@ class Parser
 public:
     constexpr static int UnknownWord = -1;
 
-    int parse(State&, std::string_view&);
+    int parse(State&, const char *);
 
 private:
     int parseSource(State&);

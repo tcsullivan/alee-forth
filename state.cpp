@@ -31,19 +31,26 @@ void State::compiling(bool yes)
     dict.write(Dictionary::Compiling, yes);
 }
 
-void State::execute(Addr addr)
+State::Error State::execute(Addr addr)
 {
-    if (addr < CoreWords::WordCount) {
-        CoreWords::run(addr, *this);
-    } else {
-        pushr(0);
-        ip = addr - sizeof(Cell);
+    auto stat = setjmp(jmpbuf);
+    if (!stat) {
+        if (addr < CoreWords::WordCount) {
+            CoreWords::run(addr, *this);
+        } else {
+            pushr(0);
+            ip = addr - sizeof(Cell);
 
-        do {
-            ip += sizeof(Cell);
-            CoreWords::run(dict.read(ip), *this);
-        } while (ip);
+            do {
+                ip += sizeof(Cell);
+                CoreWords::run(dict.read(ip), *this);
+            } while (ip);
+        }
+    } else {
+        return static_cast<State::Error>(stat);
     }
+
+    return State::Error::none;
 }
 
 std::size_t State::size() const noexcept

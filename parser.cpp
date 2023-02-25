@@ -19,17 +19,19 @@
 #include "corewords.hpp"
 #include "parser.hpp"
 
-#include <cctype>
-#include <cstdlib>
+#include <charconv>
+#include <cstring>
 
-int Parser::parse(State& state, std::string_view& str)
+int Parser::parse(State& state, const char *str)
 {
-    auto addr = Dictionary::Input;
-    state.dict.write(addr, str.size() + 1);
+    const auto size = std::strlen(str);
 
-    addr += sizeof(Cell) + Dictionary::InputCells - str.size() - 1;
-    for (char c : str)
-        state.dict.writebyte(addr++, c);
+    auto addr = Dictionary::Input;
+    state.dict.write(addr, size + 1);
+
+    addr += sizeof(Cell) + Dictionary::InputCells - size - 1;
+    while (*str)
+        state.dict.writebyte(addr++, *str++);
     state.dict.writebyte(addr, ' ');
 
     return parseSource(state);
@@ -74,7 +76,8 @@ int Parser::parseWord(State& state, Word word)
     } else if (state.compiling() && !imm) {
         state.dict.add(ins);
     } else {
-        state.execute(ins);
+        if (auto stat = state.execute(ins); stat != State::Error::none)
+            return static_cast<int>(stat);
     }
 
     return 0;
@@ -88,11 +91,11 @@ int Parser::parseNumber(State& state, Word word)
         buf[i] = state.dict.readbyte(word.start + i);
     buf[i] = '\0';
 
-    char *p;
-    const auto base = state.dict.read(0);
-    const Cell l = std::strtol(buf, &p, base);
+    auto base = state.dict.read(0);
+    Cell l;
+    auto [ptr, ec] = std::from_chars(buf, buf + i, l, base);
 
-    if (static_cast<Addr>(std::distance(buf, p)) == word.size()) {
+    if (ec == std::errc() && ptr == buf + i) {
         if (state.compiling()) {
             state.dict.add(CoreWords::findi("_lit"));
             state.dict.add(l);

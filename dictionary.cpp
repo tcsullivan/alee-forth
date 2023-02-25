@@ -19,15 +19,16 @@
 #include "dictionary.hpp"
 
 #include <cctype>
+#include <cstring>
 
-Addr Dictionary::allot(Cell amount)
+Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here;
     here += amount;
     return old;
 }
 
-void Dictionary::add(Cell value)
+void Dictionary::add(Cell value) noexcept
 {
     write(allot(sizeof(Cell)), value);
 }
@@ -41,13 +42,13 @@ Addr Dictionary::aligned(Addr addr) const noexcept
     return addr;
 }
 
-Addr Dictionary::alignhere()
+Addr Dictionary::alignhere() noexcept
 {
     here = aligned(here);
     return here;
 }
 
-void Dictionary::addDefinition(Word word)
+void Dictionary::addDefinition(Word word) noexcept
 {
     add(word.size());
     for (auto w = word.start; w != word.end; ++w)
@@ -56,7 +57,7 @@ void Dictionary::addDefinition(Word word)
     alignhere();
 }
 
-Addr Dictionary::find(Word word)
+Addr Dictionary::find(Word word) noexcept
 {
     Addr lt = latest(), oldlt;
     do {
@@ -77,13 +78,13 @@ Addr Dictionary::find(Word word)
     return 0;
 }
 
-Addr Dictionary::getexec(Addr addr)
+Addr Dictionary::getexec(Addr addr) noexcept
 {
     const auto len = read(addr) & 0x1F;
     return aligned(addr + sizeof(Cell) + len);
 }
 
-Word Dictionary::input()
+Word Dictionary::input() noexcept
 {
     auto len = read(Dictionary::Input);
     if (len != 0) {
@@ -111,22 +112,22 @@ Word Dictionary::input()
     return {};
 }
 
-bool Dictionary::equal(Word word, std::string_view sv) const
+bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
 {
-    if (word.size() != sv.size())
+    if (word.size() != len)
         return false;
 
     for (auto w = word.start; w != word.end; ++w) {
-        if (readbyte(w) != sv.front())
+        if (readbyte(w) != *str)
             return false;
 
-        sv = sv.substr(1);
+        ++str;
     }
 
     return true;
 }
 
-bool Dictionary::equal(Word word, Word other) const
+bool Dictionary::equal(Word word, Word other) const noexcept
 {
     if (word.size() != other.size())
         return false;

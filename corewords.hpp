@@ -22,8 +22,6 @@
 #include "types.hpp"
 #include "state.hpp"
 
-#include <string_view>
-
 void user_sys(State&);
 
 class CoreWords
@@ -34,7 +32,7 @@ public:
     constexpr static Cell Immediate   = (1 << 5);
     constexpr static Cell Compiletime = (1 << 6);
 
-    static int findi(std::string_view);
+    static int findi(const char *);
     static int findi(State&, Word);
     static void run(unsigned int, State&);
 

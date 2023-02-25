@@ -26,7 +26,7 @@
 static bool okay = false;
 
 static void readchar(State& state);
-static void parseLine(Parser&, State&, std::string_view);
+static void parseLine(Parser&, State&, const std::string&);
 static void parseFile(Parser&, State&, std::istream&);
 
 int main(int argc, char *argv[])
@@ -105,9 +105,9 @@ void user_sys(State& state)
     }
 }
 
-void parseLine(Parser& parser, State& state, std::string_view line)
+void parseLine(Parser& parser, State& state, const std::string& line)
 {
-    if (auto r = parser.parse(state, line); r == 0) {
+    if (auto r = parser.parse(state, line.c_str()); r == 0) {
         if (okay)
             std::cout << (state.compiling() ? "compiled" : "ok") << std::endl;
     } else {
@@ -116,6 +116,7 @@ void parseLine(Parser& parser, State& state, std::string_view line)
             std::cout << "word not found in: " << line << std::endl;
             break;
         default:
+            std::cout << "error: " << r << std::endl;
             break;
         }
     }

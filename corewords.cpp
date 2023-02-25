@@ -18,6 +18,9 @@
 
 #include "corewords.hpp"
 
+#include <cstring>
+#include <utility>
+
 void CoreWords::run(unsigned int index, State& state)
 {
     auto getword = [&state] {
@@ -197,18 +200,19 @@ void CoreWords::run(unsigned int index, State& state)
     }
 }
 
-int CoreWords::findi(std::string_view word)
+int CoreWords::findi(const char *word)
 {
+    const auto size = std::strlen(word);
     std::size_t i;
     int wordsi = 0;
 
-    std::string_view words (wordsarr, sizeof(wordsarr));
+    for (i = 0; i < sizeof(wordsarr);) {
+        auto end = i;
+        while (wordsarr[end] > '\1')
+            ++end;
 
-    for (i = 0; i < words.size();) {
-        const auto end = words.find_first_of({"\0\1", 2}, i);
-
-        if (word == words.substr(i, end - i))
-            return words[end] == '\0' ? wordsi : (wordsi | Compiletime);
+        if (size == end - i && !std::strncmp(word, wordsarr + i, size))
+            return wordsarr[end] == '\0' ? wordsi : (wordsi | Compiletime);
 
         ++wordsi;
         i = end + 1;
@@ -222,13 +226,13 @@ int CoreWords::findi(State& state, Word word)
     std::size_t i;
     int wordsi = 0;
 
-    std::string_view words (wordsarr, sizeof(wordsarr));
+    for (i = 0; i < sizeof(wordsarr);) {
+        auto end = i;
+        while (wordsarr[end] > '\1')
+            ++end;
 
-    for (i = 0; i < words.size();) {
-        const auto end = words.find_first_of({"\0\1", 2}, i);
-
-        if (state.dict.equal(word, words.substr(i, end - i)))
-            return words[end] == '\0' ? wordsi : (wordsi | Compiletime);
+        if (state.dict.equal(word, wordsarr + i, end - i))
+            return wordsarr[end] == '\0' ? wordsi : (wordsi | Compiletime);
 
         ++wordsi;
         i = end + 1;
