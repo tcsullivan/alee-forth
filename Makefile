@@ -1,6 +1,6 @@
 CXXFLAGS += -std=c++17 -g3 -ggdb -O0 \
             -Wall -Wextra -pedantic -Werror \
-	    -fno-exceptions -fno-rtti #-fstack-usage
+            -fno-exceptions -fno-rtti #-fstack-usage
 
 CXXFILES := corewords.cpp dictionary.cpp parser.cpp state.cpp
 OBJFILES := $(subst .cpp,.o,$(CXXFILES))

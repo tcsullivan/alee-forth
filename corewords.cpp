@@ -21,36 +21,41 @@
 #include <cstring>
 #include <utility>
 
+Word getword(State& state)
+{
+    auto word = state.dict.input();
+    while (word.size() == 0) {
+        state.input(state);
+        word = state.dict.input();
+    }
+    return word;
+}
+void newdef(Dictionary& dict, Word word)
+{
+    auto addr = dict.alignhere();
+    dict.addDefinition(word);
+    dict.write(addr,
+        (dict.read(addr) & 0x1F) |
+        ((addr - dict.latest()) << 6));
+    dict.latest(addr);
+};
+void tick(State& state)
+{
+    auto word = getword(state);
+    if (auto j = state.dict.find(word); j > 0)
+        state.push(state.dict.getexec(j));
+    else if (auto i = CoreWords::findi(state, word); i >= 0)
+        state.push(i & ~CoreWords::Immediate);
+    else
+        state.push(0);
+}
+
 void CoreWords::run(unsigned int index, State& state)
 {
-    auto getword = [&state] {
-        auto word = state.dict.input();
-        while (word.size() == 0) {
-            state.input(state);
-            word = state.dict.input();
-        }
-        return word;
-    };
-    auto newdef = [](Dictionary& dict, Word word) {
-        auto addr = dict.alignhere();
-        dict.addDefinition(word);
-        dict.write(addr,
-            (dict.read(addr) & 0x1F) |
-            ((addr - dict.latest()) << 6));
-        dict.latest(addr);
-    };
-    auto tick = [&state](Word word) {
-        if (auto j = state.dict.find(word); j > 0)
-            state.push(state.dict.getexec(j));
-        else if (auto i = CoreWords::findi(state, word); i >= 0)
-            state.push(i & ~CoreWords::Immediate);
-        else
-            state.push(0);
-    };
-
     Cell cell;
     DoubleCell dcell;
 
+execute:
     switch (index) {
     default:
         // must be calling a defined subroutine
@@ -91,13 +96,15 @@ void CoreWords::run(unsigned int index, State& state)
         break;
     case 9: // div ( d n -- n )
         cell = state.pop();
-        dcell = state.pop() << (sizeof(Cell) * 8);
+        dcell = state.pop();
+        dcell <<= sizeof(Cell) * 8;
         dcell |= state.pop();
         state.push(dcell / cell);
         break;
     case 10: // mod ( d n -- n )
         cell = state.pop();
-        dcell = state.pop() << (sizeof(Cell) * 8);
+        dcell = state.pop();
+        dcell <<= sizeof(Cell) * 8;
         dcell |= state.pop();
         state.push(dcell % cell);
         break;
@@ -149,14 +156,15 @@ void CoreWords::run(unsigned int index, State& state)
         state.top() >>= cell;
         break;
     case 22: // colon
-        newdef(state.dict, getword());
+        newdef(state.dict, getword(state));
         state.compiling(true);
         break;
     case 23: // tick
-        tick(getword());
+        tick(state);
         break;
     case 24: // execute
-        run(state.pop(), state);
+        index = state.pop();
+        goto execute;
         break;
     case 25: // exit
         state.ip = state.popr();

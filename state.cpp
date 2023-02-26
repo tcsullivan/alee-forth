@@ -35,16 +35,17 @@ State::Error State::execute(Addr addr)
 {
     auto stat = setjmp(jmpbuf);
     if (!stat) {
-        if (addr < CoreWords::WordCount) {
-            CoreWords::run(addr, *this);
-        } else {
-            pushr(0);
-            ip = addr - sizeof(Cell);
+        ip = 0;
 
-            do {
-                ip += sizeof(Cell);
-                CoreWords::run(dict.read(ip), *this);
-            } while (ip);
+        auto ins = addr;
+        for (;;) {
+            CoreWords::run(ins, *this);
+
+            if (!ip)
+                break;
+
+            ip += sizeof(Cell);
+            ins = dict.read(ip);
         }
     } else {
         return static_cast<State::Error>(stat);
