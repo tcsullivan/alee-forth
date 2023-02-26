@@ -37,12 +37,12 @@ State::Error State::execute(Addr addr)
     if (!stat) {
         if (addr < CoreWords::WordCount) {
             CoreWords::run(addr, *this);
+            ip = 0;
         } else {
             auto ins = addr;
 
             for (;;) {
                 CoreWords::run(ins, *this);
-                ip += sizeof(Cell);
                 ins = dict.read(ip);
             }
         }

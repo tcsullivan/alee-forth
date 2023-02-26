@@ -60,8 +60,8 @@ execute:
     default:
         // must be calling a defined subroutine
         state.pushr(state.ip);
-        state.ip = index - sizeof(Cell);
-        break;
+        state.ip = index;
+        return;
     case 0: // _lit
         state.push(state.beyondip());
         break;
@@ -184,8 +184,8 @@ execute:
         }
         [[fallthrough]];
     case 28: // _jmp
-        state.ip = state.beyondip() - sizeof(Cell);
-        break;
+        state.ip = state.beyondip();
+        return;
     case 29: // depth
         state.push(state.size());
         break;
@@ -207,6 +207,8 @@ execute:
                 Dictionary::InputCells - cell));
         break;
     }
+
+    state.ip += sizeof(Cell);
 }
 
 int CoreWords::findi(const char *word)
