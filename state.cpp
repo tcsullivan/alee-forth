@@ -35,20 +35,20 @@ State::Error State::execute(Addr addr)
 {
     auto stat = setjmp(jmpbuf);
     if (!stat) {
-        ip = 0;
+        if (addr < CoreWords::WordCount) {
+            CoreWords::run(addr, *this);
+        } else {
+            auto ins = addr;
 
-        auto ins = addr;
-        for (;;) {
-            CoreWords::run(ins, *this);
-
-            if (!ip)
-                break;
-
-            ip += sizeof(Cell);
-            ins = dict.read(ip);
+            for (;;) {
+                CoreWords::run(ins, *this);
+                ip += sizeof(Cell);
+                ins = dict.read(ip);
+            }
         }
     } else {
-        return static_cast<State::Error>(stat);
+        auto err = static_cast<State::Error>(stat);
+        return err == State::Error::exit ? State::Error::none : err;
     }
 
     return State::Error::none;

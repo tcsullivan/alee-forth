@@ -37,7 +37,8 @@ struct State
         pushr,
         popr,
         top,
-        pick
+        pick,
+        exit
     };
 
     Addr ip = 0;

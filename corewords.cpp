@@ -168,19 +168,23 @@ execute:
         break;
     case 25: // exit
         state.ip = state.popr();
+        if (state.ip == 0) {
+            std::longjmp(state.jmpbuf,
+                static_cast<int>(State::Error::exit));
+        }
         break;
     case 26: // semic
         state.dict.add(findi("exit"));
         state.compiling(false);
         break;
-    case 27: // _jmp
-        state.ip = state.beyondip() - sizeof(Cell);
-        break;
-    case 28: // _jmp0
-        if (state.pop())
+    case 27: // _jmp0
+        if (state.pop()) {
             state.beyondip();
-        else
-            state.ip = state.beyondip() - sizeof(Cell);
+            break;
+        }
+        [[fallthrough]];
+    case 28: // _jmp
+        state.ip = state.beyondip() - sizeof(Cell);
         break;
     case 29: // depth
         state.push(state.size());

@@ -44,8 +44,8 @@ private:
         "_@\0_!\0>r\0r>\0=\0"
         "<\0&\0|\0^\0"
         "<<\0>>\0:\0'\0execute\0"
-        "exit\0;\1_jmp\0"
-        "_jmp0\0depth\0_rdepth\0key\0";
+        "exit\0;\1_jmp0\0_jmp\0"
+        "depth\0_rdepth\0key\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP
