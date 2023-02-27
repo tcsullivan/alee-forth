@@ -49,6 +49,21 @@ void tick(State& state)
     else
         state.push(0);
 }
+//    auto addr = state.pop();
+//    auto count = state.dict.read(addr++);
+//    Word word (addr, addr + count);
+//
+//    if (auto j = state.dict.find(word); j > 0) {
+//        state.push(state.dict.getexec(j));
+//        auto imm = state.dict.read(ins) & CoreWords::Immediate;
+//        state.push(imm ? 1 : -1);
+//    } else if (auto i = CoreWords::findi(state, word); i >= 0) {
+//        state.push(((i & ~CoreWords::Immediate) << 1) | 1);
+//        state.push((i & CoreWords::Immediate) ? 1 : -1);
+//    } else {
+//        state.push(addr);
+//        state.push(0);
+//    }
 
 void CoreWords::run(unsigned int index, State& state)
 {
@@ -191,19 +206,8 @@ execute:
     case 30: // _rdepth
         state.push(state.rsize());
         break;
-    case 31: // key
-        cell = state.dict.read(Dictionary::Input);
-        while (cell <= 0) {
-            state.input(state);
-            cell = state.dict.read(Dictionary::Input);
-        }
-
-        state.dict.write(Dictionary::Input, cell - 1);
-
-        state.push(
-            state.dict.readbyte(
-                Dictionary::Input + sizeof(Cell) +
-                Dictionary::InputCells - cell));
+    case 31: // _in
+        state.input(state);
         break;
     }
 

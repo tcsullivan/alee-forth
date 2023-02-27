@@ -123,6 +123,9 @@
 : min      2dup <= if drop else nip then ;
 : max      2dup <= if nip else drop then ;
 
+: key      begin _input @ dup 0 <= while drop _in repeat
+           dup 1- _input !
+           _input cell+ 80 chars + swap - c@ ;
 : word     here -1 cells over ! dup cell+ rot begin key 2dup <> while
            2 pick c! swap char+ swap repeat
            2drop over - over +!  ;
@@ -181,6 +184,9 @@
 
 : quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
 : abort    begin depth 0 > while drop repeat quit ;
+: abort"   postpone s" ['] rot ,
+           postpone if ['] type , ['] abort ,
+           postpone else ['] 2drop , postpone then ; imm
 
 : recurse  _latword , ; imm
 

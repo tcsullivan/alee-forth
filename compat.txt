@@ -43,7 +43,7 @@ yes 6.1.0580 >R
 yes 6.1.0630 ?DUP
 yes 6.1.0650 @
 yes 6.1.0670 ABORT
-    6.1.0680 ABORT"
+yes 6.1.0680 ABORT"
 yes 6.1.0690 ABS
 yes 6.1.0695 ACCEPT
 yes 6.1.0705 ALIGN
