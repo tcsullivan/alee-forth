@@ -143,9 +143,9 @@ yes 6.2.0280 0>
 yes 6.2.0340 2>R
 yes 6.2.0410 2R>
 yes 6.2.0415 2R@
-    6.2.0455 :NONAME
+yes 6.2.0455 :NONAME
 yes 6.2.0500 <>
-    6.2.0620 ?DO
+yes 6.2.0620 ?DO
 yes 6.2.0698 ACTION-OF
 yes 6.2.0700 AGAIN
 yes 6.2.0825 BUFFER:

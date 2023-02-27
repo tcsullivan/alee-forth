@@ -62,7 +62,7 @@
 : 0=       0 = ;
 : 0<       0 < ;
 : <=       - 1- 0< ;
-: >        <= 0= ;
+: >        swap < ;
 : <>       = 0= ;
 : 0<>      0= 0= ;
 : 0>       0 > ;
@@ -78,19 +78,27 @@
 : again    postpone repeat ; imm
 
 : do       ['] _lit , here 0 , ['] >r , postpone 2>r here ; imm
+: ?do      ['] 2dup , ['] _lit , here 0 , ['] >r , ['] = , postpone if
+           ['] 2drop , postpone 2r> ['] drop , ['] >r , ['] exit ,
+           postpone then postpone 2>r here ; imm
 : unloop   postpone 2r> ['] 2drop , ; imm
 : leave    postpone unloop postpone 2r>
            ['] drop , ['] >r , ['] exit , ; imm
-: +loop    postpone 2r> ['] rot , ['] + , ['] 2dup ,
-           postpone 2>r ['] - , ['] 0= , ['] _jmp0 , ,
+: +loop    postpone 2r> ['] 2dup , ['] swap , ['] < , ['] >r ,
+           ['] rot , ['] + , ['] 2dup , ['] swap , ['] < ,
+           ['] r> , ['] ^ , ['] -rot ,
+           postpone 2>r ['] _jmp0 , ,
            postpone unloop
            here swap ! ['] r> , ['] drop , ; imm
-: loop     1 postpone literal postpone +loop ; imm
+: loop     postpone 2r> ['] 1+ , ['] 2dup ,
+           postpone 2>r ['] = , ['] _jmp0 , ,
+           postpone unloop
+           here swap ! ['] r> , ['] drop , ; imm
 : i        postpone r@ ; imm 
 : j        postpone 2r> postpone r@ ['] -rot , postpone 2>r ; imm
 
 : align    here 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
-: aligned  dup 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
+: aligned  dup 1 cells 1- tuck & if 1 cells swap - + else drop then ;
 
 : and      & ;
 : or       | ;
@@ -209,3 +217,4 @@
 
 : marker   create _latest @ , here , does>
            dup @ _latest ! cell+ @ here swap - allot ;
+: :noname  0 , here ] ;
