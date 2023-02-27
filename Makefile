@@ -17,7 +17,7 @@ msp430: alee-msp430
 small: CXXFLAGS += -Os
 small: alee
 
-fast: CXXFLAGS += -O3 -march=native -mtune=native
+fast: CXXFLAGS += -O3 -march=native -mtune=native -flto
 fast: alee
 
 alee: $(LIBFILE)

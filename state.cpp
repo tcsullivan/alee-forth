@@ -33,25 +33,24 @@ void State::compiling(bool yes)
 
 State::Error State::execute(Addr addr)
 {
-    auto stat = setjmp(jmpbuf);
-    if (!stat) {
-        if (addr < CoreWords::WordCount) {
-            CoreWords::run(addr, *this);
-            ip = 0;
-        } else {
-            auto ins = addr;
+    auto stat = static_cast<State::Error>(setjmp(jmpbuf));
 
-            for (;;) {
-                CoreWords::run(ins, *this);
-                ins = dict.read(ip);
-            }
+    if (stat == State::Error::none) {
+        CoreWords::run(addr, *this);
+
+        if (ip >= Dictionary::Begin) {
+            // longjmp will exit this loop.
+            for (;;)
+                CoreWords::run(dict.read(ip), *this);
+        } else {
+            // addr was a CoreWord, all done now.
+            ip = 0;
         }
-    } else {
-        auto err = static_cast<State::Error>(stat);
-        return err == State::Error::exit ? State::Error::none : err;
+    } else if (stat == State::Error::exit) {
+        stat = State::Error::none;
     }
 
-    return State::Error::none;
+    return stat;
 }
 
 std::size_t State::size() const noexcept

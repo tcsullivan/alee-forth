@@ -36,7 +36,7 @@ void newdef(Dictionary& dict, Word word)
     dict.addDefinition(word);
     dict.write(addr,
         (dict.read(addr) & 0x1F) |
-        ((addr - dict.latest()) << 6));
+        ((addr - dict.latest()) << 7));
     dict.latest(addr);
 };
 void tick(State& state)
@@ -45,7 +45,7 @@ void tick(State& state)
     if (auto j = state.dict.find(word); j > 0)
         state.push(state.dict.getexec(j));
     else if (auto i = CoreWords::findi(state, word); i >= 0)
-        state.push(i & ~CoreWords::Immediate);
+        state.push(((i & ~CoreWords::Immediate) << 1) | 1);
     else
         state.push(0);
 }
@@ -56,14 +56,14 @@ void CoreWords::run(unsigned int index, State& state)
     DoubleCell dcell;
 
 execute:
-    switch (index) {
-    default:
+    if ((index & 1) == 0) {
         // must be calling a defined subroutine
         state.pushr(state.ip);
         state.ip = index;
         return;
+    } else switch ((index & 0x3E) >> 1) {
     case 0: // _lit
-        state.push(state.beyondip());
+        state.push((index & 0xFF00) ? (index >> 8) - 1 : state.beyondip());
         break;
     case 1: // drop
         state.pop();
@@ -165,7 +165,6 @@ execute:
     case 24: // execute
         index = state.pop();
         goto execute;
-        break;
     case 25: // exit
         state.ip = state.popr();
         if (state.ip == 0) {
@@ -174,7 +173,7 @@ execute:
         }
         break;
     case 26: // semic
-        state.dict.add(findi("exit"));
+        state.dict.add((findi("exit") << 1) | 1);
         state.compiling(false);
         break;
     case 27: // _jmp0
@@ -213,17 +212,16 @@ execute:
 
 int CoreWords::findi(const char *word)
 {
-    const auto size = std::strlen(word);
-    std::size_t i;
+    std::size_t i = 0;
     int wordsi = 0;
 
-    for (i = 0; i < sizeof(wordsarr);) {
+    while (i < sizeof(wordsarr)) {
         auto end = i;
-        while (wordsarr[end] > '\1')
+        while (wordsarr[end])
             ++end;
 
-        if (size == end - i && !std::strncmp(word, wordsarr + i, size))
-            return wordsarr[end] == '\0' ? wordsi : (wordsi | Immediate);
+        if (!std::strcmp(word, wordsarr + i))
+            return wordsi;
 
         ++wordsi;
         i = end + 1;
@@ -234,16 +232,16 @@ int CoreWords::findi(const char *word)
 
 int CoreWords::findi(State& state, Word word)
 {
-    std::size_t i;
+    std::size_t i = 0;
     int wordsi = 0;
 
-    for (i = 0; i < sizeof(wordsarr);) {
+    while (i < sizeof(wordsarr)) {
         auto end = i;
-        while (wordsarr[end] > '\1')
+        while (wordsarr[end])
             ++end;
 
         if (state.dict.equal(word, wordsarr + i, end - i))
-            return wordsarr[end] == '\0' ? wordsi : (wordsi | Immediate);
+            return wordsi;
 
         ++wordsi;
         i = end + 1;

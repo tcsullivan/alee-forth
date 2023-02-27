@@ -72,7 +72,7 @@ Addr Dictionary::find(Word word) noexcept
         if (equal(word, lw))
             return lt;
         else
-            lt -= l >> 6;
+            lt -= l >> 7;
     } while (lt != oldlt);
 
     return 0;

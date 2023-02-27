@@ -31,7 +31,7 @@ constexpr unsigned ReturnStackSize = 16;
 struct State
 {
     enum class Error : int {
-        none,
+        none = 0,
         push,
         pop,
         pushr,

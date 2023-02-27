@@ -19,7 +19,7 @@
 : here     1 cells @ ;
 : allot    1 cells +! ;
 : _latest  2 cells ;
-: imm      _latest @ dup @ 1 5 << | swap ! ;
+: imm      _latest @ dup @ 1 6 << | swap ! ;
 : state    3 cells ;
 : postpone 1 4 cells ! ; imm
 : _input   5 cells ;
@@ -46,7 +46,7 @@
 : decimal  10 base ! ;
 : hex      16 base ! ;
 
-: literal  0 , , ; imm
+: literal  1 , , ; imm
 : [']      ' postpone literal ; imm
 : [        0 state ! ; imm
 : ]        1 state ! ;
@@ -151,7 +151,7 @@
 
 : create   align here bl word count nip cell+ allot align
            ['] _lit , here 3 cells + , ['] exit dup , ,
-           dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
+           dup @ 31 & over _latest @ - 7 << or over ! _latest ! ;
 : _latword _latest @
            dup @ 31 & + cell+ aligned ;
 : _does>   _latword 2 cells +

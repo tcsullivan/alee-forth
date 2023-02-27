@@ -62,8 +62,9 @@ int Parser::parseWord(State& state, Word word)
         if (ins < 0) {
             return parseNumber(state, word);
         } else {
-            imm = ins & CoreWords::Immediate;
+            imm = ins == CoreWords::Semicolon;
             ins &= ~CoreWords::Immediate;
+            ins = (ins << 1) | 1;
         }
     } else {
         imm = state.dict.read(ins) & CoreWords::Immediate;
@@ -97,8 +98,14 @@ int Parser::parseNumber(State& state, Word word)
 
     if (ec == std::errc() && ptr == buf + i) {
         if (state.compiling()) {
-            state.dict.add(CoreWords::findi("_lit"));
-            state.dict.add(l);
+            auto ins = (CoreWords::findi("_lit") << 1) | 1;
+
+            if (l >= 0 && l < 0xFF) {
+                state.dict.add(ins | ((l + 1) << 8));
+            } else {
+                state.dict.add(ins);
+                state.dict.add(l);
+            }
         } else {
             state.push(l);
         }

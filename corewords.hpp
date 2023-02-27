@@ -29,22 +29,22 @@ class CoreWords
 public:
     constexpr static std::size_t WordCount = 32;
 
-    constexpr static Cell Immediate = (1 << 5);
+    constexpr static Cell Immediate = (1 << 6);
+
+    constexpr static int Semicolon = 26;
 
     static int findi(const char *);
     static int findi(State&, Word);
     static void run(unsigned int, State&);
 
 private:
-    // Ends with '\0': regular word
-    // Ends with '\1': compile-only word
     constexpr static char wordsarr[] =
         "_lit\0drop\0dup\0swap\0pick\0sys\0"
         "+\0-\0m*\0_/\0_%\0"
         "_@\0_!\0>r\0r>\0=\0"
         "<\0&\0|\0^\0"
         "<<\0>>\0:\0'\0execute\0"
-        "exit\0;\1_jmp0\0_jmp\0"
+        "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0key\0";
 };
 
