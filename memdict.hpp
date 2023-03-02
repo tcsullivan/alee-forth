@@ -22,7 +22,7 @@
 #include "dictionary.hpp"
 
 #ifndef MEMDICTSIZE
-#define MEMDICTSIZE (4096)
+#define MEMDICTSIZE (65536)
 #endif
 constexpr unsigned long int MemDictSize = MEMDICTSIZE;
 

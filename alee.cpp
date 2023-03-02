@@ -19,6 +19,7 @@
 #include "alee.hpp"
 #include "memdict.hpp"
 
+#include <charconv>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -35,11 +36,7 @@ int main(int argc, char *argv[])
     State state (dict, readchar);
     Parser parser;
 
-    dict.write(Dictionary::Base, 10);
-    dict.write(Dictionary::Here, Dictionary::Begin);
-    dict.write(Dictionary::Latest, Dictionary::Begin);
-    dict.write(Dictionary::Compiling, 0);
-    dict.write(Dictionary::Postpone, 0);
+    dict.initialize();
 
     std::vector args (argv + 1, argv + argc);
     for (const auto& a : args) {
@@ -63,6 +60,8 @@ static void readchar(State& state)
         state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
 
     auto c = std::cin.get();
+    if (isupper(c))
+        c += 32;
     state.dict.writebyte(addr, c ? c : ' ');
     state.dict.write(Dictionary::Input, len + 1);
 }
@@ -88,18 +87,30 @@ static void load(State& state)
 
 void user_sys(State& state)
 {
+    char buf[32] = {0};
+
     switch (state.pop()) {
-    case 0:
-        std::cout << state.pop() << ' ';
+    case 0: // .
+        std::to_chars(buf, buf + sizeof(buf), state.pop(),
+                      state.dict.read(Dictionary::Base));
+        std::cout << buf << ' ';
         break;
-    case 1:
+    case 1: // emit
         std::cout << static_cast<char>(state.pop());
         break;
-    case 2:
+    case 2: // save
         save(state);
         break;
-    case 3:
+    case 3: // load
         load(state);
+        break;
+    case 4: // u.
+        {
+        Addr ucell = static_cast<Addr>(state.pop());
+        std::to_chars(buf, buf + sizeof(buf), ucell,
+                      state.dict.read(Dictionary::Base));
+        std::cout << buf << ' ';
+        }
         break;
     }
 }
@@ -132,6 +143,12 @@ void parseLine(Parser& parser, State& state, const std::string& line)
             std::cout << "error: " << r << std::endl;
             break;
         }
+
+        while (state.size())
+            state.pop();
+        while (state.rsize())
+            state.popr();
+        state.dict.write(Dictionary::Compiling, 0);
     }
 }
 
@@ -140,6 +157,7 @@ void parseFile(Parser& parser, State& state, std::istream& file)
     while (file.good()) {
         std::string line;
         std::getline(file, line);
+
         if (line == "bye")
             exit(0);
 

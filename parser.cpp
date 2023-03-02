@@ -59,27 +59,19 @@ int Parser::parseWord(State& state, Word word)
     if (ins <= 0) {
         ins = CoreWords::findi(state, word);
 
-        if (ins < 0) {
+        if (ins < 0)
             return parseNumber(state, word);
-        } else {
+        else
             imm = ins == CoreWords::Semicolon;
-            ins &= ~CoreWords::Immediate;
-            ins = (ins << 1) | 1;
-        }
     } else {
         imm = state.dict.read(ins) & CoreWords::Immediate;
         ins = state.dict.getexec(ins);
     }
 
-    if (state.dict.read(Dictionary::Postpone)) {
+    if (state.compiling() && !imm)
         state.dict.add(ins);
-        state.dict.write(Dictionary::Postpone, 0);
-    } else if (state.compiling() && !imm) {
-        state.dict.add(ins);
-    } else {
-        if (auto stat = state.execute(ins); stat != State::Error::none)
-            return static_cast<int>(stat);
-    }
+    else if (auto stat = state.execute(ins); stat != State::Error::none)
+        return static_cast<int>(stat);
 
     return 0;
 }
@@ -93,19 +85,20 @@ int Parser::parseNumber(State& state, Word word)
     buf[i] = '\0';
 
     auto base = state.dict.read(0);
-    Cell l;
-    auto [ptr, ec] = std::from_chars(buf, buf + i, l, base);
+    DoubleCell dl;
+    auto [ptr, ec] = std::from_chars(buf, buf + i, dl, base);
+    Cell l = static_cast<Cell>(dl);
 
     if (ec == std::errc() && ptr == buf + i) {
         if (state.compiling()) {
-            auto ins = (CoreWords::findi("_lit") << 1) | 1;
+            auto ins = CoreWords::findi("_lit");
 
-            if (l >= 0 && l < 0xFF) {
-                state.dict.add(ins | ((l + 1) << 8));
-            } else {
+            //if (l >= 0 && l < 0xFF) {
+            //    state.dict.add(ins | ((l + 1) << 8));
+            //} else {
                 state.dict.add(ins);
                 state.dict.add(l);
-            }
+            //}
         } else {
             state.push(l);
         }

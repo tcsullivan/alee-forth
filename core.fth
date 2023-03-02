@@ -1,16 +1,19 @@
 : *        m* drop ;
-: /        0 swap _/ ;
-: %        0 swap _% ;
+: s>d      1 m* ;
+: /        >r s>d r> _/ ;
+: %        >r s>d r> _% ;
 
 : cell+    2 + ;
 : cells    2 * ;
 
 : .        0 sys ;
 : emit     1 sys ;
+: u.       4 sys ;
 
 : 1+       1 + ;
 : 1-       1 - ;
 
+: '        _' drop ;
 : !        1 _! ;
 : @        1 _@ ;
 : +!       dup >r swap r> @ + swap ! ;
@@ -19,12 +22,26 @@
 : here     1 cells @ ;
 : allot    1 cells +! ;
 : _latest  2 cells ;
-: imm      _latest @ dup @ 1 6 << | swap ! ;
+: imm      _latest @ dup @ 1 5 << | swap ! ;
+: immediate imm ;
 : state    3 cells ;
-: postpone 1 4 cells ! ; imm
-: _input   5 cells ;
+: _input   4 cells ;
 
 : ,        here ! 1 cells allot ;
+
+: [        0 state ! ; imm
+: ]        1 state ! ;
+
+: literal  [ ' _lit dup , , ] , , ; imm
+: [']      ' [ ' literal , ] ; imm
+
+: if       ['] _jmp0 , here 0 , ; imm
+: then     here swap ! ; imm
+: else     ['] _jmp , here 0 , swap here swap ! ; imm
+
+: postpone _' dup 0 = if exit then
+           1 = swap ['] _lit , , if ['] execute ,
+           else ['] , , then ; imm
 
 : over     1 pick ;
 : rot      >r swap r> swap ;
@@ -46,11 +63,6 @@
 : decimal  10 base ! ;
 : hex      16 base ! ;
 
-: literal  1 , , ; imm
-: [']      ' postpone literal ; imm
-: [        0 state ! ; imm
-: ]        1 state ! ;
-
 : 2r>      ['] r> , ['] r> , ['] swap , ; imm
 : 2>r      ['] swap , ['] >r , ['] >r , ; imm
 : 2r@      ['] r> , ['] r> , ['] 2dup , ['] >r , ['] >r , ['] swap , ; imm
@@ -61,15 +73,11 @@
 
 : 0=       0 = ;
 : 0<       0 < ;
-: <=       - 1- 0< ;
+: <=       2dup < >r = r> | ;
 : >        swap < ;
 : <>       = 0= ;
 : 0<>      0= 0= ;
 : 0>       0 > ;
-
-: if       ['] _jmp0 , here 0 , ; imm
-: then     here swap ! ; imm
-: else     ['] _jmp , here 0 , here rot ! ; imm
 
 : begin    0 here ; imm
 : while    swap 1+ swap postpone if -rot ; imm
@@ -81,21 +89,20 @@
 : ?do      ['] 2dup , ['] _lit , here 0 , ['] >r , ['] = , postpone if
            ['] 2drop , postpone 2r> ['] drop , ['] >r , ['] exit ,
            postpone then postpone 2>r here ; imm
-: unloop   postpone 2r> ['] 2drop , ; imm
-: leave    postpone unloop postpone 2r>
+: unloop   postpone 2r> ['] 2drop , ['] r> , ['] drop , ; imm
+: leave    postpone 2r> ['] 2drop , postpone 2r>
            ['] drop , ['] >r , ['] exit , ; imm
 : +loop    postpone 2r> ['] 2dup , ['] swap , ['] < , ['] >r ,
            ['] rot , ['] + , ['] 2dup , ['] swap , ['] < ,
            ['] r> , ['] ^ , ['] -rot ,
            postpone 2>r ['] _jmp0 , ,
-           postpone unloop
-           here swap ! ['] r> , ['] drop , ; imm
+           postpone unloop here swap ! ; imm
 : loop     postpone 2r> ['] 1+ , ['] 2dup ,
            postpone 2>r ['] = , ['] _jmp0 , ,
-           postpone unloop
-           here swap ! ['] r> , ['] drop , ; imm
+           postpone unloop here swap ! ; imm
 : i        postpone r@ ; imm 
-: j        postpone 2r> postpone r@ ['] -rot , postpone 2>r ; imm
+: j        postpone 2r> ['] r> , postpone r@ ['] swap ,
+           ['] >r , ['] -rot , postpone 2>r ; imm
 
 : align    here 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
 : aligned  dup 1 cells 1- tuck & if 1 cells swap - + else drop then ;
@@ -108,10 +115,10 @@
 : invert   -1 ^ ;
 : mod      % ;
 : 2*       2 * ;
-: 2/       2 / ;
+: _msb     1 1 cells 8 * 1- << ;
+: 2/       dup 1 >> swap 0< if _msb or then ;
 
 : /mod     2dup % -rot / ;
-: s>d      1 m* ;
 : */       >r m* r> _/ ;
 : */mod    >r m* 2dup r@ _% r> _/ ;
 : sm/rem   >r 2dup r@ _% -rot r> _/ ;
@@ -162,10 +169,8 @@
 
 : create   align here bl word count nip cell+ allot align
            ['] _lit , here 3 cells + , ['] exit dup , ,
-           dup @ 31 & over _latest @ - 7 << or over ! _latest ! ;
-: _latword _latest @
-           dup @ 31 & + cell+ aligned ;
-: _does>   _latword 2 cells +
+           dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
+: _does>   _latest @ dup @ 31 & + cell+ aligned 2 cells +
            ['] _jmp over ! cell+
            r@ 1 cells - @ swap ! ;
 : does>    ['] _jmp , here 2 cells + dup , 2 cells + ,
@@ -196,12 +201,14 @@
            postpone if ['] type , ['] abort ,
            postpone else ['] 2drop , postpone then ; imm
 
-: recurse  _latword , ; imm
+: recurse  depth 1- pick dup @ 31 & + cell+ aligned , ; imm
 
-: move     begin dup 0 > while
-           rot dup @ >r 1+
-           rot r> over ! 1+
-           rot 1- repeat drop 2drop ;
+: move     dup 0 <= if drop 2drop exit then
+           >r 2dup < r> swap if
+           1- 0 swap do over i + c@ over i + c! -1 +loop
+           else
+           0 do over i + c@ over i + c! loop
+           then 2drop ;
 : fill     -rot begin dup 0 > while
            >r 2dup c! char+ r> 1- repeat
            2drop drop ;

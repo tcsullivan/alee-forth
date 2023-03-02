@@ -29,7 +29,7 @@ class CoreWords
 public:
     constexpr static std::size_t WordCount = 32;
 
-    constexpr static Cell Immediate = (1 << 6);
+    constexpr static Cell Immediate = (1 << 5);
 
     constexpr static int Semicolon = 26;
 
@@ -43,7 +43,7 @@ private:
         "+\0-\0m*\0_/\0_%\0"
         "_@\0_!\0>r\0r>\0=\0"
         "<\0&\0|\0^\0"
-        "<<\0>>\0:\0'\0execute\0"
+        "<<\0>>\0:\0_'\0execute\0"
         "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0_in\0";
 };

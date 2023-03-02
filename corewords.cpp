@@ -30,40 +30,29 @@ Word getword(State& state)
     }
     return word;
 }
-void newdef(Dictionary& dict, Word word)
+void newdef(State& state, Word word)
 {
+    auto& dict = state.dict;
+
     auto addr = dict.alignhere();
     dict.addDefinition(word);
-    dict.write(addr,
-        (dict.read(addr) & 0x1F) |
-        ((addr - dict.latest()) << 7));
-    dict.latest(addr);
+    state.push(addr);
 };
 void tick(State& state)
 {
     auto word = getword(state);
-    if (auto j = state.dict.find(word); j > 0)
+    if (auto j = state.dict.find(word); j > 0) {
         state.push(state.dict.getexec(j));
-    else if (auto i = CoreWords::findi(state, word); i >= 0)
-        state.push(((i & ~CoreWords::Immediate) << 1) | 1);
-    else
+        auto imm = state.dict.read(j) & CoreWords::Immediate;
+        state.push(imm ? 1 : -1);
+    } else if (auto i = CoreWords::findi(state, word); i >= 0) {
+        state.push(i);
+        state.push(i == CoreWords::Semicolon ? 1 : -1);
+    } else {
         state.push(0);
+        state.push(0);
+    }
 }
-//    auto addr = state.pop();
-//    auto count = state.dict.read(addr++);
-//    Word word (addr, addr + count);
-//
-//    if (auto j = state.dict.find(word); j > 0) {
-//        state.push(state.dict.getexec(j));
-//        auto imm = state.dict.read(ins) & CoreWords::Immediate;
-//        state.push(imm ? 1 : -1);
-//    } else if (auto i = CoreWords::findi(state, word); i >= 0) {
-//        state.push(((i & ~CoreWords::Immediate) << 1) | 1);
-//        state.push((i & CoreWords::Immediate) ? 1 : -1);
-//    } else {
-//        state.push(addr);
-//        state.push(0);
-//    }
 
 void CoreWords::run(unsigned int index, State& state)
 {
@@ -71,14 +60,14 @@ void CoreWords::run(unsigned int index, State& state)
     DoubleCell dcell;
 
 execute:
-    if ((index & 1) == 0) {
+    if (/*(index & 1) == 0 &&*/ index >= WordCount) {
         // must be calling a defined subroutine
         state.pushr(state.ip);
         state.ip = index;
         return;
-    } else switch ((index & 0x3E) >> 1) {
+    } else switch (index & 0x1F) {
     case 0: // _lit
-        state.push((index & 0xFF00) ? (index >> 8) - 1 : state.beyondip());
+        state.push(/*(index & 0xFF00) ? ((Addr)index >> 8u) - 1 :*/ state.beyondip());
         break;
     case 1: // drop
         state.pop();
@@ -144,11 +133,11 @@ execute:
         break;
     case 15: // equal
         cell = state.pop();
-        state.top() = state.top() == cell;
+        state.top() = state.top() == cell ? -1 : 0;
         break;
     case 16: // lt
         cell = state.pop();
-        state.top() = state.top() < cell;
+        state.top() = state.top() < cell ? -1 : 0;
         break;
     case 17: // and
         cell = state.pop();
@@ -164,14 +153,14 @@ execute:
         break;
     case 20: // shl
         cell = state.pop();
-        state.top() <<= cell;
+        reinterpret_cast<Addr&>(state.top()) <<= static_cast<Addr>(cell);
         break;
     case 21: // shr
         cell = state.pop();
-        state.top() >>= cell;
+        reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell);
         break;
     case 22: // colon
-        newdef(state.dict, getword(state));
+        newdef(state, getword(state));
         state.compiling(true);
         break;
     case 23: // tick
@@ -188,8 +177,16 @@ execute:
         }
         break;
     case 26: // semic
-        state.dict.add((findi("exit") << 1) | 1);
+        {
+        state.dict.add(findi("exit"));
         state.compiling(false);
+
+        auto addr = state.pop();
+        state.dict.write(addr,
+            (state.dict.read(addr) & 0x1F) |
+            ((addr - state.dict.latest()) << 6));
+        state.dict.latest(addr);
+        }
         break;
     case 27: // _jmp0
         if (state.pop()) {

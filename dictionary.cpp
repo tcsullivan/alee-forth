@@ -21,6 +21,14 @@
 #include <cctype>
 #include <cstring>
 
+void Dictionary::initialize()
+{
+    write(Base, 10);
+    write(Here, Begin);
+    write(Latest, Begin);
+    write(Compiling, 0);
+}
+
 Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here();
@@ -62,7 +70,7 @@ Addr Dictionary::find(Word word) noexcept
     Addr lt = latest(), oldlt;
     do {
         oldlt = lt;
-        const Cell l = read(lt);
+        const auto l = static_cast<Addr>(read(lt));
         const Addr len = l & 0x1F;
         const Word lw {
             static_cast<Addr>(lt + sizeof(Cell)),
@@ -72,7 +80,7 @@ Addr Dictionary::find(Word word) noexcept
         if (equal(word, lw))
             return lt;
         else
-            lt -= l >> 7;
+            lt -= l >> 6;
     } while (lt != oldlt);
 
     return 0;
@@ -118,8 +126,15 @@ bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
         return false;
 
     for (auto w = word.start; w != word.end; ++w) {
-        if (readbyte(w) != *str)
+        auto wc = readbyte(w);
+        if (wc != *str) {
+            if (isalpha(wc) && isalpha(*str) && (wc | 32) == (*str | 32)) {
+                ++str;
+                continue;
+            }
+
             return false;
+        }
 
         ++str;
     }
@@ -134,8 +149,15 @@ bool Dictionary::equal(Word word, Word other) const noexcept
 
     auto w = word.start, o = other.start;
     while (w != word.end) {
-        if (readbyte(w) != readbyte(o))
+        auto wc = readbyte(w), oc = readbyte(o);
+        if (wc != oc) {
+            if (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32)) {
+                ++w, ++o;
+                continue;
+            }
+
             return false;
+        }
 
         ++w, ++o;
     }
