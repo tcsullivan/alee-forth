@@ -31,9 +31,10 @@ public:
     constexpr static Addr Here       = sizeof(Cell);
     constexpr static Addr Latest     = sizeof(Cell) * 2;
     constexpr static Addr Compiling  = sizeof(Cell) * 3;
-    constexpr static Addr Input      = sizeof(Cell) * 4; // len data...
+    constexpr static Addr Source     = sizeof(Cell) * 4;
+    constexpr static Addr Input      = sizeof(Cell) * 5; // len data...
     constexpr static Addr InputCells = 82; // bytes!
-    constexpr static Addr Begin      = sizeof(Cell) * 5 + InputCells;
+    constexpr static Addr Begin      = sizeof(Cell) * 6 + InputCells;
 
     void initialize();
 

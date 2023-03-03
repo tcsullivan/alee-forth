@@ -29,9 +29,9 @@ public:
     constexpr static int UnknownWord = -1;
 
     int parse(State&, const char *);
+    int parseSource(State&);
 
 private:
-    int parseSource(State&);
     int parseWord(State&, Word);
     int parseNumber(State&, Word);
 };

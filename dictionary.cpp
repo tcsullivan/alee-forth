@@ -27,6 +27,7 @@ void Dictionary::initialize()
     write(Here, Begin);
     write(Latest, Begin);
     write(Compiling, 0);
+    write(Source, Input + sizeof(Cell));
 }
 
 Addr Dictionary::allot(Cell amount) noexcept
@@ -95,10 +96,11 @@ Addr Dictionary::getexec(Addr addr) noexcept
 Word Dictionary::input() noexcept
 {
     auto idx = read(Dictionary::Input);
-    auto ch = readbyte(Dictionary::Input + sizeof(Cell) + idx);
+    auto src = read(Dictionary::Source);
+    auto ch = readbyte(src + idx);
 
     if (ch) {
-        Addr wordstart = Dictionary::Input + sizeof(Cell) + idx;
+        Addr wordstart = src + idx;
         Addr wordend = wordstart;
 
         do {

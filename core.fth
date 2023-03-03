@@ -25,7 +25,8 @@
 : imm      _latest @ dup @ 1 5 << | swap ! ;
 : immediate imm ;
 : state    3 cells ;
-: >in      4 cells ;
+: _source  4 cells ;
+: >in      5 cells ;
 
 : ,        here ! 1 cells allot ;
 
@@ -138,10 +139,11 @@
 : min      2dup <= if drop else nip then ;
 : max      2dup <= if nip else drop then ;
 
-: key      >in @ 5 cells +
+: source   _source @ 0 begin 2dup + c@ while char+ repeat ;
+: key      _source @ >in @ +
            begin dup c@ 0 = while _in repeat
            c@ 1 >in +! ;
-: key?     >in @ 5 cells + c@ 0 <> ;
+: key?     _source @ >in @ + c@ 0 <> ;
 : word     here dup >r char+ >r
            begin key? if key 2dup <> else 0 0 then while
            r> tuck c! char+ >r repeat
@@ -151,7 +153,7 @@
 : [char]   char postpone literal ; imm
 
 : (        begin [char] ) key <> while repeat ; imm
-: \        >in @ 5 cells +
+: \        _source @ >in @ +
            begin dup c@ while 0 over c! char+ repeat drop ; imm
 
 : type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
@@ -199,8 +201,6 @@
 -1 constant true
 0 constant false
 
-: source   >in cell+ 0 begin 2dup + c@ while char+ repeat ;
-
 : quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
 : abort    begin depth 0 > while drop repeat quit ;
 : abort"   postpone s" ['] rot ,
@@ -231,3 +231,7 @@
 : marker   create _latest @ , here , does>
            dup @ _latest ! cell+ @ here swap - allot ;
 : :noname  0 , here ] ;
+
+: evaluate _source @ >r >in @ >r
+           0 >in ! _source ! 5 sys
+           r> >in ! r> _source ! ;

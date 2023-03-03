@@ -30,11 +30,12 @@ static void readchar(State& state);
 static void parseLine(Parser&, State&, const std::string&);
 static void parseFile(Parser&, State&, std::istream&);
 
+static Parser parser;
+
 int main(int argc, char *argv[])
 {
     MemDict dict;
     State state (dict, readchar);
-    Parser parser;
 
     dict.initialize();
 
@@ -80,6 +81,7 @@ static void load(State& state)
         state.dict.writebyte(i++, file.get());
 }
 
+#include <cstring>
 void user_sys(State& state)
 {
     char buf[32] = {0};
@@ -105,6 +107,17 @@ void user_sys(State& state)
         std::to_chars(buf, buf + sizeof(buf), ucell,
                       state.dict.read(Dictionary::Base));
         std::cout << buf << ' ';
+        }
+        break;
+    case 5: // eval
+        {
+        auto oldip = state.ip;
+        std::jmp_buf oldjb;
+        memcpy(oldjb, state.jmpbuf, sizeof(std::jmp_buf));
+        state.ip = 0;
+        parser.parseSource(state);
+        memcpy(state.jmpbuf, oldjb, sizeof(std::jmp_buf));
+        state.ip = oldip;
         }
         break;
     }
