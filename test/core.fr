@@ -793,34 +793,33 @@ T{ W1 -> HERE 2 + }T
 \ T{ GE6 -> 123 }T
 \ T{ : GE7 GE2 GE5 ; -> }T
 \ T{ GE7 -> 124 }T
-\ 
-\ \ ------------------------------------------------------------------------
-\ TESTING SOURCE >IN WORD
-\ 
+
+\ ------------------------------------------------------------------------
+." TESTING SOURCE >IN WORD" CR
+
 \ : GS1 S" SOURCE" 2DUP EVALUATE
 \        >R SWAP >R = R> R> = ;
 \ T{ GS1 -> <TRUE> <TRUE> }T
-\ 
-\ VARIABLE SCANS
-\ : RESCAN?  -1 SCANS +! SCANS @ IF 0 >IN ! THEN ;
-\ 
-\ T{ 2 SCANS !
-\ 345 RESCAN?
-\ -> 345 345 }T
-\ 
+
+VARIABLE SCANS
+: RESCAN?  -1 SCANS +! SCANS @ IF 0 >IN ! THEN ;
+T{ 2 SCANS !
+345 RESCAN?
+-> 345 345 }T
+
 \ : GS2  5 SCANS ! S" 123 RESCAN?" EVALUATE ;
 \ T{ GS2 -> 123 123 123 123 123 }T
-\ 
-\ : GS3 WORD COUNT SWAP C@ ;
-\ T{ BL GS3 HELLO -> 5 CHAR H }T
-\ T{ CHAR " GS3 GOODBYE" -> 7 CHAR G }T
-\ T{ BL GS3
-\ DROP -> 0 }T            \ BLANK LINE RETURN ZERO-LENGTH STRING
-\ 
-\ : GS4 SOURCE >IN ! DROP ;
-\ T{ GS4 123 456
-\ -> }T
-\ 
+
+: GS3 WORD COUNT SWAP C@ ;
+T{ BL GS3 HELLO -> 5 CHAR H }T
+T{ CHAR " GS3 GOODBYE" -> 7 CHAR G }T
+T{ BL GS3
+DROP -> 0 }T            \ BLANK LINE RETURN ZERO-LENGTH STRING
+
+: GS4 SOURCE >IN ! DROP ;
+T{ GS4 123 456
+-> }T
+
 \ \ ------------------------------------------------------------------------
 \ TESTING <# # #S #> HOLD SIGN BASE >NUMBER HEX DECIMAL
 \ 

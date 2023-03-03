@@ -94,27 +94,32 @@ Addr Dictionary::getexec(Addr addr) noexcept
 
 Word Dictionary::input() noexcept
 {
-    auto len = read(Dictionary::Input);
-    if (len != 0) {
-        Addr wordstart = Dictionary::Input + sizeof(Cell) + Dictionary::InputCells
-                         - len;
+    auto idx = read(Dictionary::Input);
+    auto ch = readbyte(Dictionary::Input + sizeof(Cell) + idx);
+
+    if (ch) {
+        Addr wordstart = Dictionary::Input + sizeof(Cell) + idx;
         Addr wordend = wordstart;
 
-        while (len) {
-            auto b = readbyte(wordend);
+        do {
+            ch = readbyte(wordend);
 
-            if (isspace(b)) {
+            if (isspace(ch) || ch == '\0') {
                 if (wordstart != wordend) {
-                    writebyte(Dictionary::Input, len - 1);
+                    if (isspace(ch))
+                        ++idx;
+                    writebyte(Dictionary::Input, idx);
                     return {wordstart, wordend};
+                } else if (ch == '\0') {
+                    return {};
                 }
 
                 ++wordstart;
             }
 
             ++wordend;
-            --len;
-        }
+            ++idx;
+        } while (ch);
     }
 
     return {};

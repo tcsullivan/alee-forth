@@ -52,18 +52,13 @@ int main(int argc, char *argv[])
 
 static void readchar(State& state)
 {
-    auto len = state.dict.read(Dictionary::Input);
-    Addr addr = Dictionary::Input + sizeof(Cell) +
-                Dictionary::InputCells - len - 1;
-
-    for (Addr i = 0; i < len; ++i, ++addr)
-        state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
+    auto idx = state.dict.read(Dictionary::Input);
+    Addr addr = Dictionary::Input + sizeof(Cell) + idx;
 
     auto c = std::cin.get();
     if (isupper(c))
         c += 32;
     state.dict.writebyte(addr, c ? c : ' ');
-    state.dict.write(Dictionary::Input, len + 1);
 }
 
 static void save(State& state)

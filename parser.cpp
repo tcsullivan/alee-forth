@@ -24,15 +24,15 @@
 
 int Parser::parse(State& state, const char *str)
 {
-    const auto size = std::strlen(str);
-
     auto addr = Dictionary::Input;
-    state.dict.write(addr, size + 1);
+    state.dict.write(addr, 0);
 
-    addr += sizeof(Cell) + Dictionary::InputCells - size - 1;
+    addr += sizeof(Cell);
     while (*str)
         state.dict.writebyte(addr++, *str++);
-    state.dict.writebyte(addr, ' ');
+
+    while (addr < Dictionary::Input + Dictionary::InputCells)
+        state.dict.writebyte(addr++, '\0');
 
     return parseSource(state);
 }
