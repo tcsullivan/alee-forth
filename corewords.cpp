@@ -102,14 +102,14 @@ execute:
         cell = state.pop();
         dcell = state.pop();
         dcell <<= sizeof(Cell) * 8;
-        dcell |= state.pop();
+        dcell |= static_cast<Addr>(state.pop());
         state.push(dcell / cell);
         break;
     case 10: // mod ( d n -- n )
         cell = state.pop();
         dcell = state.pop();
         dcell <<= sizeof(Cell) * 8;
-        dcell |= state.pop();
+        dcell |= static_cast<Addr>(state.pop());
         state.push(dcell % cell);
         break;
     case 11: // peek

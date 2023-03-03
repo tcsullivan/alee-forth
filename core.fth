@@ -120,8 +120,8 @@
 
 : /mod     2dup % -rot / ;
 : */       >r m* r> _/ ;
-: */mod    >r m* 2dup r@ _% r> _/ ;
 : sm/rem   >r 2dup r@ _% -rot r> _/ ;
+: */mod    >r m* r> sm/rem ;
 : fm/mod   2dup dup >r ^ >r sm/rem swap dup
            if r> 0< if r> + swap 1- else swap r> drop then
            else swap 2r> 2drop then ;
@@ -141,11 +141,12 @@
 : key      begin _input @ dup 0 <= while drop _in repeat
            dup 1- _input !
            _input cell+ 80 chars + swap - c@ ;
-: word     here -1 cells over ! dup cell+ rot begin key 2dup <> while
-           2 pick c! swap char+ swap repeat
-           2drop over - over +!  ;
-: count    dup cell+ swap @ ;
-: char     bl word cell+ c@ ;
+: word     here dup >r char+ >r
+           begin key 2dup <> while
+           r> tuck c! char+ >r repeat
+           2drop r> r> tuck - 1- over c! ;
+: count    dup char+ swap c@ ;
+: char     bl word char+ c@ ;
 : [char]   char postpone literal ; imm
 
 : (        begin [char] ) key <> while repeat ; imm
@@ -167,7 +168,11 @@
 : ."       postpone s" state @ if ['] type , else type then ; imm
 : .(       [char] ) word count type ; imm
 
-: create   align here bl word count nip cell+ allot align
+: create   align here
+           1 cells 1 chars - allot
+           bl word count nip
+           1 chars allot
+           tuck over ! swap allot align
            ['] _lit , here 3 cells + , ['] exit dup , ,
            dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
 : _does>   _latest @ dup @ 31 & + cell+ aligned 2 cells +
