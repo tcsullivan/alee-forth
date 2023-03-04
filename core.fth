@@ -26,7 +26,8 @@
 : immediate imm ;
 : state    3 cells ;
 : _source  4 cells ;
-: >in      5 cells ;
+: _sourceu 5 cells ;
+: >in      6 cells ;
 
 : ,        here ! 1 cells allot ;
 
@@ -232,6 +233,6 @@
            dup @ _latest ! cell+ @ here swap - allot ;
 : :noname  0 , here ] ;
 
-: evaluate _source @ >r >in @ >r
-           0 >in ! _source ! 5 sys
-           r> >in ! r> _source ! ;
+: evaluate _source @ >r _sourceu @ >r >in @ >r
+           0 >in ! _sourceu ! _source ! 5 sys
+           r> >in ! r> _sourceu ! r> _source ! ;

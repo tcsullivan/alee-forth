@@ -26,6 +26,7 @@ int Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
     state.dict.write(addr, 0);
+    state.dict.write(Dictionary::SourceLen, std::strlen(str));
 
     addr += sizeof(Cell);
     while (*str)

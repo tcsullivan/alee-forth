@@ -95,33 +95,35 @@ Addr Dictionary::getexec(Addr addr) noexcept
 
 Word Dictionary::input() noexcept
 {
-    auto idx = read(Dictionary::Input);
     auto src = read(Dictionary::Source);
-    auto ch = readbyte(src + idx);
+    auto end = read(Dictionary::SourceLen);
+    auto idx = read(Dictionary::Input);
 
-    if (ch) {
-        Addr wordstart = src + idx;
-        Addr wordend = wordstart;
+    Addr wordstart = src + idx;
+    Addr wordend = wordstart;
 
-        do {
-            ch = readbyte(wordend);
+    while (idx < end) {
+        auto ch = readbyte(wordend);
 
-            if (isspace(ch) || ch == '\0') {
-                if (wordstart != wordend) {
-                    if (isspace(ch))
-                        ++idx;
-                    writebyte(Dictionary::Input, idx);
-                    return {wordstart, wordend};
-                } else if (ch == '\0') {
-                    return {};
-                }
+        if (ch == '\0')
+            break;
 
-                ++wordstart;
+        if (isspace(ch)) {
+            if (wordstart != wordend) {
+                writebyte(Dictionary::Input, idx + 1);
+                return {wordstart, wordend};
             }
 
-            ++wordend;
-            ++idx;
-        } while (ch);
+            ++wordstart;
+        }
+
+        ++wordend;
+        ++idx;
+    }
+
+    if (wordstart != wordend) {
+        writebyte(Dictionary::Input, idx + 1);
+        return {wordstart, wordend};
     }
 
     return {};
