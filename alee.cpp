@@ -157,6 +157,7 @@ void parseLine(Parser& parser, State& state, const std::string& line)
         while (state.rsize())
             state.popr();
         state.dict.write(Dictionary::Compiling, 0);
+        state.ip = 0;
     }
 }
 

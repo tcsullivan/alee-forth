@@ -236,3 +236,9 @@
 : evaluate _source @ >r _sourceu @ >r >in @ >r
            0 >in ! _sourceu ! _source ! 5 sys
            r> >in ! r> _sourceu ! r> _source ! ;
+
+: case     ['] _lit , 1 here 0 , ['] drop , ; imm
+: of       ['] over , ['] = , postpone if ; imm
+: endof    ['] _jmp , here >r 0 , postpone then
+           swap 1+ swap r> tuck ! ; imm
+: endcase  swap 0 do dup @ swap here swap ! loop drop ['] drop , ; imm

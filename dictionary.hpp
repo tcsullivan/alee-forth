@@ -24,6 +24,17 @@
 #include <cstddef>
 #include <cstdint>
 
+/**
+ * Dictionary entry format:
+ *  - 1 information byte
+ *    bits  0..4: Length of name (L)
+ *    bit      5: Immediate?
+ *    bits 6..15: Distance to next entry (negative)
+ *  - L bytes of name
+ *  - 0+ bytes for address alignment
+ *  - 0+ bytes of entry's data...
+ */
+
 class Dictionary
 {
 public:
@@ -34,7 +45,7 @@ public:
     constexpr static Addr Source     = sizeof(Cell) * 4;
     constexpr static Addr SourceLen  = sizeof(Cell) * 5;
     constexpr static Addr Input      = sizeof(Cell) * 6; // len data...
-    constexpr static Addr InputCells = 82; // bytes!
+    constexpr static Addr InputCells = 80; // bytes!
     constexpr static Addr Begin      = sizeof(Cell) * 7 + InputCells;
 
     void initialize();
