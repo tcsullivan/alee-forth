@@ -1,5 +1,8 @@
 .*
 *.o
+*.dat
 alee
 alee-msp430
+alee-standalone
 libalee.a
+core.fth.h

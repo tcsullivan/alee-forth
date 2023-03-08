@@ -10,7 +10,8 @@ all: alee
 
 msp430: CXX := msp430-elf32-g++
 msp430: AR := msp430-elf32-ar
-msp430: CXXFLAGS += -Os -mmcu=msp430g2553 -ffunction-sections -fdata-sections -DMEMDICTSIZE=200
+msp430: CXXFLAGS += -Os -mmcu=msp430g2553 -ffunction-sections -fdata-sections
+msp430: CXXFLAGS += -DMEMDICTSIZE=200
 msp430: LDFLAGS += -L/opt/msp430-elf32/include -Wl,-gc-sections
 msp430: alee-msp430
 
@@ -20,13 +21,25 @@ small: alee
 fast: CXXFLAGS += -O3 -march=native -mtune=native -flto
 fast: alee
 
-alee: $(LIBFILE)
+standalone: core.fth.h alee-standalone
 
+alee: $(LIBFILE)
 alee-msp430: $(LIBFILE)
+alee-standalone: $(LIBFILE)
 
 $(LIBFILE): $(OBJFILES)
 	$(AR) cr $@ $(OBJFILES)
 
+core.fth.h: alee.dat
+	xxd -i $< > $@
+	sed -i "s/unsigned /static const &/" $@
+
+alee.dat: alee core.fth
+	echo "2 sys" | ./alee core.fth
+
 clean:
-	rm -f alee alee-msp430 $(LIBFILE) $(OBJFILES)
+	rm -f alee alee-msp430 alee-standalone
+	rm -f $(LIBFILE) $(OBJFILES) alee.dat core.fth.h
+
+.PHONY: all msp430 small fast standalone clean
 
