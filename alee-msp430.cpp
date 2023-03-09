@@ -90,10 +90,7 @@ int main()
                 *ptr++ = c;
             }
         }
-
     }
-
-    return 0;
 }
 
 static void readchar(State& state)
@@ -157,3 +154,6 @@ void user_sys(State& state)
     }
 }
 
+extern "C" int atexit(void (*)()) { return 0; }
+void operator delete(void *) {}
+void operator delete(void *, std::size_t) {}

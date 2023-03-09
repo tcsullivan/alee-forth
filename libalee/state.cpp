@@ -55,11 +55,11 @@ State::Error State::execute(Addr addr)
 
 std::size_t State::size() const noexcept
 {
-    return std::distance(dstack, static_cast<const Cell *>(dsp)) + 1;
+    return std::distance(dstack, static_cast<const Cell *>(dsp));
 }
 
 std::size_t State::rsize() const noexcept
 {
-    return std::distance(rstack, static_cast<const Cell *>(rsp)) + 1;
+    return std::distance(rstack, static_cast<const Cell *>(rsp));
 }
 

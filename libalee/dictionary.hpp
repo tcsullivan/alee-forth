@@ -73,6 +73,8 @@ public:
 
     bool equal(Word, const char *, unsigned) const noexcept;
     bool equal(Word, Word) const noexcept;
+
+    virtual ~Dictionary() = default;
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

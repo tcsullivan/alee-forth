@@ -39,10 +39,12 @@ int main(int argc, char *argv[])
 
     dict.initialize();
 
-    std::vector args (argv + 1, argv + argc);
-    for (const auto& a : args) {
-        std::ifstream file (a);
-        parseFile(parser, state, file);
+    {
+        std::vector args (argv + 1, argv + argc);
+        for (const auto& a : args) {
+            std::ifstream file (a);
+            parseFile(parser, state, file);
+        }
     }
 
     okay = true;

@@ -1,6 +1,6 @@
 CXXFLAGS += -std=c++17 -g3 -ggdb -O0 \
-            -Wall -Wextra -pedantic -Werror \
-            -fno-exceptions -fno-rtti #-fstack-usage
+            -pedantic -Wall -Wextra -Werror -Weffc++ \
+            -fno-exceptions -fno-threadsafe-statics -fno-rtti #-fstack-usage
 
 CXXFILES := $(wildcard libalee/*.cpp)
 OBJFILES := $(subst .cpp,.o,$(CXXFILES))

@@ -21,7 +21,7 @@
 
 #include "alee.hpp"
 
-#include <cstring>
+#include <algorithm>
 
 #ifndef MEMDICTSIZE
 #define MEMDICTSIZE (65536)
@@ -32,14 +32,21 @@ template<unsigned long int RON>
 class SplitMemDict : public Dictionary
 {
     const uint8_t *rodict;
-    uint8_t rwdict[MemDictSize];
+    uint8_t rwdict[MemDictSize - Dictionary::Begin] = {0};
     uint8_t extra[Dictionary::Begin];
 
 public:
-    constexpr SplitMemDict(const uint8_t *rod):
+    constexpr explicit SplitMemDict(const uint8_t *rod):
         rodict(rod)
     {
-        std::memcpy(extra, rodict, sizeof(extra));
+        std::copy(rodict, rodict + sizeof(extra), extra);
+    }
+
+    constexpr SplitMemDict(const SplitMemDict<RON>& spd):
+        SplitMemDict(spd.rodict) {}
+    constexpr auto& operator=(const SplitMemDict<RON>& spd) {
+        *this = SplitMemDict(spd.rodict);
+        return *this;
     }
 
     virtual Cell read(Addr addr) const noexcept final {

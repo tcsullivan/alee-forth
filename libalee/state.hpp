@@ -28,8 +28,9 @@
 constexpr unsigned DataStackSize = 16;
 constexpr unsigned ReturnStackSize = 16;
 
-struct State
+class State
 {
+public:
     enum class Error : int {
         none = 0,
         push,
@@ -45,11 +46,6 @@ struct State
     Dictionary& dict;
     void (*input)(State&);
 
-    Cell dstack[DataStackSize] = {};
-    Cell rstack[ReturnStackSize] = {};
-    Cell *dsp = dstack - 1;
-    Cell *rsp = rstack - 1;
-
     std::jmp_buf jmpbuf = {};
 
     constexpr State(Dictionary& d, void (*i)(State&)):
@@ -64,15 +60,15 @@ struct State
     std::size_t rsize() const noexcept;
 
     inline void push(Cell value) {
-        if (dsp == dstack + DataStackSize - 1)
+        if (dsp == dstack + DataStackSize)
             std::longjmp(jmpbuf, static_cast<int>(Error::push));
-        *++dsp = value;
+        *dsp++ = value;
     }
 
     inline Cell pop() {
-        if (dsp < dstack)
+        if (dsp == dstack)
             std::longjmp(jmpbuf, static_cast<int>(Error::pop));
-        return *dsp--;
+        return *--dsp;
     }
 
     inline Cell beyondip() {
@@ -81,28 +77,35 @@ struct State
     }
 
     inline void pushr(Cell value) {
-        if (rsp == rstack + ReturnStackSize - 1)
+        if (rsp == rstack + ReturnStackSize)
             std::longjmp(jmpbuf, static_cast<int>(Error::pushr));
-        *++rsp = value;
+        *rsp++ = value;
     }
 
     inline Cell popr() {
-        if (rsp < rstack)
+        if (rsp == rstack)
             std::longjmp(jmpbuf, static_cast<int>(Error::popr));
-        return *rsp--;
+        return *--rsp;
     }
 
     inline Cell& top() {
-        if (dsp < dstack)
+        if (dsp == dstack)
             std::longjmp(jmpbuf, static_cast<int>(Error::top));
-        return *dsp;
+        return *(dsp - 1);
     }
 
     inline Cell& pick(std::size_t i) {
-        if (dsp - i < dstack)
+        if (dsp - i == dstack)
             std::longjmp(jmpbuf, static_cast<int>(Error::pick));
-        return *(dsp - i);
+        return *(dsp - i - 1);
     }
+
+private:
+    Cell dstack[DataStackSize] = {};
+    Cell rstack[ReturnStackSize] = {};
+    Cell *dsp = dstack;
+    Cell *rsp = rstack;
+
 };
 
 #endif // ALEEFORTH_STATE_HPP

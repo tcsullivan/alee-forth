@@ -28,7 +28,7 @@ constexpr unsigned long int MemDictSize = MEMDICTSIZE;
 
 class MemDict : public Dictionary
 {
-    uint8_t dict[MemDictSize];
+    uint8_t dict[MemDictSize] = {0};
 
 public:
     virtual Cell read(Addr addr) const noexcept final {
