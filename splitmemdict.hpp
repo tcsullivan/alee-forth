@@ -19,7 +19,7 @@
 #ifndef ALEEFORTH_SPLITMEMDICT_HPP
 #define ALEEFORTH_SPLITMEMDICT_HPP
 
-#include "dictionary.hpp"
+#include "alee.hpp"
 
 #include <cstring>
 

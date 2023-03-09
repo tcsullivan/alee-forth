@@ -2,9 +2,9 @@ CXXFLAGS += -std=c++17 -g3 -ggdb -O0 \
             -Wall -Wextra -pedantic -Werror \
             -fno-exceptions -fno-rtti #-fstack-usage
 
-CXXFILES := corewords.cpp dictionary.cpp parser.cpp state.cpp
+CXXFILES := $(wildcard libalee/*.cpp)
 OBJFILES := $(subst .cpp,.o,$(CXXFILES))
-LIBFILE := libalee.a
+LIBFILE := libalee/libalee.a
 
 all: alee
 

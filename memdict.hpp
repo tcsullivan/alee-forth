@@ -19,7 +19,7 @@
 #ifndef ALEEFORTH_MEMDICT_HPP
 #define ALEEFORTH_MEMDICT_HPP
 
-#include "dictionary.hpp"
+#include "alee.hpp"
 
 #ifndef MEMDICTSIZE
 #define MEMDICTSIZE (65536)
