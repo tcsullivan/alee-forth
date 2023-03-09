@@ -19,6 +19,7 @@
 #include "alee.hpp"
 #include "splitmemdict.hpp"
 
+#include <cctype>
 #include <msp430.h>
 
 #include "core.fth.h"
@@ -95,16 +96,14 @@ int main()
 
 static void readchar(State& state)
 {
-    auto len = state.dict.read(Dictionary::Input);
-    Addr addr = Dictionary::Input + sizeof(Cell) +
-                Dictionary::InputCells - len - 1;
-
-    for (Cell i = 0; i < len; ++i, ++addr)
-        state.dict.writebyte(addr, state.dict.readbyte(addr + 1));
+    auto idx = state.dict.read(Dictionary::Input);
+    Addr addr = Dictionary::Input + sizeof(Cell) + idx;
 
     while (!(IFG2 & UCA0RXIFG));
-    state.dict.writebyte(addr, UCA0RXBUF);
-    state.dict.write(Dictionary::Input, len + 1);
+    auto c = UCA0RXBUF;
+    if (isupper(c))
+        c += 32;
+    state.dict.writebyte(addr, c ? c : ' ');
 }
 
 void serput(int c)

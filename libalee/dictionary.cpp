@@ -95,38 +95,33 @@ Addr Dictionary::getexec(Addr addr) noexcept
 
 Word Dictionary::input() noexcept
 {
-    auto src = read(Dictionary::Source);
-    auto end = read(Dictionary::SourceLen);
+    const auto src = read(Dictionary::Source);
+    const auto end = read(Dictionary::SourceLen);
     auto idx = read(Dictionary::Input);
 
-    Addr wordstart = src + idx;
-    Addr wordend = wordstart;
+    Word word {
+        static_cast<Addr>(src + idx),
+        static_cast<Addr>(src + idx)
+    };
 
     while (idx < end) {
-        auto ch = readbyte(wordend);
-
-        if (ch == '\0')
-            break;
+        auto ch = readbyte(word.end);
 
         if (isspace(ch)) {
-            if (wordstart != wordend) {
-                writebyte(Dictionary::Input, idx + 1);
-                return {wordstart, wordend};
-            }
+            if (word.size() > 0)
+                break;
 
-            ++wordstart;
+            ++word.start;
+        } else if (ch == '\0') {
+            break;
         }
 
-        ++wordend;
+        ++word.end;
         ++idx;
     }
 
-    if (wordstart != wordend) {
-        writebyte(Dictionary::Input, idx + 1);
-        return {wordstart, wordend};
-    }
-
-    return {};
+    writebyte(Dictionary::Input, idx + 1);
+    return word;
 }
 
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept

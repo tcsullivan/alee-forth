@@ -19,7 +19,7 @@
 #include "corewords.hpp"
 #include "parser.hpp"
 
-#include <charconv>
+#include <cctype>
 #include <cstring>
 
 int Parser::parse(State& state, const char *str)
@@ -79,34 +79,48 @@ int Parser::parseWord(State& state, Word word)
 
 int Parser::parseNumber(State& state, Word word)
 {
-    char buf[MaxCellNumberChars + 1];
-    unsigned i;
-    for (i = 0; i < std::min(MaxCellNumberChars, word.size()); ++i)
-        buf[i] = state.dict.readbyte(word.start + i);
-    buf[i] = '\0';
+    const auto base = state.dict.read(Dictionary::Base);
+    DoubleCell result = 0;
+    auto i = word.start;
+    bool inv;
+    char c;
 
-    auto base = state.dict.read(0);
-    DoubleCell dl;
-    auto [ptr, ec] = std::from_chars(buf, buf + i, dl, base);
-    Cell l = static_cast<Cell>(dl);
+    c = state.dict.readbyte(i);
+    if (inv = c == '-'; inv)
+        c = state.dict.readbyte(++i);
 
-    if (ec == std::errc() && ptr == buf + i) {
-        if (state.compiling()) {
-            auto ins = CoreWords::findi("_lit");
-
-            //if (l >= 0 && l < 0xFF) {
-            //    state.dict.add(ins | ((l + 1) << 8));
-            //} else {
-                state.dict.add(ins);
-                state.dict.add(l);
-            //}
+    do {
+        if (isdigit(c)) {
+            result *= base;
+            result += c - '0';
+        } else if (isalpha(c) && base > 10) {
+            result *= base;
+            result += 10 + (c > 'a' ? c - 'a' : c - 'A');
         } else {
-            state.push(l);
+            return UnknownWord;
         }
 
-        return 0;
+        if (++i < word.end)
+            c = state.dict.readbyte(i);
+    } while (i < word.end);
+
+    if (inv)
+        result *= -1;
+
+    Cell value = static_cast<Cell>(result);
+    if (state.compiling()) {
+        auto ins = CoreWords::findi("_lit");
+
+        //if (l >= 0 && l < 0xFF) {
+        //    state.dict.add(ins | ((l + 1) << 8));
+        //} else {
+            state.dict.add(ins);
+            state.dict.add(value);
+        //}
     } else {
-        return UnknownWord;
+        state.push(value);
     }
+
+    return 0;
 }
 

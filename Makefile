@@ -9,10 +9,10 @@ LIBFILE := libalee/libalee.a
 all: alee
 
 msp430: CXX := msp430-elf32-g++
-msp430: AR := msp430-elf32-ar
+msp430: AR := msp430-elf32-gcc-ar
 msp430: CXXFLAGS += -Os -mmcu=msp430g2553 -ffunction-sections -fdata-sections
-msp430: CXXFLAGS += -DMEMDICTSIZE=200
-msp430: LDFLAGS += -L/opt/msp430-elf32/include -Wl,-gc-sections
+msp430: CXXFLAGS += -DMEMDICTSIZE=200 -flto
+msp430: LDFLAGS += -L/opt/msp430-elf32/include -Tmsp430g2553.ld -Wl,-gc-sections
 msp430: clean-lib alee-msp430
 
 small: CXXFLAGS += -Os
@@ -27,8 +27,15 @@ alee: $(LIBFILE)
 alee-msp430: $(LIBFILE)
 alee-standalone: $(LIBFILE)
 
+cppcheck:
+	cppcheck --enable=warning,style,information --disable=missingInclude \
+             libalee alee*.cpp *dict.hpp
+
+test: standalone
+	echo "\nbye\n" | ./alee-standalone test/tester.fr test/core.fr
+
 $(LIBFILE): $(OBJFILES)
-	$(AR) cr $@ $(OBJFILES)
+	$(AR) crs $@ $(OBJFILES)
 
 core.fth.h: alee.dat
 	xxd -i $< > $@
@@ -44,5 +51,5 @@ clean: clean-lib
 clean-lib:
 	rm -f $(LIBFILE) $(OBJFILES)
 
-.PHONY: all msp430 small fast standalone clean clean-lib
+.PHONY: all clean clean-lib cppcheck fast msp430 small standalone test
 
