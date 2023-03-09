@@ -17,9 +17,11 @@
  */
 
 #include "alee.hpp"
-#include "memdict.hpp"
+#include "splitmemdict.hpp"
 
 #include <msp430.h>
+
+#include "core.fth.h"
 
 static char strbuf[32];
 
@@ -47,14 +49,9 @@ int main()
 
     __enable_interrupt();
 
-    static MemDict dict;
+    static SplitMemDict<alee_dat_len> dict (alee_dat);
     State state (dict, readchar);
     Parser parser;
-
-    dict.write(Dictionary::Base, 10);
-    dict.write(Dictionary::Latest, Dictionary::Begin);
-    dict.write(Dictionary::Compiling, 0);
-    dict.write(Dictionary::Postpone, 0);
 
     serputs("alee forth\n\r");
 

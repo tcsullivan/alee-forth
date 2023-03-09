@@ -1,20 +1,33 @@
 # Alee Forth
 
-**Still very much in development! Not suitable for real applications yet.**
-
-Alee is a portable and concise Forth implementation in modern C++. Its primary aims are for reduced program size and execution efficiency. Portability includes bare-metal platforms, with intentions to support microcontrollers with kilobytes of memory.
+Alee is a concise Forth implementation written in modern C++ that aims for portability, minimal program size, and execution efficiency.
 
 ## Cross-platform compatibility
 
-Alee relies on the C++17 standard. Alee *does not* rely on operating-system-specific functions, making portability easy. See the `msp430` target for an example of a port.
+Alee relies on the C++17 standard. Alee *does not* rely on operating-system-specific functions, making portability easy.
 
-System-specific functionality such as text output is contained to a `sys` word. This word calls a user-supplied `user_sys` C++ function that should implement the necessary (or any additional) system-specific functionality.
+The goal of portability extends down to microcontroller targets with kilobytes of memory. See the `msp430` target for an example of a port.
+
+System-specific functionality is obtained through a `sys` Forth word. This word calls a user-supplied C++ function that implements the necessary (or any additional) functionality.
 
 # Forth compatibility
 
-A base dictionary is being built by working through the "core" and "core extension" [glossaries](https://forth-standard.org/standard/core). These glossaries are listed in `compat.txt`, with "yes" indicating that the word is implemented either in `core.fth` or within Alee itself. `core.fth` may be compiled into a binary for loading on targets without filesystems.
+Alee implements a large majority of the "core" and "core extension" [glossaries](https://forth-standard.org/standard/core). Implementation is tracked in `compat.txt`, with missing words listed below. Fundamental words are built into Alee (written in C++); the rest of the implementation is in `core.fth`.
 
-Alee Forth aims for compliance with common Forth standards like Forth 2012 and ANS Forth. Compliance is tested using a [Forth 2012 test suite](https://github.com/gerryjackson/forth2012-test-suite). Supported test files are in the `test` directory, with non-passing or unimplemented tests commented out.
+This means Alee should be executed as `alee core.fth` to include these words. Alternatively, the `standalone` target packages the `core.fth` dictionary into the program.
+
+**Missing** core features:  
+* Pictured numeric output conversion `<# #>`
+* Words for unsigned integers: `U. U< UM* UM/MOD`
+* `>NUMBER`
+* `FIND`
+
+**Missing** core extensions:  
+```
+.R HOLDS PAD PARSE PARSE-NAME REFILL RESTORE-INPUT S\" SAVE-INPUT SOURCE-ID U.R U> UNUSED WITHIN [COMPILE]
+```
+
+Alee aims for compliance with common Forth standards like Forth 2012 and ANS Forth. Compliance is tested using a [Forth 2012 test suite](https://github.com/gerryjackson/forth2012-test-suite). Supported test files are in the `test` directory, with tests for unimplemented words commented out.
 
 ## Building
 
@@ -22,5 +35,9 @@ Alee requires `make` and a C++17-compatible compiler.
 
 To compile, simply run the `make` command. This will produce a library, `libalee.a`, as well as a REPL binary named `alee`.  
 A `small` target exists that optimizes the build for size.  
-A `fast` target exists that optimizes for maximum performance on the host (not target) system.
+A `fast` target exists that optimizes for maximum performance on the host system.
+The `standalone` target will produce a `alee-standalone` binary that contains and pre-loads the core dictionary.
+The `msp430` target builds Alee for the [MSP430G2553](https://www.ti.com/product/MSP430G2553) microcontroller. Like `standalone`, the core dictionary is built into the binary.
+
+Configurable constants and types are defined either in the Makefile or in `types.hpp`.
 

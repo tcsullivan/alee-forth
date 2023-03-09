@@ -13,7 +13,7 @@ msp430: AR := msp430-elf32-ar
 msp430: CXXFLAGS += -Os -mmcu=msp430g2553 -ffunction-sections -fdata-sections
 msp430: CXXFLAGS += -DMEMDICTSIZE=200
 msp430: LDFLAGS += -L/opt/msp430-elf32/include -Wl,-gc-sections
-msp430: alee-msp430
+msp430: clean-lib alee-msp430
 
 small: CXXFLAGS += -Os
 small: alee
@@ -37,9 +37,12 @@ core.fth.h: alee.dat
 alee.dat: alee core.fth
 	echo "2 sys" | ./alee core.fth
 
-clean:
+clean: clean-lib
 	rm -f alee alee-msp430 alee-standalone
-	rm -f $(LIBFILE) $(OBJFILES) alee.dat core.fth.h
+	rm -f alee.dat core.fth.h
 
-.PHONY: all msp430 small fast standalone clean
+clean-lib:
+	rm -f $(LIBFILE) $(OBJFILES)
+
+.PHONY: all msp430 small fast standalone clean clean-lib
 
