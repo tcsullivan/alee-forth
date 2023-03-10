@@ -10,7 +10,7 @@ The goal of portability extends down to microcontroller targets with kilobytes o
 
 System-specific functionality is obtained through a `sys` Forth word. This word calls a user-supplied C++ function that implements the necessary (or any additional) functionality.
 
-# Forth compatibility
+## Forth compatibility
 
 Alee implements a large majority of the "core" and "core extension" [word sets](https://forth-standard.org/standard/core). Implementation is tracked in `compat.txt`, with missing words listed below. Fundamental words are built into Alee (written in C++); the rest of the implementation is in `core.fth` and `core-ext.fth`.
 
@@ -41,3 +41,5 @@ The `msp430` target builds Alee for the [MSP430G2553](https://www.ti.com/product
 
 Configurable constants and types are defined either in the Makefile or in `types.hpp`.
 
+   text	   data	    bss	    dec	    hex	filename
+   8528	      8	    252	   8788	   2254	alee-msp430

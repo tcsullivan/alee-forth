@@ -16,9 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ctype.hpp"
 #include "dictionary.hpp"
 
-#include <cctype>
 #include <cstring>
 
 void Dictionary::initialize()
@@ -68,9 +68,8 @@ void Dictionary::addDefinition(Word word) noexcept
 
 Addr Dictionary::find(Word word) noexcept
 {
-    Addr lt = latest(), oldlt;
-    do {
-        oldlt = lt;
+    Addr lt = latest();
+    for (;;) {
         const auto l = static_cast<Addr>(read(lt));
         const Addr len = l & 0x1F;
         const Word lw {
@@ -80,9 +79,11 @@ Addr Dictionary::find(Word word) noexcept
 
         if (equal(word, lw))
             return lt;
+        else if (lt == Begin)
+            break;
         else
             lt -= l >> 6;
-    } while (lt != oldlt);
+    }
 
     return 0;
 }
@@ -124,29 +125,21 @@ Word Dictionary::input() noexcept
     return word;
 }
 
-#include <algorithm>
-
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
 {
-    if (word.size() != len)
-        return false;
-
-    return std::equal(word.begin(this), word.end(this), str,
-        [](auto wc, auto oc) {
-            return wc == oc ||
-                   (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32));
-        });
+    return word.size() == len &&
+           equal(word.begin(this), word.end(this), str);
 }
 
 bool Dictionary::equal(Word word, Word other) const noexcept
 {
-    if (word.size() != other.size())
-        return false;
+    return word.size() == other.size() &&
+           equal(word.begin(this), word.end(this), other.begin(this));
+}
 
-    return std::equal(word.begin(this), word.end(this), other.begin(this),
-        [](auto wc, auto oc) {
-            return wc == oc ||
-                   (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32));
-        });
+bool Dictionary::eqchars(char c1, char c2)
+{
+    return c1 == c2 ||
+        (isalpha(c1) && isalpha(c2) && (c1 | 32) == (c2 | 32));
 }
 

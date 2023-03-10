@@ -214,22 +214,22 @@ execute:
     state.ip += sizeof(Cell);
 }
 
-template<class Comp>
-int findi(Comp comp)
+template<typename Iter>
+int findi(Iter it, int size)
 {
-    std::size_t i = 0;
+    auto ptr = CoreWords::wordsarr;
     int wordsi = 0;
 
-    while (i < sizeof(CoreWords::wordsarr)) {
-        auto end = i;
-        while (CoreWords::wordsarr[end])
+    while (ptr < CoreWords::wordsarr + sizeof(CoreWords::wordsarr)) {
+        auto end = ptr;
+        while (*end)
             ++end;
 
-        if (comp(CoreWords::wordsarr + i, end - i))
+        if (end - ptr == size &&  Dictionary::equal(ptr, end, it))
             return wordsi;
 
         ++wordsi;
-        i = end + 1;
+        ptr = end + 1;
     }
 
     return -1;
@@ -237,13 +237,11 @@ int findi(Comp comp)
 
 int CoreWords::findi(const char *word)
 {
-    return ::findi([word](auto b, auto e) {
-        return !std::strncmp(word, b, e); });
+    return ::findi(word, strlen(word));
 }
 
 int CoreWords::findi(State& state, Word word)
 {
-    return ::findi([state, word](auto b, auto e) {
-        return state.dict.equal(word, b, e); });
+    return ::findi(word.begin(&state.dict), word.size());
 }
 

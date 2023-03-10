@@ -21,6 +21,7 @@
 
 #include "types.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 
@@ -74,7 +75,15 @@ public:
     bool equal(Word, const char *, unsigned) const noexcept;
     bool equal(Word, Word) const noexcept;
 
+    template<typename Iter1, typename Iter2>
+    static bool equal(Iter1 b1, Iter1 e1, Iter2 b2) {
+        return std::equal(b1, e1, b2, eqchars);
+    }
+
     virtual ~Dictionary() = default;
+
+private:
+    static bool eqchars(char c1, char c2);
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

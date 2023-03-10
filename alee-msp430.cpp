@@ -17,9 +17,9 @@
  */
 
 #include "alee.hpp"
+#include "libalee/ctype.hpp"
 #include "splitmemdict.hpp"
 
-#include <cctype>
 #include <msp430.h>
 
 #include "core.fth.h"
@@ -149,10 +149,10 @@ void user_sys(State& state)
         break;
     case 2:
         { auto addr = state.pop();
-          *((uint8_t *)addr) = state.pop(); }
+          *reinterpret_cast<uint8_t *>(addr) = state.pop(); }
         break;
     case 3:
-        state.push(*((uint8_t *)state.pop()));
+        state.push(*reinterpret_cast<uint8_t *>(state.pop()));
         break;
     default:
         break;

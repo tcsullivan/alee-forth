@@ -17,9 +17,9 @@
  */
 
 #include "corewords.hpp"
+#include "ctype.hpp"
 #include "parser.hpp"
 
-#include <cctype>
 #include <cstring>
 
 int Parser::parse(State& state, const char *str)
