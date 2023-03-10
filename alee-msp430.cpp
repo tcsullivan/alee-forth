@@ -52,7 +52,6 @@ int main()
 
     static SplitMemDict<alee_dat_len> dict (alee_dat);
     State state (dict, readchar);
-    Parser parser;
 
     serputs("alee forth\n\r");
 
@@ -67,7 +66,7 @@ int main()
 
                 serputs("\n\r");
 
-                if (auto r = parser.parse(state, strbuf); r == 0) {
+                if (auto r = Parser::parse(state, strbuf); r == 0) {
                     serputs(state.compiling() ? " compiled" : " ok");
                 } else {
                     switch (r) {
@@ -147,6 +146,13 @@ void user_sys(State& state)
         break;
     case 1:
         serput(state.pop());
+        break;
+    case 2:
+        { auto addr = state.pop();
+          *((uint8_t *)addr) = state.pop(); }
+        break;
+    case 3:
+        state.push(*((uint8_t *)state.pop()));
         break;
     default:
         break;

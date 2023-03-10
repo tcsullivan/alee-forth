@@ -27,10 +27,8 @@
 static bool okay = false;
 
 static void readchar(State& state);
-static void parseLine(Parser&, State&, const std::string&);
-static void parseFile(Parser&, State&, std::istream&);
-
-static Parser parser;
+static void parseLine(State&, const std::string&);
+static void parseFile(State&, std::istream&);
 
 int main(int argc, char *argv[])
 {
@@ -43,12 +41,12 @@ int main(int argc, char *argv[])
         std::vector args (argv + 1, argv + argc);
         for (const auto& a : args) {
             std::ifstream file (a);
-            parseFile(parser, state, file);
+            parseFile(state, file);
         }
     }
 
     okay = true;
-    parseFile(parser, state, std::cin);
+    parseFile(state, std::cin);
 
     return 0;
 }
@@ -117,7 +115,7 @@ void user_sys(State& state)
         std::jmp_buf oldjb;
         memcpy(oldjb, state.jmpbuf, sizeof(std::jmp_buf));
         state.ip = 0;
-        parser.parseSource(state);
+        Parser::parseSource(state);
         memcpy(state.jmpbuf, oldjb, sizeof(std::jmp_buf));
         state.ip = oldip;
         }
@@ -125,9 +123,9 @@ void user_sys(State& state)
     }
 }
 
-void parseLine(Parser& parser, State& state, const std::string& line)
+void parseLine(State& state, const std::string& line)
 {
-    if (auto r = parser.parse(state, line.c_str()); r == 0) {
+    if (auto r = Parser::parse(state, line.c_str()); r == 0) {
         if (okay)
             std::cout << (state.compiling() ? "compiled" : "ok") << std::endl;
     } else {
@@ -163,7 +161,7 @@ void parseLine(Parser& parser, State& state, const std::string& line)
     }
 }
 
-void parseFile(Parser& parser, State& state, std::istream& file)
+void parseFile(State& state, std::istream& file)
 {
     while (file.good()) {
         std::string line;
@@ -172,7 +170,7 @@ void parseFile(Parser& parser, State& state, std::istream& file)
         if (line == "bye")
             exit(0);
 
-        parseLine(parser, state, line);
+        parseLine(state, line);
     }
 }
 

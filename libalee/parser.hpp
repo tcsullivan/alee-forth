@@ -28,12 +28,12 @@ class Parser
 public:
     constexpr static int UnknownWord = -1;
 
-    int parse(State&, const char *);
-    int parseSource(State&);
+    static int parse(State&, const char *);
+    static int parseSource(State&);
 
 private:
-    int parseWord(State&, Word);
-    int parseNumber(State&, Word);
+    static int parseWord(State&, Word);
+    static int parseNumber(State&, Word);
 };
 
 #endif // ALEEFORTH_PARSER_HPP
