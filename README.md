@@ -40,6 +40,3 @@ The `standalone` target will produce a `alee-standalone` binary that has the cor
 The `msp430` target builds Alee for the [MSP430G2553](https://www.ti.com/product/MSP430G2553) microcontroller. This target requires `standalone` for the core dictionary.
 
 Configurable constants and types are defined either in the Makefile or in `types.hpp`.
-
-   text	   data	    bss	    dec	    hex	filename
-   8528	      8	    252	   8788	   2254	alee-msp430
