@@ -16,36 +16,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef ALEEFORTH_COREWORDS_HPP
-#define ALEEFORTH_COREWORDS_HPP
-
+#include "dictionary.hpp"
 #include "types.hpp"
-#include "state.hpp"
 
-void user_sys(State&);
-
-class CoreWords
+unsigned Word::size() const noexcept
 {
-public:
-    constexpr static std::size_t WordCount = 32;
+    return wend - start;
+}
 
-    constexpr static Cell Immediate = (1 << 5);
+Word::iterator Word::begin(const Dictionary *dict)
+{
+    return iterator(start, dict);
+}
 
-    constexpr static int Semicolon = 26;
+Word::iterator Word::end(const Dictionary *dict)
+{
+    return iterator(wend, dict);
+}
 
-    static int findi(const char *);
-    static int findi(State&, Word);
-    static void run(unsigned int, State&);
+Word::iterator& Word::iterator::operator++()
+{
+    addr++;
+    return *this;
+}
 
-    constexpr static char wordsarr[] =
-        "_lit\0drop\0dup\0swap\0pick\0sys\0"
-        "+\0-\0m*\0_/\0_%\0"
-        "_@\0_!\0>r\0r>\0=\0"
-        "<\0&\0|\0^\0"
-        "<<\0>>\0:\0_'\0execute\0"
-        "exit\0;\0_jmp0\0_jmp\0"
-        "depth\0_rdepth\0_in\0";
-};
+Word::iterator::value_type Word::iterator::operator*()
+{
+    return dict->readbyte(addr);
+}
 
-#endif // ALEEFORTH_COREWORDS_HPP
-
+bool Word::iterator::operator!=(const iterator& other)
+{
+    return dict != other.dict || addr != other.addr;
+}

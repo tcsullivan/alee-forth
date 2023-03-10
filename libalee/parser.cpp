@@ -100,9 +100,9 @@ int Parser::parseNumber(State& state, Word word)
             return UnknownWord;
         }
 
-        if (++i < word.end)
+        if (++i < word.wend)
             c = state.dict.readbyte(i);
-    } while (i < word.end);
+    } while (i < word.wend);
 
     if (inv)
         result *= -1;

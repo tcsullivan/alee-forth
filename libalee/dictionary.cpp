@@ -60,7 +60,7 @@ Addr Dictionary::alignhere() noexcept
 void Dictionary::addDefinition(Word word) noexcept
 {
     add(word.size());
-    for (auto w = word.start; w != word.end; ++w)
+    for (auto w = word.start; w != word.wend; ++w)
         writebyte(allot(1), readbyte(w));
 
     alignhere();
@@ -105,7 +105,7 @@ Word Dictionary::input() noexcept
     };
 
     while (idx < end) {
-        auto ch = readbyte(word.end);
+        auto ch = readbyte(word.wend);
 
         if (isspace(ch)) {
             if (word.size() > 0)
@@ -116,7 +116,7 @@ Word Dictionary::input() noexcept
             break;
         }
 
-        ++word.end;
+        ++word.wend;
         ++idx;
     }
 
@@ -124,26 +124,18 @@ Word Dictionary::input() noexcept
     return word;
 }
 
+#include <algorithm>
+
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
 {
     if (word.size() != len)
         return false;
 
-    for (auto w = word.start; w != word.end; ++w) {
-        auto wc = readbyte(w);
-        if (wc != *str) {
-            if (isalpha(wc) && isalpha(*str) && (wc | 32) == (*str | 32)) {
-                ++str;
-                continue;
-            }
-
-            return false;
-        }
-
-        ++str;
-    }
-
-    return true;
+    return std::equal(word.begin(this), word.end(this), str,
+        [](auto wc, auto oc) {
+            return wc == oc ||
+                   (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32));
+        });
 }
 
 bool Dictionary::equal(Word word, Word other) const noexcept
@@ -151,21 +143,10 @@ bool Dictionary::equal(Word word, Word other) const noexcept
     if (word.size() != other.size())
         return false;
 
-    auto w = word.start, o = other.start;
-    while (w != word.end) {
-        auto wc = readbyte(w), oc = readbyte(o);
-        if (wc != oc) {
-            if (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32)) {
-                ++w, ++o;
-                continue;
-            }
-
-            return false;
-        }
-
-        ++w, ++o;
-    }
-
-    return true;
+    return std::equal(word.begin(this), word.end(this), other.begin(this),
+        [](auto wc, auto oc) {
+            return wc == oc ||
+                   (isalpha(wc) && isalpha(oc) && (wc | 32) == (oc | 32));
+        });
 }
 

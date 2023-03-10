@@ -20,7 +20,9 @@
 #define ALEEFORTH_TYPES_HPP
 
 #include <cstdint>
+#include <iterator>
 
+struct Dictionary;
 struct State;
 
 using Addr = uint16_t;
@@ -32,12 +34,32 @@ constexpr unsigned int MaxCellNumberChars = 6; // -32768
 
 struct Word
 {
-    Addr start = 0;
-    Addr end = 0;
+    struct iterator;
 
-    unsigned size() const noexcept {
-        return end - start;
-    }
+    Addr start = 0;
+    Addr wend = 0;
+
+    iterator begin(const Dictionary *);
+    iterator end(const Dictionary *);
+    unsigned size() const noexcept;
+
+    struct iterator {
+        using iterator_category = std::input_iterator_tag;
+        using value_type = uint8_t;
+        using pointer = void;
+        using reference = void;
+        using difference_type = Cell;
+
+        Addr addr;
+        const Dictionary *dict;
+
+        constexpr iterator(Addr a, const Dictionary *d):
+            addr(a), dict(d) {}
+
+        iterator& operator++();
+        value_type operator*();
+        bool operator!=(const iterator&);
+    };
 };
 
 #endif // ALEEFORTH_TYPES_HPP
