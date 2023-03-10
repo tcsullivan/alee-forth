@@ -189,7 +189,7 @@
 : compile, postpone literal postpone execute ;
 
 : buffer:  create allot ;
-: variable create 1 cells allot ;
+: variable 1 cells buffer: ;
 : constant create , does> @ ;
 : value    constant ;
 : to       ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm

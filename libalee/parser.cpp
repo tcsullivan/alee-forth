@@ -111,12 +111,12 @@ int Parser::parseNumber(State& state, Word word)
     if (state.compiling()) {
         auto ins = CoreWords::findi("_lit");
 
-        //if (l >= 0 && l < 0xFF) {
-        //    state.dict.add(ins | ((l + 1) << 8));
-        //} else {
+        if (value >= 0 && value < static_cast<Cell>(Dictionary::Begin - CoreWords::WordCount)) {
+            state.dict.add(value + CoreWords::WordCount);
+        } else {
             state.dict.add(ins);
             state.dict.add(value);
-        //}
+        }
     } else {
         state.push(value);
     }

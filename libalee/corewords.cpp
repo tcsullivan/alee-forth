@@ -60,14 +60,14 @@ void CoreWords::run(unsigned int index, State& state)
     DoubleCell dcell;
 
 execute:
-    if (/*(index & 1) == 0 &&*/ index >= WordCount) {
+    if (index >= Dictionary::Begin) {
         // must be calling a defined subroutine
         state.pushr(state.ip);
         state.ip = index;
         return;
-    } else switch (index & 0x1F) {
+    } else switch (index) {
     case 0: // _lit
-        state.push(/*(index & 0xFF00) ? ((Addr)index >> 8u) - 1 :*/ state.beyondip());
+        state.push(state.beyondip());
         break;
     case 1: // drop
         state.pop();
@@ -205,6 +205,9 @@ execute:
         break;
     case 31: // _in
         state.input(state);
+        break;
+    default:
+        state.push(index - WordCount);
         break;
     }
 
