@@ -48,8 +48,6 @@
 : over     1 pick ;
 : rot      >r swap r> swap ;
 : -rot     rot rot ;
-: nip      swap drop ;
-: tuck     swap over ;
 
 : 2drop    drop drop ;
 : 2dup     over over ;
@@ -63,11 +61,9 @@
 : chars    ;
 
 : decimal  10 base ! ;
-: hex      16 base ! ;
 
 : 2r>      ['] r> , ['] r> , ['] swap , ; imm
 : 2>r      ['] swap , ['] >r , ['] >r , ; imm
-: 2r@      ['] r> , ['] r> , ['] 2dup , ['] >r , ['] >r , ['] swap , ; imm
 : r@       ['] r> , ['] dup , ['] >r , ; imm
 
 : 2!       swap over ! cell+ ! ;
@@ -78,19 +74,13 @@
 : <=       2dup < >r = r> | ;
 : >        swap < ;
 : <>       = 0= ;
-: 0<>      0= 0= ;
-: 0>       0 > ;
 
 : begin    0 here ; imm
 : while    swap 1+ swap postpone if -rot ; imm
 : repeat   ['] _jmp , , if postpone then then ; imm
 : until    ['] _jmp0 , , drop ; imm
-: again    postpone repeat ; imm
 
 : do       ['] _lit , here 0 , ['] >r , postpone 2>r here ; imm
-: ?do      ['] 2dup , ['] _lit , here 0 , ['] >r , ['] = , postpone if
-           ['] 2drop , postpone 2r> ['] drop , ['] >r , ['] exit ,
-           postpone then postpone 2>r here ; imm
 : unloop   postpone 2r> ['] 2drop , ['] r> , ['] drop , ; imm
 : leave    postpone 2r> ['] 2drop , postpone 2r>
            ['] drop , ['] >r , ['] exit , ; imm
@@ -106,8 +96,8 @@
 : j        postpone 2r> ['] r> , postpone r@ ['] swap ,
            ['] >r , ['] -rot , postpone 2>r ; imm
 
-: align    here 1 cells 1- tuck & if 1 cells swap - allot else drop then ;
-: aligned  dup 1 cells 1- tuck & if 1 cells swap - + else drop then ;
+: align    here 1 cells 1- swap over & if 1 cells swap - allot else drop then ;
+: aligned  dup 1 cells 1- swap over & if 1 cells swap - + else drop then ;
 
 : and      & ;
 : or       | ;
@@ -137,8 +127,8 @@
 
 : negate   -1 * ;
 : abs      dup 0< if negate then ;
-: min      2dup <= if drop else nip then ;
-: max      2dup <= if nip else drop then ;
+: min      2dup <= if drop else swap drop then ;
+: max      2dup <= if swap drop else drop then ;
 
 : source   _source @ 0 begin 2dup + c@ while char+ repeat ;
 : key      _source @ >in @ +
@@ -147,15 +137,13 @@
 : key?     _source @ >in @ + c@ 0 <> ;
 : word     here dup >r char+ >r
            begin key? if key 2dup <> else 0 0 then while
-           r> tuck c! char+ >r repeat
-           2drop r> r> tuck - 1- over c! ;
+           r> swap over c! char+ >r repeat
+           2drop r> r> swap over - 1- over c! ;
 : count    dup char+ swap c@ ;
 : char     bl word char+ c@ ;
 : [char]   char postpone literal ; imm
 
 : (        begin [char] ) key <> while repeat ; imm
-: \        _source @ >in @ +
-           begin dup c@ while 0 over c! char+ repeat drop ; imm
 
 : type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
 : s"       state @ if ['] _jmp , here 0 , then
@@ -164,20 +152,13 @@
            dup cell+ allot
            rot here swap !
            swap postpone literal postpone literal ; imm
-: c"       state @ if ['] _jmp , here 0 , then
-           [char] " word
-           state @ 0= if exit then
-           dup count nip allot
-           here rot !
-           postpone literal ; imm
 : ."       postpone s" state @ if ['] type , else type then ; imm
-: .(       [char] ) word count type ; imm
 
 : create   align here
            1 cells 1 chars - allot
-           bl word count nip
+           bl word count swap drop
            1 chars allot
-           tuck over ! swap allot align
+           swap over over ! swap allot align
            ['] _lit , here 3 cells + , ['] exit dup , ,
            dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
 : _does>   _latest @ dup @ 31 & + cell+ aligned 2 cells +
@@ -186,21 +167,9 @@
 : does>    ['] _jmp , here 2 cells + dup , 2 cells + ,
            ['] _does> , ['] exit , ; imm
 : >body    cell+ @ ;
-: compile, postpone literal postpone execute ;
 
-: buffer:  create allot ;
-: variable 1 cells buffer: ;
+: variable create 1 cells allot ;
 : constant create , does> @ ;
-: value    constant ;
-: to       ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm
-: defer    create does> @ execute ;
-: defer@   >body @ ;
-: defer!   >body ! ;
-: is       state @ if postpone ['] postpone defer! else ' defer! then ; imm
-: action-of state @ if postpone ['] postpone defer@ else ' defer@ then ; imm
-
--1 constant true
-0 constant false
 
 : quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
 : abort    begin depth 0 > while drop repeat quit ;
@@ -219,26 +188,16 @@
 : fill     -rot begin dup 0 > while
            >r 2dup c! char+ r> 1- repeat
            2drop drop ;
-: erase    begin dup 0 > while swap 0 over ! 1+ swap 1- repeat ;
-: roll     dup if swap >r 1- recurse r> swap exit then drop ;
 
-: environment? 2drop false ;
+: environment? 2drop 1 0= ;
 
 : accept   over >r begin dup 0 > while
            key dup 32 < if 2drop 0
-           else dup emit rot 2dup c! char+ nip swap 1- then
+           else dup emit rot 2dup c! char+ swap drop swap 1- then
            repeat drop r> - 1 chars / ;
 
-: marker   create _latest @ , here , does>
-           dup @ _latest ! cell+ @ here swap - allot ;
 : :noname  0 , here ] ;
 
 : evaluate _source @ >r _sourceu @ >r >in @ >r
            0 >in ! _sourceu ! _source ! 5 sys
            r> >in ! r> _sourceu ! r> _source ! ;
-
-: case     ['] _lit , 1 here 0 , ['] drop , ; imm
-: of       ['] over , ['] = , postpone if ; imm
-: endof    ['] _jmp , here >r 0 , postpone then
-           swap 1+ swap r> tuck ! ; imm
-: endcase  swap 0 do dup @ swap here swap ! loop drop ['] drop , ; imm

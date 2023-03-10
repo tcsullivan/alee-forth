@@ -32,7 +32,7 @@ cppcheck:
              libalee alee*.cpp *dict.hpp
 
 test: standalone
-	echo "\nbye\n" | ./alee-standalone test/tester.fr test/core.fr
+	echo "\nbye\n" | ./alee-standalone core-ext.fth test/tester.fr test/core.fr
 
 $(LIBFILE): $(OBJFILES)
 	$(AR) crs $@ $(OBJFILES)
