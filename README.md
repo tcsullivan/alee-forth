@@ -20,7 +20,6 @@ Running Alee without `core.fth` or `core-ext.fth` passed as arguments will leave
 * Pictured numeric output conversion (e.g. `<# #>`)
 * Words for unsigned integers: `U. U< UM* UM/MOD`
 * `>NUMBER`
-* `FIND`
 
 **Missing** core extensions:  
 ```

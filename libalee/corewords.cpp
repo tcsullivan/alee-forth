@@ -39,9 +39,8 @@ void newdef(State& state, Word word)
     dict.addDefinition(word);
     state.push(addr);
 };
-void tick(State& state)
+void find(State& state, Word word)
 {
-    auto word = getword(state);
     if (auto j = state.dict.find(word); j > 0) {
         state.push(state.dict.getexec(j));
         auto imm = state.dict.read(j) & Dictionary::Immediate;
@@ -165,7 +164,7 @@ execute:
         state.compiling(true);
         break;
     case 23: // tick
-        tick(state);
+        find(state, getword(state));
         break;
     case 24: // execute
         index = state.pop();
@@ -211,6 +210,16 @@ execute:
         state.ip = 0;
         Parser::parseSource(state);
         state.load(st);
+        }
+        break;
+    case 33: // find
+        {
+        const Addr caddr = state.pop();
+        const Word word {
+            static_cast<Addr>(caddr + 1),
+            static_cast<Addr>(caddr + 1 + state.dict.readbyte(caddr))
+        };
+        find(state, word);
         }
         break;
     default:

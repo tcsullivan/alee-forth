@@ -31,7 +31,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 33;
+    constexpr static std::size_t WordCount = 34;
     constexpr static int Semicolon = 26;
 
     /**
@@ -53,7 +53,7 @@ public:
         "<\0&\0|\0^\0"
         "<<\0>>\0:\0_'\0execute\0"
         "exit\0;\0_jmp0\0_jmp\0"
-        "depth\0_rdepth\0_in\0_ev\0";
+        "depth\0_rdepth\0_in\0_ev\0find\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP
