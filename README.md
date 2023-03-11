@@ -18,7 +18,6 @@ Running Alee without `core.fth` or `core-ext.fth` passed as arguments will leave
 
 **Missing** core features:  
 * Pictured numeric output conversion (e.g. `<# #>`)
-* Some words for unsigned integers: `U. U< UM/MOD`
 * `>NUMBER`
 
 **Missing** core extensions:  

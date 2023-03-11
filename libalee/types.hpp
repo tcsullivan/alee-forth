@@ -28,6 +28,7 @@
 using Addr = uint16_t;
 using Cell = int16_t;
 using DoubleCell = int32_t;
+using DoubleAddr = uint32_t; // Only used for um/mod.
 
 struct Dictionary;
 struct State;

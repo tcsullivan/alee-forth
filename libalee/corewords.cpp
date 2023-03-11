@@ -230,6 +230,22 @@ execute:
         state.push(dcell);
         state.push(dcell >> (sizeof(Cell) * 8));
         break;
+    case 35: // u<
+        cell = state.pop();
+        state.top() = static_cast<Addr>(state.top()) <
+                      static_cast<Addr>(cell) ? -1 : 0;
+        break;
+    case 36: // um/mod
+        cell = state.pop();
+        dcell = state.pop();
+        dcell <<= sizeof(Cell) * 8;
+        dcell |= static_cast<Addr>(state.pop());
+
+        state.push(static_cast<DoubleAddr>(dcell) %
+                   static_cast<Addr>(cell));
+        state.push(static_cast<DoubleAddr>(dcell) /
+                   static_cast<Addr>(cell));
+        break;
     default:
         state.push(index - WordCount);
         break;
