@@ -42,7 +42,7 @@ core.fth.h: alee.dat
 	sed -i "s/unsigned /static const &/" $@
 
 alee.dat: alee forth/core.fth
-	echo "2 sys" | ./alee forth/core.fth
+	echo "3 sys" | ./alee forth/core.fth
 
 clean: clean-lib
 	rm -f alee alee-standalone msp430/alee-msp430

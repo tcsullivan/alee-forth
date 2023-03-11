@@ -222,6 +222,14 @@ execute:
         find(state, word);
         }
         break;
+    case 34: // um*
+        cell = state.pop();
+        dcell = static_cast<DoubleCell>(
+            static_cast<Addr>(state.pop()) *
+            static_cast<Addr>(cell));
+        state.push(dcell);
+        state.push(dcell >> (sizeof(Cell) * 8));
+        break;
     default:
         state.push(index - WordCount);
         break;

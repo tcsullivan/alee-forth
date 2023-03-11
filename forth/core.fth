@@ -7,8 +7,8 @@
 : cells    2 * ;
 
 : .        0 sys ;
-: emit     1 sys ;
-: u.       4 sys ;
+: u.       1 sys ;
+: emit     2 sys ;
 
 : 1+       1 + ;
 : 1-       1 - ;

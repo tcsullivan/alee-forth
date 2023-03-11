@@ -29,7 +29,7 @@ static char strbuf[32];
 static void readchar(State& state);
 static void serput(int c);
 static void serputs(const char *s);
-static void printint(int n, char *buf);
+static void printint(DoubleCell n, char *buf);
 
 int main()
 {
@@ -118,7 +118,7 @@ void serputs(const char *s)
         serput(*s++);
 }
 
-void printint(int n, char *buf)
+void printint(DoubleCell n, char *buf)
 {
     char *ptr = buf;
     bool neg = n < 0;
@@ -146,13 +146,16 @@ void user_sys(State& state)
         printint(state.pop(), strbuf);
         break;
     case 1:
-        serput(state.pop());
+        printint(static_cast<Addr>(state.pop()), strbuf);
         break;
     case 2:
+        serput(state.pop());
+        break;
+    case 3:
         { auto addr = state.pop();
           *reinterpret_cast<uint8_t *>(addr) = state.pop(); }
         break;
-    case 3:
+    case 4:
         state.push(*reinterpret_cast<uint8_t *>(state.pop()));
         break;
     default:

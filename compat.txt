@@ -119,9 +119,9 @@ yes 6.1.2250 STATE
 yes 6.1.2260 SWAP
 yes 6.1.2270 THEN
 yes 6.1.2310 TYPE
-    6.1.2320 U.
+yes 6.1.2320 U.
     6.1.2340 U<
-    6.1.2360 UM*
+yes 6.1.2360 UM*
     6.1.2370 UM/MOD
 yes 6.1.2380 UNLOOP
 yes 6.1.2390 UNTIL

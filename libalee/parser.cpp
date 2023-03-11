@@ -95,7 +95,7 @@ Error Parser::parseNumber(State& state, Word word)
             result += c - '0';
         } else if (isalpha(c) && base > 10) {
             result *= base;
-            result += 10 + (c > 'a' ? c - 'a' : c - 'A');
+            result += 10 + c - (isupper(c) ? 'A' : 'a');
         } else {
             return Error::noword;
         }
