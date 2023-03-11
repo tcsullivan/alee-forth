@@ -34,9 +34,8 @@ class State
 public:
     Addr ip = 0;
     Dictionary& dict;
-    void (*input)(State&);
-
-    std::jmp_buf jmpbuf = {};
+    void (*input)(State&); // User-provided function to collect "stdin" input.
+    std::jmp_buf jmpbuf = {}; // Used when catching execution errors.
 
     constexpr State(Dictionary& d, void (*i)(State&)):
         dict(d), input(i) {}
@@ -44,10 +43,29 @@ public:
     bool compiling() const;
     void compiling(bool);
 
+    /**
+     * Saves execution state so that a new execution can begin.
+     * Used for EVALUATE.
+     */
     std::pair<Addr, std::jmp_buf> save();
+
+    /**
+     * Reloads the given execution state.
+     */
     void load(const std::pair<Addr, std::jmp_buf>&);
 
+    /**
+     * Begins execution at the given execution token.
+     * If the token is a CoreWord, this function exits after its execution.
+     * Otherwise, execution continues until the word's execution completes.
+     * Encountering an error will cause this function to exit immediately.
+     */
     Error execute(Addr);
+
+    /**
+     * Clears the data and return stacks, sets ip to zero, and clears the
+     * compiling flag.
+     */
     void reset();
 
     std::size_t size() const noexcept;
@@ -63,11 +81,6 @@ public:
         if (dsp == dstack)
             std::longjmp(jmpbuf, static_cast<int>(Error::pop));
         return *--dsp;
-    }
-
-    inline Cell beyondip() {
-        ip += sizeof(Cell);
-        return dict.read(ip);
     }
 
     inline void pushr(Cell value) {
@@ -94,12 +107,17 @@ public:
         return *(dsp - i - 1);
     }
 
+    // Advances the instruction pointer and returns that cell's contents.
+    inline Cell beyondip() {
+        ip += sizeof(Cell);
+        return dict.read(ip);
+    }
+
 private:
     Cell dstack[DataStackSize] = {};
     Cell rstack[ReturnStackSize] = {};
     Cell *dsp = dstack;
     Cell *rsp = rstack;
-
 };
 
 #endif // ALEEFORTH_STATE_HPP

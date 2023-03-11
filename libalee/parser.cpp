@@ -65,7 +65,7 @@ Error Parser::parseWord(State& state, Word word)
         else
             imm = ins == CoreWords::Semicolon;
     } else {
-        imm = state.dict.read(ins) & CoreWords::Immediate;
+        imm = state.dict.read(ins) & Dictionary::Immediate;
         ins = state.dict.getexec(ins);
     }
 

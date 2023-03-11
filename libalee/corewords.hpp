@@ -22,19 +22,28 @@
 #include "types.hpp"
 #include "state.hpp"
 
+/**
+ * To be implemented by the user, this function is called when the `sys` word
+ * is executed.
+ */
 void user_sys(State&);
 
 class CoreWords
 {
 public:
     constexpr static std::size_t WordCount = 33;
-
-    constexpr static Cell Immediate = (1 << 5);
-
     constexpr static int Semicolon = 26;
 
+    /**
+     * Finds execution token that corresponds to the given word.
+     * Returns -1 if not found.
+     */
     static int findi(const char *);
     static int findi(State&, Word);
+
+    /**
+     * Executes the given CoreWord execution token using the given state.
+     */
     static void run(unsigned int, State&);
 
     constexpr static char wordsarr[] =

@@ -26,11 +26,29 @@
 class Parser
 {
 public:
+    /**
+     * Parses (and evaluates) the given string using the given state.
+     * The string is stored in the state's input buffer, then parseSource()
+     * works through that using parseWord(). parseWord() will compile or
+     * execute as necessary.
+     */
     static Error parse(State&, const char *);
+
+    /**
+     * Parses (and evaluates) through the words stored in the state's input
+     * buffer.
+     */
     static Error parseSource(State&);
 
 private:
+    /**
+     * Parses the given word using the given state.
+     */
     static Error parseWord(State&, Word);
+
+    /**
+     * Attempts to parse the given word into a number.
+     */
     static Error parseNumber(State&, Word);
 };
 

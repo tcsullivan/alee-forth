@@ -22,15 +22,17 @@
 #include <cstdint>
 #include <iterator>
 
-struct Dictionary;
-struct State;
-
+/**
+ * Configure the below three types to match your platform.
+ */
 using Addr = uint16_t;
 using Cell = int16_t;
 using DoubleCell = int32_t;
-using Func = void (*)(State&);
 
-constexpr unsigned int MaxCellNumberChars = 6; // -32768
+struct Dictionary;
+struct State;
+
+using Func = void (*)(State&);
 
 enum class Error : int {
     none = 0,
@@ -44,6 +46,9 @@ enum class Error : int {
     noword
 };
 
+/**
+ * Stores the start and (past-the-)end addresses of a dictionary's word.
+ */
 struct Word
 {
     struct iterator;
@@ -51,9 +56,11 @@ struct Word
     Addr start = 0;
     Addr wend = 0;
 
+    unsigned size() const noexcept;
+
+    // Iterators provided for std::equal.
     iterator begin(const Dictionary *);
     iterator end(const Dictionary *);
-    unsigned size() const noexcept;
 
     struct iterator {
         using iterator_category = std::input_iterator_tag;

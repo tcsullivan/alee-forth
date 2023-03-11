@@ -19,6 +19,10 @@
 #ifndef ALEEFORTH_CTYPE_HPP
 #define ALEEFORTH_CTYPE_HPP
 
+/**
+ * We implement our own character comparison functions to keep them lean.
+ */
+
 #include <cstdint>
 
 bool isspace(uint8_t);

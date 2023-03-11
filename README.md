@@ -17,7 +17,7 @@ Alee implements a large majority of the "core" and "core extension" [word sets](
 Running Alee without `core.fth` or `core-ext.fth` passed as arguments will leave you with a minimal word set. The `standalone` target will package the `core.fth` dictionary into the program.
 
 **Missing** core features:  
-* Pictured numeric output conversion `<# #>`
+* Pictured numeric output conversion (e.g. `<# #>`)
 * Words for unsigned integers: `U. U< UM* UM/MOD`
 * `>NUMBER`
 * `FIND`
@@ -31,12 +31,14 @@ Alee aims for compliance with common Forth standards like Forth 2012 and ANS For
 
 ## Building
 
-Alee requires `make` and a C++17-compatible compiler.
+Alee requires `make` and a C++17-compatible compiler. Simply running `make` will produce the `libalee.a` library and a REPL binary named `alee`. Note that this binary has no built-in libraries; these can be passed in by calling `./alee core.fth core-ext.fth`.
 
-To compile, simply run the `make` command. This will produce a library, `libalee.a`, as well as a REPL binary named `alee`.  
-A `small` target exists that optimizes the build for size.  
-A `fast` target exists that optimizes for maximum performance on the host system.
-The `standalone` target will produce a `alee-standalone` binary that has the core dictionary built in.
-The `msp430` target builds Alee for the [MSP430G2553](https://www.ti.com/product/MSP430G2553) microcontroller. This target requires `standalone` for the core dictionary.
+There are other build targets:
 
-Configurable constants and types are defined either in the Makefile or in `types.hpp`.
+* `small`: Optimize for minimal binary size.
+* `fast`: Optimize for maximum performance on the host system.
+* `standalone`: Builds the core dictionary (`core.fth`) into the binary.
+* `msp430`: Builds a binary for the [MSP430G2553](https://www.ti.com/product/MSP430G2553) microcontroller. The `standalone` target must be built first for the core dictionary.
+
+If building for a new platform, see `Makefile`, `types.hpp`, and `state.hpp` for available configuration options.
+

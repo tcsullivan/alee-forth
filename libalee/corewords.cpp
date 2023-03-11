@@ -44,7 +44,7 @@ void tick(State& state)
     auto word = getword(state);
     if (auto j = state.dict.find(word); j > 0) {
         state.push(state.dict.getexec(j));
-        auto imm = state.dict.read(j) & CoreWords::Immediate;
+        auto imm = state.dict.read(j) & Dictionary::Immediate;
         state.push(imm ? 1 : -1);
     } else if (auto i = CoreWords::findi(state, word); i >= 0) {
         state.push(i);
