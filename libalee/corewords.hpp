@@ -27,7 +27,7 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 32;
+    constexpr static std::size_t WordCount = 33;
 
     constexpr static Cell Immediate = (1 << 5);
 
@@ -44,7 +44,7 @@ public:
         "<\0&\0|\0^\0"
         "<<\0>>\0:\0_'\0execute\0"
         "exit\0;\0_jmp0\0_jmp\0"
-        "depth\0_rdepth\0_in\0";
+        "depth\0_rdepth\0_in\0_ev\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

@@ -32,6 +32,18 @@ using Func = void (*)(State&);
 
 constexpr unsigned int MaxCellNumberChars = 6; // -32768
 
+enum class Error : int {
+    none = 0,
+    push,
+    pop,
+    pushr,
+    popr,
+    top,
+    pick,
+    exit,
+    noword
+};
+
 struct Word
 {
     struct iterator;

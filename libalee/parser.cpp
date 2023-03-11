@@ -22,7 +22,7 @@
 
 #include <cstring>
 
-int Parser::parse(State& state, const char *str)
+Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
     state.dict.write(addr, 0);
@@ -38,20 +38,20 @@ int Parser::parse(State& state, const char *str)
     return parseSource(state);
 }
 
-int Parser::parseSource(State& state)
+Error Parser::parseSource(State& state)
 {
     auto word = state.dict.input();
     while (word.size() > 0) {
-        if (auto ret = parseWord(state, word); ret)
+        if (auto ret = parseWord(state, word); ret != Error::none)
             return ret;
 
         word = state.dict.input();
     }
 
-    return 0;
+    return Error::none;
 }
 
-int Parser::parseWord(State& state, Word word)
+Error Parser::parseWord(State& state, Word word)
 {
     int ins, imm;
 
@@ -71,13 +71,13 @@ int Parser::parseWord(State& state, Word word)
 
     if (state.compiling() && !imm)
         state.dict.add(ins);
-    else if (auto stat = state.execute(ins); stat != State::Error::none)
-        return static_cast<int>(stat);
+    else if (auto stat = state.execute(ins); stat != Error::none)
+        return stat;
 
-    return 0;
+    return Error::none;
 }
 
-int Parser::parseNumber(State& state, Word word)
+Error Parser::parseNumber(State& state, Word word)
 {
     const auto base = state.dict.read(Dictionary::Base);
     DoubleCell result = 0;
@@ -97,7 +97,7 @@ int Parser::parseNumber(State& state, Word word)
             result *= base;
             result += 10 + (c > 'a' ? c - 'a' : c - 'A');
         } else {
-            return UnknownWord;
+            return Error::noword;
         }
 
         if (++i < word.wend)
@@ -121,6 +121,6 @@ int Parser::parseNumber(State& state, Word word)
         state.push(value);
     }
 
-    return 0;
+    return Error::none;
 }
 

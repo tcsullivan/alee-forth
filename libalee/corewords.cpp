@@ -17,6 +17,7 @@
  */
 
 #include "corewords.hpp"
+#include "parser.hpp"
 
 #include <cstring>
 #include <utility>
@@ -171,10 +172,8 @@ execute:
         goto execute;
     case 25: // exit
         state.ip = state.popr();
-        if (state.ip == 0) {
-            std::longjmp(state.jmpbuf,
-                static_cast<int>(State::Error::exit));
-        }
+        if (state.ip == 0)
+            std::longjmp(state.jmpbuf, static_cast<int>(Error::exit));
         break;
     case 26: // semic
         {
@@ -205,6 +204,14 @@ execute:
         break;
     case 31: // _in
         state.input(state);
+        break;
+    case 32: // _ex
+        {
+        const auto st = state.save();
+        state.ip = 0;
+        Parser::parseSource(state);
+        state.load(st);
+        }
         break;
     default:
         state.push(index - WordCount);

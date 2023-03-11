@@ -24,6 +24,7 @@
 
 #include <csetjmp>
 #include <cstddef>
+#include <tuple>
 
 constexpr unsigned DataStackSize = 16;
 constexpr unsigned ReturnStackSize = 16;
@@ -31,17 +32,6 @@ constexpr unsigned ReturnStackSize = 16;
 class State
 {
 public:
-    enum class Error : int {
-        none = 0,
-        push,
-        pop,
-        pushr,
-        popr,
-        top,
-        pick,
-        exit
-    };
-
     Addr ip = 0;
     Dictionary& dict;
     void (*input)(State&);
@@ -54,7 +44,11 @@ public:
     bool compiling() const;
     void compiling(bool);
 
+    std::pair<Addr, std::jmp_buf> save();
+    void load(const std::pair<Addr, std::jmp_buf>&);
+
     Error execute(Addr);
+    void reset();
 
     std::size_t size() const noexcept;
     std::size_t rsize() const noexcept;

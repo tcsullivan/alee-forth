@@ -66,14 +66,15 @@ int main()
 
                 serputs("\n\r");
 
-                if (auto r = Parser::parse(state, strbuf); r == 0) {
+                if (auto r = Parser::parse(state, strbuf); r == Error::none) {
                     serputs(state.compiling() ? " compiled" : " ok");
                 } else {
                     switch (r) {
-                    case Parser::UnknownWord:
+                    case Error::noword:
                         serputs("unknown word...");
                         break;
                     default:
+                        serputs("error...");
                         break;
                     }
                 }

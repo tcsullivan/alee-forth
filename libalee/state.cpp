@@ -19,6 +19,7 @@
 #include "corewords.hpp"
 #include "state.hpp"
 
+#include <cstring>
 #include <iterator>
 
 bool State::compiling() const
@@ -31,11 +32,25 @@ void State::compiling(bool yes)
     dict.write(Dictionary::Compiling, yes);
 }
 
-State::Error State::execute(Addr addr)
+std::pair<Addr, std::jmp_buf> State::save()
 {
-    auto stat = static_cast<State::Error>(setjmp(jmpbuf));
+    std::pair<Addr, std::jmp_buf> st;
+    st.first = ip;
+    std::memcpy(st.second, jmpbuf, sizeof(std::jmp_buf));
+    return st;
+}
 
-    if (stat == State::Error::none) {
+void State::load(const std::pair<Addr, std::jmp_buf>& st)
+{
+    ip = st.first;
+    std::memcpy(jmpbuf, st.second, sizeof(std::jmp_buf));
+}
+
+Error State::execute(Addr addr)
+{
+    auto stat = static_cast<Error>(setjmp(jmpbuf));
+
+    if (stat == Error::none) {
         CoreWords::run(addr, *this);
 
         if (ip >= Dictionary::Begin) {
@@ -46,11 +61,22 @@ State::Error State::execute(Addr addr)
             // addr was a CoreWord, all done now.
             ip = 0;
         }
-    } else if (stat == State::Error::exit) {
-        stat = State::Error::none;
+    } else if (stat == Error::exit) {
+        stat = Error::none;
     }
 
     return stat;
+}
+
+void State::reset()
+{
+    while (size())
+        pop();
+    while (rsize())
+        popr();
+
+    dict.write(Dictionary::Compiling, 0);
+    ip = 0;
 }
 
 std::size_t State::size() const noexcept

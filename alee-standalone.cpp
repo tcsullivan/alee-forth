@@ -79,7 +79,6 @@ static void load(State& state)
         state.dict.writebyte(i++, file.get());
 }
 
-#include <cstring>
 void user_sys(State& state)
 {
     char buf[32] = {0};
@@ -107,55 +106,41 @@ void user_sys(State& state)
         std::cout << buf << ' ';
         }
         break;
-    case 5: // eval
-        {
-        auto oldip = state.ip;
-        std::jmp_buf oldjb;
-        memcpy(oldjb, state.jmpbuf, sizeof(std::jmp_buf));
-        state.ip = 0;
-        Parser::parseSource(state);
-        memcpy(state.jmpbuf, oldjb, sizeof(std::jmp_buf));
-        state.ip = oldip;
-        }
+    default:
         break;
     }
 }
 
 void parseLine(State& state, const std::string& line)
 {
-    if (auto r = Parser::parse(state, line.c_str()); r == 0) {
+    if (auto r = Parser::parse(state, line.c_str()); r == Error::none) {
         if (okay)
-            std::cout << (state.compiling() ? "compiled" : "ok") << std::endl;
+            std::cout << (state.compiling() ? " compiled" : " ok") << std::endl;
     } else {
         switch (r) {
-        case Parser::UnknownWord:
+        case Error::noword:
             std::cout << "word not found in: " << line << std::endl;
             break;
-        case static_cast<int>(State::Error::push):
+        case Error::push:
             std::cout << "stack overflow" << std::endl;
             break;
-        case static_cast<int>(State::Error::pushr):
+        case Error::pushr:
             std::cout << "return stack overflow" << std::endl;
             break;
-        case static_cast<int>(State::Error::popr):
+        case Error::popr:
             std::cout << "return stack underflow" << std::endl;
             break;
-        case static_cast<int>(State::Error::pop):
-        case static_cast<int>(State::Error::top):
-        case static_cast<int>(State::Error::pick):
+        case Error::pop:
+        case Error::top:
+        case Error::pick:
             std::cout << "stack underflow" << std::endl;
             break;
         default:
-            std::cout << "error: " << r << std::endl;
+            std::cout << "unknown error" << std::endl;
             break;
         }
 
-        while (state.size())
-            state.pop();
-        while (state.rsize())
-            state.popr();
-        state.dict.write(Dictionary::Compiling, 0);
-        state.ip = 0;
+        state.reset();
     }
 }
 
