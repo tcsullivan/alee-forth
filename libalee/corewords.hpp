@@ -54,7 +54,7 @@ public:
         "<<\0>>\0:\0_'\0execute\0"
         "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0_in\0_ev\0find\0"
-        "um*\0u<\0um/mod\0";
+        "_uma\0u<\0um/mod\0";
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

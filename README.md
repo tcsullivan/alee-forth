@@ -18,7 +18,6 @@ Running Alee without `core.fth` or `core-ext.fth` passed as arguments will leave
 
 **Missing** core features:  
 * Pictured numeric output conversion (e.g. `<# #>`)
-* `>NUMBER`
 
 **Missing** core extensions:  
 ```

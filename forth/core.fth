@@ -2,6 +2,7 @@
 : s>d      1 m* ;
 : /        >r s>d r> _/ ;
 : %        >r s>d r> _% ;
+: um*      0 swap 0 _uma ;
 
 : cell+    2 + ;
 : cells    2 * ;
@@ -201,3 +202,18 @@
 : evaluate _source @ >r _sourceu @ >r >in @ >r
            0 >in ! _sourceu ! _source ! _ev
            r> >in ! r> _sourceu ! r> _source ! ;
+
+: _isdigit ( ch -- bch )
+  dup [char] 0 over <= swap [char] 0 base @ 10 min 1- + <= and
+  if drop [char] 0 exit then
+  base @ 11 < if drop 0 exit then
+  base @ 36 min 10 - >r
+  dup [char] a over <= swap [char] a r@ + < and
+  if r> 2drop [char] a 10 - exit then
+  [char] A over <= swap [char] A r> + < and
+  if [char] A 10 - else 0 then ;
+: >number  begin dup 0 >
+           dup if drop over c@ _isdigit then while
+           >r dup c@ swap >r base @ swap
+           dup _isdigit - _uma
+           r> char+ r> 1- repeat ;

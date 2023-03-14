@@ -222,13 +222,18 @@ execute:
         find(state, word);
         }
         break;
-    case 34: // um*
+    case 34: // _uma
+        {
+        const auto plus = state.pop();
         cell = state.pop();
-        dcell = static_cast<DoubleCell>(
-            static_cast<Addr>(state.pop()) *
-            static_cast<Addr>(cell));
+        dcell = state.pop();
+        dcell <<= sizeof(Cell) * 8;
+        dcell |= static_cast<Addr>(state.pop());
+        dcell *= static_cast<Addr>(cell);
+        dcell += static_cast<Addr>(plus);
         state.push(dcell);
         state.push(dcell >> (sizeof(Cell) * 8));
+        }
         break;
     case 35: // u<
         cell = state.pop();

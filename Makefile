@@ -21,11 +21,11 @@ small: alee
 fast: CXXFLAGS += -O3 -march=native -mtune=native -flto
 fast: alee
 
-standalone: core.fth.h alee-standalone
+standalone: alee-standalone
 
 alee: $(LIBFILE)
 msp430/alee-msp430: $(LIBFILE)
-alee-standalone: $(LIBFILE)
+alee-standalone: core.fth.h $(LIBFILE)
 
 cppcheck:
 	cppcheck --enable=warning,style,information --disable=missingInclude \

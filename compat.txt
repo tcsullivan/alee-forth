@@ -38,7 +38,7 @@ yes 6.1.0530 =
 yes 6.1.0540 >
 yes 6.1.0550 >BODY
 yes 6.1.0560 >IN
-    6.1.0570 >NUMBER
+yes 6.1.0570 >NUMBER
 yes 6.1.0580 >R
 yes 6.1.0630 ?DUP
 yes 6.1.0650 @
