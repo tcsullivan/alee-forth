@@ -81,11 +81,11 @@ void State::reset()
 
 std::size_t State::size() const noexcept
 {
-    return std::distance(dstack, static_cast<const Cell *>(dsp));
+    return dsp - dstack;
 }
 
 std::size_t State::rsize() const noexcept
 {
-    return std::distance(rstack, static_cast<const Cell *>(rsp));
+    return rsp - rstack;
 }
 

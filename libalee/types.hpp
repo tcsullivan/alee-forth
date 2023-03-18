@@ -52,14 +52,20 @@ enum class Error : int {
  */
 struct Word
 {
-    struct iterator;
+    Addr start;
+    Addr wend;
 
-    Addr start = 0;
-    Addr wend = 0;
+    constexpr explicit Word(Addr s = 0, Addr e = 0):
+        start(s), wend(e) {}
 
-    unsigned size() const noexcept;
+    static constexpr Word fromLength(Addr s, Addr l) {
+        return Word(s, s + l);
+    }
+
+    Addr size() const noexcept;
 
     // Iterators provided for std::equal.
+    struct iterator;
     iterator begin(const Dictionary *);
     iterator end(const Dictionary *);
 

@@ -54,10 +54,24 @@ void find(State& state, Word word)
     }
 }
 
-void CoreWords::run(unsigned int index, State& state)
+void CoreWords::run(Cell ins, State& state)
 {
     Cell cell;
     DoubleCell dcell;
+
+    Addr index = ins;
+
+    auto popd = [](State& s) {
+        DoubleCell dcell = s.pop();
+        dcell <<= sizeof(Cell) * 8;
+        dcell |= static_cast<Addr>(s.pop());
+        return dcell;
+    };
+
+    auto pushd = [](State& s, DoubleCell d) {
+        s.push(static_cast<Cell>(d));
+        s.push(static_cast<Cell>(d >> (sizeof(Cell) * 8)));
+    };
 
 execute:
     if (index >= Dictionary::Begin) {
@@ -95,22 +109,17 @@ execute:
     case 8: // mul ( n n -- d )
         cell = state.pop();
         dcell = state.pop() * cell;
-        state.push(dcell);
-        state.push(dcell >> (sizeof(Cell) * 8));
+        pushd(state, dcell);
         break;
     case 9: // div ( d n -- n )
         cell = state.pop();
-        dcell = state.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(state.pop());
-        state.push(dcell / cell);
+        dcell = popd(state);
+        state.push(static_cast<Cell>(dcell / cell));
         break;
     case 10: // mod ( d n -- n )
         cell = state.pop();
-        dcell = state.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(state.pop());
-        state.push(dcell % cell);
+        dcell = popd(state);
+        state.push(static_cast<Cell>(dcell % cell));
         break;
     case 11: // peek
         if (state.pop())
@@ -123,7 +132,7 @@ execute:
         if (auto addr = state.pop(); cell)
             state.dict.write(addr, state.pop());
         else
-            state.dict.writebyte(addr, state.pop());
+            state.dict.writebyte(addr, state.pop() & 0xFFu);
         break;
     case 13: // pushr
         state.pushr(state.pop());
@@ -175,16 +184,14 @@ execute:
             std::longjmp(state.jmpbuf, static_cast<int>(Error::exit));
         break;
     case 26: // semic
-        {
         state.dict.add(findi("exit"));
         state.compiling(false);
 
-        auto addr = state.pop();
-        state.dict.write(addr,
-            (state.dict.read(addr) & 0x1F) |
-            ((addr - state.dict.latest()) << 6));
-        state.dict.latest(addr);
-        }
+        cell = state.pop();
+        dcell = (cell - state.dict.latest()) << 6;
+        state.dict.write(cell,
+            (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell));
+        state.dict.latest(cell);
         break;
     case 27: // _jmp0
         if (state.pop()) {
@@ -196,10 +203,10 @@ execute:
         state.ip = state.beyondip();
         return;
     case 29: // depth
-        state.push(state.size());
+        state.push(static_cast<Cell>(state.size()));
         break;
     case 30: // _rdepth
-        state.push(state.rsize());
+        state.push(static_cast<Cell>(state.rsize()));
         break;
     case 31: // _in
         state.input(state);
@@ -213,26 +220,19 @@ execute:
         }
         break;
     case 33: // find
-        {
-        const Addr caddr = state.pop();
-        const Word word {
-            static_cast<Addr>(caddr + 1),
-            static_cast<Addr>(caddr + 1 + state.dict.readbyte(caddr))
-        };
-        find(state, word);
-        }
+        cell = state.pop();
+        find(state,
+             Word::fromLength(static_cast<Addr>(cell + 1),
+                              state.dict.readbyte(cell)));
         break;
     case 34: // _uma
         {
         const auto plus = state.pop();
         cell = state.pop();
-        dcell = state.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(state.pop());
+        dcell = popd(state);
         dcell *= static_cast<Addr>(cell);
         dcell += static_cast<Addr>(plus);
-        state.push(dcell);
-        state.push(dcell >> (sizeof(Cell) * 8));
+        pushd(state, dcell);
         }
         break;
     case 35: // u<
@@ -242,17 +242,17 @@ execute:
         break;
     case 36: // um/mod
         cell = state.pop();
-        dcell = state.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(state.pop());
+        dcell = popd(state);
 
-        state.push(static_cast<DoubleAddr>(dcell) %
-                   static_cast<Addr>(cell));
-        state.push(static_cast<DoubleAddr>(dcell) /
-                   static_cast<Addr>(cell));
+        state.push(static_cast<Cell>(
+            static_cast<DoubleAddr>(dcell) %
+            static_cast<Addr>(cell)));
+        state.push(static_cast<Cell>(
+            static_cast<DoubleAddr>(dcell) /
+            static_cast<Addr>(cell)));
         break;
     default:
-        state.push(index - WordCount);
+        state.push(ins - WordCount);
         break;
     }
 
@@ -260,17 +260,18 @@ execute:
 }
 
 template<typename Iter>
-int findi(Iter it, int size)
+Cell findi(Iter it, std::size_t size)
 {
     auto ptr = CoreWords::wordsarr;
-    int wordsi = 0;
+    Cell wordsi = 0;
 
     while (ptr < CoreWords::wordsarr + sizeof(CoreWords::wordsarr)) {
         auto end = ptr;
         while (*end)
             ++end;
 
-        if (end - ptr == size &&  Dictionary::equal(ptr, end, it))
+        std::size_t wordsize = end - ptr;
+        if (wordsize == size && Dictionary::equal(ptr, end, it))
             return wordsi;
 
         ++wordsi;
@@ -280,12 +281,12 @@ int findi(Iter it, int size)
     return -1;
 }
 
-int CoreWords::findi(const char *word)
+Cell CoreWords::findi(const char *word)
 {
     return ::findi(word, strlen(word));
 }
 
-int CoreWords::findi(State& state, Word word)
+Cell CoreWords::findi(State& state, Word word)
 {
     return ::findi(word.begin(&state.dict), word.size());
 }

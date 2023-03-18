@@ -46,6 +46,10 @@ public:
     virtual void writebyte(Addr addr, uint8_t value) noexcept final {
         dict[addr] = value;
     }
+
+    virtual unsigned long int capacity() const noexcept final {
+        return sizeof(dict);
+    }
 };
 
 #endif // ALEEFORTH_MEMDICT_HPP

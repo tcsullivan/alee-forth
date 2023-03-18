@@ -153,7 +153,7 @@ void user_sys(State& state)
         break;
     case 3:
         { auto addr = state.pop();
-          *reinterpret_cast<uint8_t *>(addr) = state.pop(); }
+          *reinterpret_cast<uint8_t *>(addr) = state.pop() & 0xFFu; }
         break;
     case 4:
         state.push(*reinterpret_cast<uint8_t *>(state.pop()));

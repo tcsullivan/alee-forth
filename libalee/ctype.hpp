@@ -26,16 +26,9 @@
 #include <cstdint>
 
 bool isspace(uint8_t);
-bool isspace(char);
-
 bool isdigit(uint8_t);
-bool isdigit(char);
-
 bool isalpha(uint8_t);
-bool isalpha(char);
-
 bool isupper(uint8_t);
-bool isupper(char);
 
 #endif // ALEEFORTH_CTYPE_HPP
 

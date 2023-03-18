@@ -20,13 +20,16 @@
 #include "ctype.hpp"
 #include "parser.hpp"
 
-#include <cstring>
-
 Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
+
+    Cell len = 0;
+    for (auto ptr = str; *ptr; ++ptr)
+        ++len;
+
     state.dict.write(addr, 0);
-    state.dict.write(Dictionary::SourceLen, std::strlen(str));
+    state.dict.write(Dictionary::SourceLen, len);
 
     addr += sizeof(Cell);
     while (*str)
@@ -53,17 +56,18 @@ Error Parser::parseSource(State& state)
 
 Error Parser::parseWord(State& state, Word word)
 {
-    int ins, imm;
+    bool imm;
+    Addr ins = state.dict.find(word);
 
-    ins = state.dict.find(word);
+    if (ins == 0) {
+        auto cw = CoreWords::findi(state, word);
 
-    if (ins <= 0) {
-        ins = CoreWords::findi(state, word);
-
-        if (ins < 0)
+        if (cw < 0) {
             return parseNumber(state, word);
-        else
+        } else {
+            ins = cw;
             imm = ins == CoreWords::Semicolon;
+        }
     } else {
         imm = state.dict.read(ins) & Dictionary::Immediate;
         ins = state.dict.getexec(ins);
@@ -107,11 +111,12 @@ Error Parser::parseNumber(State& state, Word word)
     if (inv)
         result *= -1;
 
-    Cell value = static_cast<Cell>(result);
+    auto value = static_cast<Cell>(result);
     if (state.compiling()) {
         auto ins = CoreWords::findi("_lit");
 
-        if (value >= 0 && value < static_cast<Cell>(Dictionary::Begin - CoreWords::WordCount)) {
+        const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
+        if (value >= 0 && value < maxlit) {
             state.dict.add(value + CoreWords::WordCount);
         } else {
             state.dict.add(ins);

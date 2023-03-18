@@ -31,20 +31,20 @@ void user_sys(State&);
 class CoreWords
 {
 public:
-    constexpr static std::size_t WordCount = 37;
-    constexpr static int Semicolon = 26;
+    constexpr static Cell WordCount = 37;
+    constexpr static Cell Semicolon = 26;
 
     /**
      * Finds execution token that corresponds to the given word.
      * Returns -1 if not found.
      */
-    static int findi(const char *);
-    static int findi(State&, Word);
+    static Cell findi(const char *);
+    static Cell findi(State&, Word);
 
     /**
      * Executes the given CoreWord execution token using the given state.
      */
-    static void run(unsigned int, State&);
+    static void run(Cell, State&);
 
     constexpr static char wordsarr[] =
         "_lit\0drop\0dup\0swap\0pick\0sys\0"

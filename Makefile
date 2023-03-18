@@ -1,5 +1,5 @@
 CXXFLAGS += -std=c++17 -g3 -ggdb -O0 \
-            -pedantic -Wall -Wextra -Werror -Weffc++ \
+            -pedantic -Wall -Wextra -Werror -Weffc++ -Wconversion \
             -fno-exceptions -fno-threadsafe-statics -fno-rtti #-fstack-usage
 
 CXXFILES := $(wildcard libalee/*.cpp)
@@ -10,6 +10,7 @@ all: alee
 
 msp430: CXX := msp430-elf32-g++
 msp430: AR := msp430-elf32-gcc-ar
+msp430: CXXFLAGS += -I.
 msp430: CXXFLAGS += -Os -mmcu=msp430g2553 -ffunction-sections -fdata-sections
 msp430: CXXFLAGS += -DMEMDICTSIZE=200 -flto
 msp430: LDFLAGS += -L/opt/msp430-elf32/include -Tmsp430/msp430g2553.ld -Wl,-gc-sections

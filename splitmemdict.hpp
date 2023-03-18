@@ -35,6 +35,10 @@ class SplitMemDict : public Dictionary
     uint8_t rwdict[MemDictSize - Dictionary::Begin] = {0};
     uint8_t extra[Dictionary::Begin];
 
+    Addr convertAddress(Addr addr) const noexcept {
+        return addr < RON ? addr : static_cast<Addr>(addr - RON);
+    }
+
 public:
     constexpr explicit SplitMemDict(const uint8_t *rod):
         rodict(rod)
@@ -51,14 +55,12 @@ public:
 
     virtual Cell read(Addr addr) const noexcept final {
         const uint8_t *dict;
-        if (addr < RON) {
+        if (addr < RON)
             dict = addr < Dictionary::Begin ? extra : rodict;
-        } else {
+        else
             dict = rwdict;
-            addr -= RON;
-        }
 
-        return *reinterpret_cast<const Cell *>(dict + addr);
+        return *reinterpret_cast<const Cell *>(dict + convertAddress(addr));
     }
 
     virtual void write(Addr addr, Cell value) noexcept final {
@@ -70,14 +72,12 @@ public:
 
     virtual uint8_t readbyte(Addr addr) const noexcept final {
         const uint8_t *dict;
-        if (addr < RON) {
+        if (addr < RON)
             dict = addr < Dictionary::Begin ? extra : rodict;
-        } else {
+        else
             dict = rwdict;
-            addr -= RON;
-        }
 
-        return dict[addr];
+        return dict[convertAddress(addr)];
     }
 
     virtual void writebyte(Addr addr, uint8_t value) noexcept final {
@@ -85,6 +85,10 @@ public:
             rwdict[addr - RON] = value;
         else if (addr < Dictionary::Begin)
             extra[addr] = value;
+    }
+
+    virtual unsigned long int capacity() const noexcept final {
+        return RON + sizeof(extra) + sizeof(rwdict);
     }
 };
 

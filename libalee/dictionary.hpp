@@ -64,6 +64,7 @@ public:
     virtual void write(Addr, Cell) noexcept = 0;
     virtual uint8_t readbyte(Addr) const noexcept = 0;
     virtual void writebyte(Addr, uint8_t) noexcept = 0;
+    virtual unsigned long int capacity() const noexcept = 0;
 
     /**
      * Does initial dictionary setup, required before use for execution.

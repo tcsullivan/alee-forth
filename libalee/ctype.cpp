@@ -22,31 +22,15 @@ bool isspace(uint8_t c) {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-bool isspace(char c) {
-    return isspace(static_cast<uint8_t>(c));
-}
-
 bool isdigit(uint8_t c) {
     return c >= '0' && c <= '9';
-}
-
-bool isdigit(char c) {
-    return isdigit(static_cast<uint8_t>(c));
 }
 
 bool isalpha(uint8_t c) {
     return isupper(c) || (c >= 'a' && c <= 'z');
 }
 
-bool isalpha(char c) {
-    return isalpha(static_cast<uint8_t>(c));
-}
-
 bool isupper(uint8_t c) {
     return c >= 'A' && c <= 'Z';
-}
-
-bool isupper(char c) {
-    return isupper(static_cast<uint8_t>(c));
 }
 

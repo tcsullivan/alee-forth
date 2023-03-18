@@ -33,7 +33,14 @@ void Dictionary::initialize()
 Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here();
-    here(old + amount);
+    decltype(capacity()) neww = old + amount;
+
+    if (neww < capacity()) {
+        write(Here, static_cast<Addr>(neww));
+    } else {
+        // TODO
+    }
+
     return old;
 }
 
@@ -44,9 +51,11 @@ void Dictionary::add(Cell value) noexcept
 
 Addr Dictionary::aligned(Addr addr) const noexcept
 {
-    auto unaligned = addr & (sizeof(Cell) - sizeof(uint8_t));
-    if (unaligned)
-        addr += sizeof(Cell) - unaligned;
+    Addr unaligned = addr & (sizeof(Cell) - sizeof(uint8_t));
+    if (unaligned) {
+        addr += sizeof(Cell);
+        addr -= unaligned;
+    }
 
     return addr;
 }
@@ -59,7 +68,9 @@ Addr Dictionary::alignhere() noexcept
 
 void Dictionary::addDefinition(Word word) noexcept
 {
-    add(word.size());
+    Cell wsize = word.size();
+    add(wsize);
+
     for (auto w = word.start; w != word.wend; ++w)
         writebyte(allot(1), readbyte(w));
 
@@ -70,12 +81,11 @@ Addr Dictionary::find(Word word) noexcept
 {
     Addr lt = latest();
     for (;;) {
-        const auto l = static_cast<Addr>(read(lt));
+        const Addr l = read(lt);
         const Addr len = l & 0x1F;
-        const Word lw {
-            static_cast<Addr>(lt + sizeof(Cell)),
-            static_cast<Addr>(lt + sizeof(Cell) + len)
-        };
+        Word lw;
+        lw.start = lt + sizeof(Cell);
+        lw.wend = lw.start + len;
 
         if (equal(word, lw))
             return lt;
@@ -90,20 +100,21 @@ Addr Dictionary::find(Word word) noexcept
 
 Addr Dictionary::getexec(Addr addr) noexcept
 {
-    const auto len = read(addr) & 0x1F;
-    return aligned(addr + sizeof(Cell) + len);
+    const Addr len = read(addr) & 0x1Fu;
+    addr += sizeof(Cell);
+    addr += len;
+    return aligned(addr);
 }
 
 Word Dictionary::input() noexcept
 {
-    const auto src = read(Dictionary::Source);
-    const auto end = read(Dictionary::SourceLen);
-    auto idx = read(Dictionary::Input);
+    const Addr src = read(Dictionary::Source);
+    const Addr end = read(Dictionary::SourceLen);
+    uint8_t idx = read(Dictionary::Input) & 0xFFu;
 
-    Word word {
-        static_cast<Addr>(src + idx),
-        static_cast<Addr>(src + idx)
-    };
+    Word word;
+    word.start = src + idx;
+    word.wend = word.start;
 
     while (idx < end) {
         auto ch = readbyte(word.wend);
@@ -121,7 +132,7 @@ Word Dictionary::input() noexcept
         ++idx;
     }
 
-    writebyte(Dictionary::Input, idx + 1);
+    writebyte(Dictionary::Input, ++idx);
     return word;
 }
 

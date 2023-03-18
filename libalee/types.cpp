@@ -19,7 +19,7 @@
 #include "dictionary.hpp"
 #include "types.hpp"
 
-unsigned Word::size() const noexcept
+Addr Word::size() const noexcept
 {
     return wend - start;
 }

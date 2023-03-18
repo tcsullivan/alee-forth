@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
 
 static void readchar(State& state)
 {
-    auto idx = state.dict.read(Dictionary::Input);
+    Addr idx = state.dict.read(Dictionary::Input);
     Addr addr = Dictionary::Input + sizeof(Cell) + idx;
 
-    auto c = std::cin.get();
+    auto c = static_cast<char>(std::cin.get());
     if (isupper(c))
         c += 32;
     state.dict.writebyte(addr, c ? c : ' ');
@@ -76,7 +76,7 @@ static void load(State& state)
 
     Addr i = 0;
     while (file.good())
-        state.dict.writebyte(i++, file.get());
+        state.dict.writebyte(i++, file.get() & 0xFFu);
 }
 
 void user_sys(State& state)
