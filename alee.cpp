@@ -19,10 +19,14 @@
 #include "alee.hpp"
 #include "memdict.hpp"
 
+#include <algorithm>
 #include <charconv>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+static void compile(State&);
 
 static bool okay = false;
 
@@ -107,6 +111,9 @@ void user_sys(State& state)
     case 4: // load
         load(state);
         break;
+    case 5: // compile
+        compile(state);
+        break;
     default:
         break;
     }
@@ -156,5 +163,39 @@ void parseFile(State& state, std::istream& file)
 
         parseLine(state, line);
     }
+}
+
+// Prints all compiled words, their start addresses, and their "disassembly".
+// Hopefully, it won't be too difficult to translate these into LLVM IR.
+void compile(State& state)
+{
+    auto& dict = state.dict;
+
+    Addr latest = dict.latest();
+    Addr attr = 0;
+    do {
+        Addr oldlen = attr >> 6;
+        latest -= oldlen;
+
+        attr = dict.read(latest);
+        auto lw = Word::fromLength(latest + sizeof(Cell), attr & 0x1F);
+
+        if (!(attr & Dictionary::Immediate)) {
+            Addr start = dict.getexec(latest);
+            Addr len = oldlen;
+            len -= start;
+            len += latest;
+
+            std::for_each(lw.begin(&dict), lw.end(&dict), putchar);
+            std::cout << " @ " << start << std::endl;
+
+            for (Addr i = 0; i < len; i += sizeof(Cell)) {
+                Addr addr = start;
+                addr += i;
+                std::cout << '\t' << (Addr)dict.read(addr) << ' ';
+            }
+            std::cout << std::endl;
+        }
+    } while (latest != Dictionary::Begin);
 }
 
