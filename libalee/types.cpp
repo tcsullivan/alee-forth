@@ -40,6 +40,13 @@ Word::iterator& Word::iterator::operator++()
     return *this;
 }
 
+Word::iterator Word::iterator::operator++(int)
+{
+    const auto copy = *this;
+    addr++;
+    return copy;
+}
+
 Word::iterator::value_type Word::iterator::operator*()
 {
     return dict->readbyte(addr);

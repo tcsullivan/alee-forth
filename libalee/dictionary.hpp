@@ -109,6 +109,7 @@ public:
      * Returns an empty word if the buffer is empty or entirely read.
      */
     Word input() noexcept;
+    bool hasInput() const noexcept;
 
     /**
      * Checks if this dictionary's word is equivalent to the given string/size.

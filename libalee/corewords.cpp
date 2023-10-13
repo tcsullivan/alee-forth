@@ -22,23 +22,6 @@
 #include <cstring>
 #include <utility>
 
-Word getword(State& state)
-{
-    auto word = state.dict.input();
-    while (word.size() == 0) {
-        state.input(state);
-        word = state.dict.input();
-    }
-    return word;
-}
-void newdef(State& state, Word word)
-{
-    auto& dict = state.dict;
-
-    auto addr = dict.alignhere();
-    dict.addDefinition(word);
-    state.push(addr);
-};
 void find(State& state, Word word)
 {
     if (auto j = state.dict.find(word); j > 0) {
@@ -169,11 +152,16 @@ execute:
         reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell);
         break;
     case 22: // colon
-        newdef(state, getword(state));
+        state.push(state.dict.alignhere());
+        while (!state.dict.hasInput())
+            state.input(state);
+        state.dict.addDefinition(state.dict.input());
         state.compiling(true);
         break;
     case 23: // tick
-        find(state, getword(state));
+        while (!state.dict.hasInput())
+            state.input(state);
+        find(state, state.dict.input());
         break;
     case 24: // execute
         index = state.pop();

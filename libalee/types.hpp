@@ -23,7 +23,7 @@
 #include <iterator>
 
 /**
- * Configure the below three types to match your platform.
+ * Configure the below types for your platform.
  */
 using Addr = uint16_t;
 using Cell = int16_t;
@@ -48,12 +48,15 @@ enum class Error : int {
 };
 
 /**
- * Stores the start and (past-the-)end addresses of a dictionary's word.
+ * Stores the start and past-the-end addresses of a dictionary's word.
  */
-struct Word
+class Word
 {
     Addr start;
     Addr wend;
+
+public:
+    struct iterator;
 
     constexpr explicit Word(Addr s = 0, Addr e = 0):
         start(s), wend(e) {}
@@ -64,8 +67,6 @@ struct Word
 
     Addr size() const noexcept;
 
-    // Iterators provided for std::equal.
-    struct iterator;
     iterator begin(const Dictionary *);
     iterator end(const Dictionary *);
 
@@ -83,6 +84,7 @@ struct Word
             addr(a), dict(d) {}
 
         iterator& operator++();
+        iterator operator++(int);
         value_type operator*();
         bool operator!=(const iterator&);
     };

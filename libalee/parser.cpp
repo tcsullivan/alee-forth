@@ -85,15 +85,16 @@ Error Parser::parseNumber(State& state, Word word)
 {
     const auto base = state.dict.read(Dictionary::Base);
     DoubleCell result = 0;
-    auto i = word.start;
-    bool inv;
-    char c;
+    auto it = word.begin(&state.dict);
 
-    c = state.dict.readbyte(i);
-    if (inv = c == '-'; inv)
-        c = state.dict.readbyte(++i);
+    bool inv = *it == '-';
+    if (inv)
+        ++it;
 
-    do {
+    const auto end = word.end(&state.dict);
+    for (char c; it != end; ++it) {
+        c = *it;
+
         if (isdigit(c)) {
             result *= base;
             result += c - '0';
@@ -103,10 +104,7 @@ Error Parser::parseNumber(State& state, Word word)
         } else {
             return Error::noword;
         }
-
-        if (++i < word.wend)
-            c = state.dict.readbyte(i);
-    } while (i < word.wend);
+    }
 
     if (inv)
         result *= -1;

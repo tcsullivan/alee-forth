@@ -71,8 +71,11 @@ void Dictionary::addDefinition(Word word) noexcept
     Cell wsize = word.size();
     add(wsize);
 
-    for (auto w = word.start; w != word.wend; ++w)
-        writebyte(allot(1), readbyte(w));
+    auto it = word.begin(this);
+    const auto end = word.end(this);
+
+    while (it != end)
+        writebyte(allot(1), *it++);
 
     alignhere();
 }
@@ -83,10 +86,8 @@ Addr Dictionary::find(Word word) noexcept
     for (;;) {
         const Addr l = read(lt);
         const Addr len = l & 0x1F;
-        Word lw;
-        lw.start = lt + sizeof(Cell);
-        lw.wend = lw.start + len;
 
+        const auto lw = Word::fromLength(lt + sizeof(Cell), len);
         if (equal(word, lw))
             return lt;
         else if (lt == Begin)
@@ -106,34 +107,54 @@ Addr Dictionary::getexec(Addr addr) noexcept
     return aligned(addr);
 }
 
+bool Dictionary::hasInput() const noexcept
+{
+    const Addr src = read(Dictionary::Source);
+    const Addr end = read(Dictionary::SourceLen);
+    uint8_t idx = read(Dictionary::Input) & 0xFFu;
+
+    while (idx < end) {
+        auto ch = readbyte(src + idx);
+
+        if (ch == '\0') {
+            break;
+        } else if (!isspace(ch)) {
+            return true;
+        }
+
+        ++idx;
+    }
+
+    return false;
+}
+
 Word Dictionary::input() noexcept
 {
     const Addr src = read(Dictionary::Source);
     const Addr end = read(Dictionary::SourceLen);
     uint8_t idx = read(Dictionary::Input) & 0xFFu;
 
-    Word word;
-    word.start = src + idx;
-    word.wend = word.start;
+    Addr wstart = src + idx;
+    Addr wend = wstart;
 
     while (idx < end) {
-        auto ch = readbyte(word.wend);
+        auto ch = readbyte(wend);
 
         if (isspace(ch)) {
-            if (word.size() > 0)
+            if (wend - wstart > 0)
                 break;
 
-            ++word.start;
+            ++wstart;
         } else if (ch == '\0') {
             break;
         }
 
-        ++word.wend;
+        ++wend;
         ++idx;
     }
 
     writebyte(Dictionary::Input, ++idx);
-    return word;
+    return Word(wstart, wend);
 }
 
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept

@@ -31,28 +31,18 @@ constexpr unsigned ReturnStackSize = 16;
 
 class State
 {
+    friend class CoreWords;
+
 public:
     Addr ip = 0;
     Dictionary& dict;
     void (*input)(State&); // User-provided function to collect "stdin" input.
-    std::jmp_buf jmpbuf = {}; // Used when catching execution errors.
 
     constexpr State(Dictionary& d, void (*i)(State&)):
         dict(d), input(i) {}
 
     bool compiling() const;
     void compiling(bool);
-
-    /**
-     * Saves execution state so that a new execution can begin.
-     * Used for EVALUATE.
-     */
-    std::pair<Addr, std::jmp_buf> save();
-
-    /**
-     * Reloads the given execution state.
-     */
-    void load(const std::pair<Addr, std::jmp_buf>&);
 
     /**
      * Begins execution at the given execution token.
@@ -72,38 +62,32 @@ public:
     std::size_t rsize() const noexcept;
 
     inline void push(Cell value) {
-        if (dsp == dstack + DataStackSize)
-            std::longjmp(jmpbuf, static_cast<int>(Error::push));
+        verify(dsp < dstack + DataStackSize, Error::push);
         *dsp++ = value;
     }
 
     inline Cell pop() {
-        if (dsp == dstack)
-            std::longjmp(jmpbuf, static_cast<int>(Error::pop));
+        verify(dsp > dstack, Error::pop);
         return *--dsp;
     }
 
     inline void pushr(Cell value) {
-        if (rsp == rstack + ReturnStackSize)
-            std::longjmp(jmpbuf, static_cast<int>(Error::pushr));
+        verify(rsp < rstack + ReturnStackSize, Error::pushr);
         *rsp++ = value;
     }
 
     inline Cell popr() {
-        if (rsp == rstack)
-            std::longjmp(jmpbuf, static_cast<int>(Error::popr));
+        verify(rsp > rstack, Error::popr);
         return *--rsp;
     }
 
     inline Cell& top() {
-        if (dsp == dstack)
-            std::longjmp(jmpbuf, static_cast<int>(Error::top));
+        verify(dsp > dstack, Error::top);
         return *(dsp - 1);
     }
 
     inline Cell& pick(std::size_t i) {
-        if (dsp - i == dstack)
-            std::longjmp(jmpbuf, static_cast<int>(Error::pick));
+        verify(dsp - i > dstack, Error::pick);
         return *(dsp - i - 1);
     }
 
@@ -118,6 +102,23 @@ private:
     Cell rstack[ReturnStackSize] = {};
     Cell *dsp = dstack;
     Cell *rsp = rstack;
+    std::jmp_buf jmpbuf = {}; // Used when catching execution errors.
+
+    inline void verify(bool condition, Error error) {
+        if (!condition)
+            std::longjmp(jmpbuf, static_cast<int>(error));
+    }
+
+    /**
+     * Saves execution state so that a new execution can begin.
+     * Used for EVALUATE.
+     */
+    std::pair<Addr, std::jmp_buf> save();
+
+    /**
+     * Reloads the given execution state.
+     */
+    void load(const std::pair<Addr, std::jmp_buf>&);
 };
 
 #endif // ALEEFORTH_STATE_HPP
