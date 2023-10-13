@@ -32,34 +32,30 @@ void State::compiling(bool yes)
     dict.write(Dictionary::Compiling, yes);
 }
 
-std::pair<Addr, std::jmp_buf> State::save()
+State::Context State::save()
 {
-    std::pair<Addr, std::jmp_buf> st;
-    st.first = ip;
-    std::memcpy(st.second, jmpbuf, sizeof(std::jmp_buf));
-    return st;
+    return context;
 }
 
-void State::load(const std::pair<Addr, std::jmp_buf>& st)
+void State::load(const State::Context& ctx)
 {
-    ip = st.first;
-    std::memcpy(jmpbuf, st.second, sizeof(std::jmp_buf));
+    context = ctx;
 }
 
 Error State::execute(Addr addr)
 {
-    auto stat = static_cast<Error>(setjmp(jmpbuf));
+    auto stat = static_cast<Error>(setjmp(context.jmpbuf));
 
     if (stat == Error::none) {
         CoreWords::run(addr, *this);
 
-        if (ip >= Dictionary::Begin) {
+        if (context.ip >= Dictionary::Begin) {
             // longjmp will exit this loop.
             for (;;)
-                CoreWords::run(dict.read(ip), *this);
+                CoreWords::run(dict.read(context.ip), *this);
         } else {
             // addr was a CoreWord, all done now.
-            ip = 0;
+            context.ip = 0;
         }
     } else if (stat == Error::exit) {
         stat = Error::none;
@@ -76,7 +72,7 @@ void State::reset()
         popr();
 
     dict.write(Dictionary::Compiling, 0);
-    ip = 0;
+    context.ip = 0;
 }
 
 std::size_t State::size() const noexcept

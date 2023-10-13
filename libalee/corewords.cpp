@@ -44,6 +44,8 @@ void CoreWords::run(Cell ins, State& state)
 
     Addr index = ins;
 
+    auto& ip = state.ip();
+
     auto popd = [](State& s) {
         DoubleCell dcell = s.pop();
         dcell <<= sizeof(Cell) * 8;
@@ -59,8 +61,8 @@ void CoreWords::run(Cell ins, State& state)
 execute:
     if (index >= Dictionary::Begin) {
         // must be calling a defined subroutine
-        state.pushr(state.ip);
-        state.ip = index;
+        state.pushr(ip);
+        ip = index;
         return;
     } else switch (index) {
     case 0: // _lit
@@ -154,22 +156,21 @@ execute:
     case 22: // colon
         state.push(state.dict.alignhere());
         while (!state.dict.hasInput())
-            state.input(state);
+            state.input();
         state.dict.addDefinition(state.dict.input());
         state.compiling(true);
         break;
     case 23: // tick
         while (!state.dict.hasInput())
-            state.input(state);
+            state.input();
         find(state, state.dict.input());
         break;
     case 24: // execute
         index = state.pop();
         goto execute;
     case 25: // exit
-        state.ip = state.popr();
-        if (state.ip == 0)
-            std::longjmp(state.jmpbuf, static_cast<int>(Error::exit));
+        ip = state.popr();
+        state.verify(ip != 0, Error::exit);
         break;
     case 26: // semic
         state.dict.add(findi("exit"));
@@ -188,7 +189,7 @@ execute:
         }
         [[fallthrough]];
     case 28: // _jmp
-        state.ip = state.beyondip();
+        ip = state.beyondip();
         return;
     case 29: // depth
         state.push(static_cast<Cell>(state.size()));
@@ -197,12 +198,12 @@ execute:
         state.push(static_cast<Cell>(state.rsize()));
         break;
     case 31: // _in
-        state.input(state);
+        state.input();
         break;
     case 32: // _ex
         {
         const auto st = state.save();
-        state.ip = 0;
+        ip = 0;
         Parser::parseSource(state);
         state.load(st);
         }
@@ -244,7 +245,7 @@ execute:
         break;
     }
 
-    state.ip += sizeof(Cell);
+    ip += sizeof(Cell);
 }
 
 template<typename Iter>

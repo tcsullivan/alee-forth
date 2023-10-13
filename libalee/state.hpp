@@ -24,25 +24,24 @@
 
 #include <csetjmp>
 #include <cstddef>
-#include <tuple>
 
 constexpr unsigned DataStackSize = 16;
 constexpr unsigned ReturnStackSize = 16;
 
 class State
 {
-    friend class CoreWords;
+    using InputFunc = void (*)(State&);
+
+    struct Context {
+        Addr ip = 0;
+        std::jmp_buf jmpbuf = {};
+    };
 
 public:
-    Addr ip = 0;
     Dictionary& dict;
-    void (*input)(State&); // User-provided function to collect "stdin" input.
 
-    constexpr State(Dictionary& d, void (*i)(State&)):
-        dict(d), input(i) {}
-
-    bool compiling() const;
-    void compiling(bool);
+    constexpr State(Dictionary& d, InputFunc i):
+        dict(d), inputfunc(i), context() {}
 
     /**
      * Begins execution at the given execution token.
@@ -58,8 +57,30 @@ public:
      */
     void reset();
 
+    Addr& ip() noexcept {
+        return context.ip;
+    }
+
+    void input() noexcept {
+        inputfunc(*this);
+    }
+
+    bool compiling() const;
+    void compiling(bool);
+
     std::size_t size() const noexcept;
     std::size_t rsize() const noexcept;
+
+    /**
+     * Saves execution state so that a new execution can begin.
+     * Used for EVALUATE.
+     */
+    Context save();
+
+    /**
+     * Reloads the given execution state.
+     */
+    void load(const Context&);
 
     inline void push(Cell value) {
         verify(dsp < dstack + DataStackSize, Error::push);
@@ -93,32 +114,23 @@ public:
 
     // Advances the instruction pointer and returns that cell's contents.
     inline Cell beyondip() {
-        ip += sizeof(Cell);
-        return dict.read(ip);
+        context.ip += sizeof(Cell);
+        return dict.read(context.ip);
+    }
+
+    inline void verify(bool condition, Error error) {
+        if (!condition)
+            std::longjmp(context.jmpbuf, static_cast<int>(error));
     }
 
 private:
+    InputFunc inputfunc; // User-provided function to collect "stdin" input.
+    Context context;
+
     Cell dstack[DataStackSize] = {};
     Cell rstack[ReturnStackSize] = {};
     Cell *dsp = dstack;
     Cell *rsp = rstack;
-    std::jmp_buf jmpbuf = {}; // Used when catching execution errors.
-
-    inline void verify(bool condition, Error error) {
-        if (!condition)
-            std::longjmp(jmpbuf, static_cast<int>(error));
-    }
-
-    /**
-     * Saves execution state so that a new execution can begin.
-     * Used for EVALUATE.
-     */
-    std::pair<Addr, std::jmp_buf> save();
-
-    /**
-     * Reloads the given execution state.
-     */
-    void load(const std::pair<Addr, std::jmp_buf>&);
 };
 
 #endif // ALEEFORTH_STATE_HPP

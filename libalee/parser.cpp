@@ -20,14 +20,14 @@
 #include "ctype.hpp"
 #include "parser.hpp"
 
+#include <algorithm>
+#include <cstring>
+
 Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
 
-    Cell len = 0;
-    for (auto ptr = str; *ptr; ++ptr)
-        ++len;
-
+    const auto len = static_cast<Cell>(std::strlen(str));
     state.dict.write(addr, 0);
     state.dict.write(Dictionary::SourceLen, len);
 
@@ -43,15 +43,12 @@ Error Parser::parse(State& state, const char *str)
 
 Error Parser::parseSource(State& state)
 {
-    auto word = state.dict.input();
-    while (word.size() > 0) {
-        if (auto ret = parseWord(state, word); ret != Error::none)
-            return ret;
+    auto err = Error::none;
 
-        word = state.dict.input();
-    }
+    while (err == Error::none && state.dict.hasInput())
+        err = parseWord(state, state.dict.input());
 
-    return Error::none;
+    return err;
 }
 
 Error Parser::parseWord(State& state, Word word)
