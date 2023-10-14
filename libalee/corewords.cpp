@@ -19,22 +19,22 @@
 #include "corewords.hpp"
 #include "parser.hpp"
 
-#include <cstring>
 #include <utility>
 
 void find(State& state, Word word)
 {
+    Cell tok = 0;
+    Cell imm = 0;
+
     if (auto j = state.dict.find(word); j > 0) {
-        state.push(state.dict.getexec(j));
-        auto imm = state.dict.read(j) & Dictionary::Immediate;
-        state.push(imm ? 1 : -1);
-    } else if (auto i = CoreWords::findi(state, word); i >= 0) {
-        state.push(i);
-        state.push(i == CoreWords::Semicolon ? 1 : -1);
-    } else {
-        state.push(0);
-        state.push(0);
+        tok = state.dict.getexec(j);
+        imm = (state.dict.read(j) & Dictionary::Immediate) ? 1 : -1;
+    } else if (tok = CoreWords::findi(state, word); tok >= 0) {
+        imm = (tok == CoreWords::Semicolon) ? 1 : -1;
     }
+
+    state.push(tok);
+    state.push(imm);
 }
 
 void CoreWords::run(Cell ins, State& state)
@@ -248,35 +248,8 @@ execute:
     ip += sizeof(Cell);
 }
 
-template<typename Iter>
-Cell findi(Iter it, std::size_t size)
-{
-    auto ptr = CoreWords::wordsarr;
-    Cell wordsi = 0;
-
-    while (ptr < CoreWords::wordsarr + sizeof(CoreWords::wordsarr)) {
-        auto end = ptr;
-        while (*end)
-            ++end;
-
-        std::size_t wordsize = end - ptr;
-        if (wordsize == size && Dictionary::equal(ptr, end, it))
-            return wordsi;
-
-        ++wordsi;
-        ptr = end + 1;
-    }
-
-    return -1;
-}
-
-Cell CoreWords::findi(const char *word)
-{
-    return ::findi(word, strlen(word));
-}
-
 Cell CoreWords::findi(State& state, Word word)
 {
-    return ::findi(word.begin(&state.dict), word.size());
+    return findi(word.begin(&state.dict), word.size());
 }
 

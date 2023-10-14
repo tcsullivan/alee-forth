@@ -25,10 +25,21 @@
 
 #include <cstdint>
 
-bool isspace(uint8_t);
-bool isdigit(uint8_t);
-bool isalpha(uint8_t);
-bool isupper(uint8_t);
+constexpr inline bool isspace(uint8_t c) {
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+constexpr inline bool isdigit(uint8_t c) {
+    return c >= '0' && c <= '9';
+}
+
+constexpr inline bool isupper(uint8_t c) {
+    return c >= 'A' && c <= 'Z';
+}
+
+constexpr inline bool isalpha(uint8_t c) {
+    return isupper(c) || (c >= 'a' && c <= 'z');
+}
 
 #endif // ALEEFORTH_CTYPE_HPP
 

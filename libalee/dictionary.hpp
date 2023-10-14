@@ -19,6 +19,7 @@
 #ifndef ALEEFORTH_DICTIONARY_HPP
 #define ALEEFORTH_DICTIONARY_HPP
 
+#include "ctype.hpp"
 #include "types.hpp"
 
 #include <algorithm>
@@ -78,7 +79,7 @@ public:
     void latest(Addr l) noexcept { write(Latest, l); }
 
     // Aligns the given address.
-    Addr aligned(Addr) const noexcept;
+    static Addr aligned(Addr);
     // Aligns `here`.
     Addr alignhere() noexcept;
     // Advances `here` by the given number of bytes.
@@ -123,7 +124,7 @@ public:
 
     // Used for case-insensitive comparison between two iterators.
     template<typename Iter1, typename Iter2>
-    static bool equal(Iter1 b1, Iter1 e1, Iter2 b2) {
+    constexpr static bool equal(Iter1 b1, Iter1 e1, Iter2 b2) {
         return std::equal(b1, e1, b2, eqchars);
     }
 
@@ -131,7 +132,15 @@ public:
 
 private:
     // Case-insensitive comparison.
-    static bool eqchars(char c1, char c2);
+    constexpr static bool eqchars(char c1, char c2) {
+        if (isalpha(static_cast<uint8_t>(c1)))
+            c1 |= 32;
+        if (isalpha(static_cast<uint8_t>(c2)))
+            c2 |= 32;
+
+        return c1 == c2;
+    }
+
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

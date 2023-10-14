@@ -22,6 +22,8 @@
 #include "types.hpp"
 #include "state.hpp"
 
+#include <cstring>
+
 /**
  * To be implemented by the user, this function is called when the `sys` word
  * is executed.
@@ -38,8 +40,10 @@ public:
      * Finds execution token that corresponds to the given word.
      * Returns -1 if not found.
      */
-    static Cell findi(const char *);
     static Cell findi(State&, Word);
+    consteval static Cell findi(const char *word) {
+        return findi(word, std::strlen(word));
+    }
 
     /**
      * Executes the given CoreWord execution token using the given state.
@@ -55,6 +59,24 @@ public:
         "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0_in\0_ev\0find\0"
         "_uma\0u<\0um/mod\0";
+
+private:
+    template<typename Iter>
+    constexpr static Cell findi(Iter it, std::size_t size)
+    {
+        const char *ptr = CoreWords::wordsarr;
+
+        for (Cell wordsi = 0; wordsi < WordCount; ++wordsi) {
+            std::size_t wordsize = std::strlen(ptr);
+
+            if (wordsize == size && Dictionary::equal(ptr, ptr + wordsize, it))
+                return wordsi;
+
+            ptr += wordsize + 1;
+        }
+
+        return -1;
+    }
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

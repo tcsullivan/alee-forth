@@ -111,12 +111,12 @@ Error Parser::parseNumber(State& state, Word word)
         auto ins = CoreWords::findi("_lit");
 
         const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
-        if (value >= 0 && value < maxlit) {
-            state.dict.add(value + CoreWords::WordCount);
-        } else {
+        if (value >= 0 && value < maxlit)
+            value += CoreWords::WordCount;
+        else
             state.dict.add(ins);
-            state.dict.add(value);
-        }
+
+        state.dict.add(value);
     } else {
         state.push(value);
     }

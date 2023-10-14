@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ctype.hpp"
 #include "dictionary.hpp"
 
 #include <cstring>
@@ -49,15 +48,9 @@ void Dictionary::add(Cell value) noexcept
     write(allot(sizeof(Cell)), value);
 }
 
-Addr Dictionary::aligned(Addr addr) const noexcept
+Addr Dictionary::aligned(Addr addr)
 {
-    Addr unaligned = addr & (sizeof(Cell) - sizeof(uint8_t));
-    if (unaligned) {
-        addr += sizeof(Cell);
-        addr -= unaligned;
-    }
-
-    return addr;
+    return (addr + (sizeof(Cell) - 1)) & ~(sizeof(Cell) - 1);
 }
 
 Addr Dictionary::alignhere() noexcept
@@ -71,11 +64,12 @@ void Dictionary::addDefinition(Word word) noexcept
     Cell wsize = word.size();
     add(wsize);
 
+    auto addr = allot(wsize);
     auto it = word.begin(this);
     const auto end = word.end(this);
 
     while (it != end)
-        writebyte(allot(1), *it++);
+        writebyte(addr++, *it++);
 
     alignhere();
 }
@@ -83,6 +77,7 @@ void Dictionary::addDefinition(Word word) noexcept
 Addr Dictionary::find(Word word) noexcept
 {
     Addr lt = latest();
+
     for (;;) {
         const Addr l = read(lt);
         const Addr len = l & 0x1F;
@@ -159,19 +154,11 @@ Word Dictionary::input() noexcept
 
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
 {
-    return word.size() == len &&
-           equal(word.begin(this), word.end(this), str);
+    return word.size() == len && equal(word.begin(this), word.end(this), str);
 }
 
 bool Dictionary::equal(Word word, Word other) const noexcept
 {
-    return word.size() == other.size() &&
-           equal(word.begin(this), word.end(this), other.begin(this));
-}
-
-bool Dictionary::eqchars(char c1, char c2)
-{
-    return c1 == c2 ||
-        (isalpha(c1) && isalpha(c2) && (c1 | 32) == (c2 | 32));
+    return word.size() == other.size() && equal(word.begin(this), word.end(this), other.begin(this));
 }
 
