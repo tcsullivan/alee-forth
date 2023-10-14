@@ -22,6 +22,7 @@
 
 #include <msp430.h>
 
+alignas(sizeof(Cell))
 #include "core.fth.h"
 
 static char strbuf[32];

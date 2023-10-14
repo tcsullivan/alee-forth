@@ -24,6 +24,7 @@
 #include <iostream>
 #include <vector>
 
+alignas(sizeof(Cell))
 #include "core.fth.h"
 
 static bool okay = false;
