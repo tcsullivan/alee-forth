@@ -217,3 +217,14 @@
            >r dup c@ swap >r base @ swap
            dup _isdigit - _uma
            r> char+ r> 1- repeat ;
+
+: <#       40 here c! ;
+: #>       2drop here dup c@ + 40 here c@ - ;
+: hold     -1 here +! here dup c@ + c! ;
+: #        base @
+           >r 0 i um/mod r> swap >r um/mod r>
+           rot 9 over <
+           if 7 + then 48 + hold ;
+: #s       begin # 2dup or 0= until ;
+: sign     0< if [char] - hold then ;
+

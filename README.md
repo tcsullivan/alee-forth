@@ -10,10 +10,7 @@ System-specific functionality is obtained through a `sys` Forth word. This word 
 
 ## Forth compatibility
 
-Alee implements a large majority of the "core" and "core extension" [word-sets](https://forth-standard.org/standard/core). Implementation is tracked in `compat.txt` with missing words listed below. Fundamental words are hard-coded into Alee while the rest of the implementation is found in `forth/core.fth` and `forth/core-ext.fth`. Running Alee without these implementation files will leave you with a very minimal word-set. These files may be compiled into the Alee binary by building the `standalone` target.
-
-**Missing** core features:  
-* Pictured numeric output conversion (e.g. `<# #>`)
+Alee implements the entire "core" and majority of the "core extension" [word-sets](https://forth-standard.org/standard/core). Implementation is tracked in `compat.txt` with missing words listed below. Fundamental words are hard-coded into Alee while the rest of the implementation is found in `forth/core.fth` and `forth/core-ext.fth`. Running Alee without these implementation files will leave you with a very minimal word-set. These files may be compiled into the Alee binary by building the `standalone` target.
 
 **Missing** core extensions:  
 ```
