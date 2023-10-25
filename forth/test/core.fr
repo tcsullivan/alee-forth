@@ -713,17 +713,17 @@ T{ MID-UINT+1 MID-UINT GD1 -> MID-UINT }T
 T{ : GD2 DO I -1 +LOOP ; -> }T
 T{ 1 4 GD2 -> 4 3 2 1 }T
 T{ -1 2 GD2 -> 2 1 0 -1 }T
-\ T{ MID-UINT MID-UINT+1 GD2 -> MID-UINT+1 MID-UINT }T
+T{ MID-UINT MID-UINT+1 GD2 -> MID-UINT+1 MID-UINT }T
 
 T{ : GD3 DO 1 0 DO J LOOP LOOP ; -> }T
 T{ 4 1 GD3 -> 1 2 3 }T
 T{ 2 -1 GD3 -> -1 0 1 }T
-\ T{ MID-UINT+1 MID-UINT GD3 -> MID-UINT }T
+T{ MID-UINT+1 MID-UINT GD3 -> MID-UINT }T
 
 T{ : GD4 DO 1 0 DO J LOOP -1 +LOOP ; -> }T
 T{ 1 4 GD4 -> 4 3 2 1 }T
 T{ -1 2 GD4 -> 2 1 0 -1 }T
-\ T{ MID-UINT MID-UINT+1 GD4 -> MID-UINT+1 MID-UINT }T
+T{ MID-UINT MID-UINT+1 GD4 -> MID-UINT+1 MID-UINT }T
 
 T{ : GD5 123 SWAP 0 DO I 4 > IF DROP 234 LEAVE THEN LOOP ; -> }T
 T{ 1 GD5 -> 123 }T
@@ -795,10 +795,9 @@ T{ GE7 -> 124 }T
 \ ------------------------------------------------------------------------
 ." TESTING SOURCE >IN WORD" CR
 
-\ String is compiled into GS1 and is distinct from SOURCE.
-\ : GS1 S" SOURCE" 2DUP 2DUP EVALUATE
-\       >R SWAP >R = R> R> = ;
-\ T{ GS1 -> <TRUE> <TRUE> }T
+: GS1 S" SOURCE" 2DUP EVALUATE
+      >R SWAP >R = R> R> = ;
+T{ GS1 -> <TRUE> <TRUE> }T
 
 VARIABLE SCANS
 : RESCAN?  -1 SCANS +! SCANS @ IF 0 >IN ! THEN ;
@@ -1012,5 +1011,4 @@ T{ : GDX   123 ; : GDX   GDX 234 ; -> }T
 T{ GDX -> 123 234 }T
 
 CR .( End of Core word set tests) CR
-
 

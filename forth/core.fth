@@ -85,10 +85,11 @@
 : unloop   postpone 2r> ['] 2drop , ['] r> , ['] drop , ; imm
 : leave    postpone 2r> ['] 2drop , postpone 2r>
            ['] drop , ['] >r , ['] exit , ; imm
-: +loop    postpone 2r> ['] 2dup , ['] swap , ['] < , ['] >r ,
-           ['] rot , ['] + , ['] 2dup , ['] swap , ['] < ,
-           ['] r> , ['] ^ , ['] -rot ,
-           postpone 2>r ['] _jmp0 , ,
+: +loop    ['] r> , ['] 2dup , ['] + ,
+           postpone r@ ['] swap , ['] >r ,
+           ['] - , ['] 2dup , ['] + , ['] over , ['] ^ ,
+           ['] rot , ['] rot , ['] ^ , ['] & , ['] _lit , 0 ,
+           ['] < , ['] _jmp0 , ,
            postpone unloop here swap ! ; imm
 : loop     postpone 2r> ['] 1+ , ['] 2dup ,
            postpone 2>r ['] = , ['] _jmp0 , ,
@@ -131,7 +132,7 @@
 : min      2dup <= if drop else swap drop then ;
 : max      2dup <= if swap drop else drop then ;
 
-: source   _source @ 0 begin 2dup + c@ while char+ repeat ;
+: source   _source @ _sourceu @ ;
 : key      _source @ >in @ +
            begin dup c@ 0 = while _in repeat
            c@ 1 >in +! ;
@@ -227,4 +228,3 @@
            if 7 + then 48 + hold ;
 : #s       begin # 2dup or 0= until ;
 : sign     0< if [char] - hold then ;
-
