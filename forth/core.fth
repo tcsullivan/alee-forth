@@ -156,13 +156,14 @@
            swap postpone literal postpone literal ; imm
 : ."       postpone s" state @ if ['] type , else type then ; imm
 
-: create   align here
-           1 cells 1 chars - allot
-           bl word count swap drop
-           1 chars allot
-           swap over over ! swap allot align
+: create   align here dup _latest @ - 1 1 cells 8 * 6 - << 1- swap <=
+           dup if -1 6 << , then 0 , >r
+           begin key? if key else bl then dup bl <> while
+           c, 1 over +! repeat drop align
            ['] _lit , here 3 cells + , ['] exit dup , ,
-           dup @ 31 & over _latest @ - 6 << or over ! _latest ! ;
+           dup _latest @ - r> if
+           over cell+ else 6 << over then +! _latest ! ;
+
 : _does>   _latest @ dup @ 31 & + cell+ aligned 2 cells +
            ['] _jmp over ! cell+
            r@ 1 cells - @ swap ! ;

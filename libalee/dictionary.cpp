@@ -64,6 +64,9 @@ void Dictionary::addDefinition(Word word) noexcept
     Cell wsize = word.size();
     add(wsize);
 
+    if (alignhere() - latest() >= ((1 << (sizeof(Cell) * 8 - 6)) - 1))
+        add(0);
+
     auto addr = allot(wsize);
     auto it = word.begin(this);
     const auto end = word.end(this);
@@ -81,14 +84,25 @@ Addr Dictionary::find(Word word) noexcept
     for (;;) {
         const Addr l = read(lt);
         const Addr len = l & 0x1F;
+        Word lw;
 
-        const auto lw = Word::fromLength(lt + sizeof(Cell), len);
-        if (equal(word, lw))
-            return lt;
-        else if (lt == Begin)
-            break;
-        else
-            lt -= l >> 6;
+        if ((l >> 6) < 1023) {
+            lw = Word::fromLength(lt + sizeof(Cell), len);
+            if (equal(word, lw))
+                return lt;
+            else if (lt == Begin)
+                break;
+            else
+                lt -= l >> 6;
+        } else {
+            lw = Word::fromLength(lt + 2 * sizeof(Cell), len);
+            if (equal(word, lw))
+                return lt;
+            else if (lt == Begin)
+                break;
+            else
+                lt -= static_cast<Addr>(read(lt + sizeof(Cell)));
+        }
     }
 
     return 0;
@@ -96,8 +110,13 @@ Addr Dictionary::find(Word word) noexcept
 
 Addr Dictionary::getexec(Addr addr) noexcept
 {
-    const Addr len = read(addr) & 0x1Fu;
+    const Addr l = read(addr);
+    const Addr len = l & 0x1Fu;
+
     addr += sizeof(Cell);
+    if ((l >> 6) == 1023)
+        addr += sizeof(Cell);
+
     addr += len;
     return aligned(addr);
 }
