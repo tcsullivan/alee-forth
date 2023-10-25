@@ -47,3 +47,5 @@
 : endof    ['] _jmp , here >r 0 , postpone then
            swap 1+ swap r> tuck ! ; imm
 : endcase  swap 0 do dup @ swap here swap ! loop drop ['] drop , ; imm
+
+: holds begin dup while 1- 2dup + c@ hold repeat 2drop ;
