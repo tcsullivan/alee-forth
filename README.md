@@ -15,7 +15,7 @@ Alee Forth uses the [Forth 2012 test suite](https://github.com/gerryjackson/fort
 **Missing** core extension words:
 
 ```
-.R HOLDS PAD PARSE PARSE-NAME REFILL RESTORE-INPUT S\" SAVE-INPUT SOURCE-ID U.R U> UNUSED WITHIN [COMPILE]
+PARSE PARSE-NAME REFILL RESTORE-INPUT S\" SAVE-INPUT SOURCE-ID [COMPILE]
 ```
 
 ## Building

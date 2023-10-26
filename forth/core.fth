@@ -8,7 +8,6 @@
 : cells    2 * ;
 
 : .        0 sys ;
-: u.       1 sys ;
 : emit     2 sys ;
 
 : 1+       1 + ;
@@ -229,3 +228,5 @@
            if 7 + then 48 + hold ;
 : #s       begin # 2dup or 0= until ;
 : sign     0< if [char] - hold then ;
+
+: u.       0 <# bl hold #s #> type ;

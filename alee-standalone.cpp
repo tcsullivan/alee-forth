@@ -90,13 +90,8 @@ void user_sys(State& state)
                       state.dict.read(Dictionary::Base));
         std::cout << buf << ' ';
         break;
-    case 1: // u.
-        {
-        Addr ucell = static_cast<Addr>(state.pop());
-        std::to_chars(buf, buf + sizeof(buf), ucell,
-                      state.dict.read(Dictionary::Base));
-        std::cout << buf << ' ';
-        }
+    case 1: // unused
+        state.push(static_cast<Addr>(state.dict.capacity() - state.dict.here()));
         break;
     case 2: // emit
         std::cout << static_cast<char>(state.pop());

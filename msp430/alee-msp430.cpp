@@ -143,13 +143,13 @@ void printint(DoubleCell n, char *buf)
 void user_sys(State& state)
 {
     switch (state.pop()) {
-    case 0:
+    case 0: // .
         printint(state.pop(), strbuf);
         break;
-    case 1:
-        printint(static_cast<Addr>(state.pop()), strbuf);
+    case 1: // unused
+        state.push(static_cast<Addr>(state.dict.capacity() - state.dict.here()));
         break;
-    case 2:
+    case 2: // emit
         serput(state.pop());
         break;
     case 3:
