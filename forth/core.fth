@@ -198,7 +198,7 @@
            else dup emit rot 2dup c! char+ swap drop swap 1- then
            repeat drop r> - 1 chars / ;
 
-: :noname  0 , here ] ;
+: :noname  here 0 , here swap ] ;
 
 : evaluate _source @ >r _sourceu @ >r >in @ >r
            0 >in ! _sourceu ! _source ! _ev

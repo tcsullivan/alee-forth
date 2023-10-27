@@ -16,29 +16,30 @@
 
 : 2r@      ['] r> , ['] r> , ['] 2dup , ['] >r , ['] >r , ['] swap , ; imm
 
-: compile, postpone literal postpone execute ;
-: \        _source @ >in @ +
-           begin dup c@ while 0 over c! char+ repeat drop ; imm
-: again    postpone repeat ; imm
-: ?do      ['] 2dup , ['] _lit , here 0 , ['] >r , ['] = , postpone if
-           ['] 2drop , postpone 2r> ['] drop , ['] >r , ['] leave ,
-           postpone then postpone 2>r here ; imm
+: compile,  postpone literal postpone execute ;
+: [compile] bl word find -1 = if , else compile, then ; imm
+: \         _source @ >in @ +
+            begin dup c@ while 0 over c! char+ repeat drop ; imm
+: again     postpone repeat ; imm
+: ?do       ['] 2dup , ['] _lit , here 0 , ['] >r , ['] = , postpone if
+            ['] 2drop , postpone 2r> ['] drop , ['] >r , ['] leave ,
+            postpone then postpone 2>r here ; imm
 
-: .(       [char] ) word count type ; imm
-: c"       state @ if ['] _jmp , here 0 , then
-           [char] " word
-           state @ 0= if exit then
-           dup count nip allot
-           here rot !
-           postpone literal ; imm
+: .(        [char] ) word count type ; imm
+: c"        state @ if ['] _jmp , here 0 , then
+            [char] " word
+            state @ 0= if exit then
+            dup count nip allot
+            here rot !
+            postpone literal ; imm
 
-: buffer:  create allot ;
-: value    constant ;
-: to       ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm
-: defer    create does> @ execute ;
-: defer@   >body @ ;
-: defer!   >body ! ;
-: is       state @ if postpone ['] postpone defer! else ' defer! then ; imm
+: buffer:   create allot ;
+: value     constant ;
+: to        ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm
+: defer     create does> @ execute ;
+: defer@    >body @ ;
+: defer!    >body ! ;
+: is        state @ if postpone ['] postpone defer! else ' defer! then ; imm
 : action-of state @ if postpone ['] postpone defer@ else ' defer@ then ; imm
 
 : erase    0 fill ;
