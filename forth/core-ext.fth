@@ -45,8 +45,8 @@
 : erase    0 fill ;
 : roll     dup if swap >r 1- recurse r> swap exit then drop ;
 
-: marker   create _latest @ , here , does>
-           dup @ _latest ! cell+ @ here swap - allot ;
+: marker   here _latest @ create , , does>
+           dup @ _latest ! cell+ @ here - allot ;
 
 : case     ['] _lit , 1 here 0 , ['] drop , ; imm
 : of       ['] over , ['] = , postpone if ; imm
