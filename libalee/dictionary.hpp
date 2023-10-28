@@ -47,11 +47,12 @@ public:
     constexpr static Addr Here       = sizeof(Cell);
     constexpr static Addr Latest     = sizeof(Cell) * 2;
     constexpr static Addr Compiling  = sizeof(Cell) * 3;
-    constexpr static Addr Source     = sizeof(Cell) * 4;
-    constexpr static Addr SourceLen  = sizeof(Cell) * 5;
-    constexpr static Addr Input      = sizeof(Cell) * 6; // len data...
+    constexpr static Addr CompToken  = sizeof(Cell) * 4;
+    constexpr static Addr Source     = sizeof(Cell) * 5;
+    constexpr static Addr SourceLen  = sizeof(Cell) * 6;
+    constexpr static Addr Input      = sizeof(Cell) * 7; // len data...
     constexpr static Addr InputCells = 80; // bytes!
-    constexpr static Addr Begin      = sizeof(Cell) * 7 + InputCells;
+    constexpr static Addr Begin      = sizeof(Cell) * 8 + InputCells;
 
     constexpr static Cell Immediate = (1 << 5);
 

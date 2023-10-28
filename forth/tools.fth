@@ -3,7 +3,6 @@
 : dump     hex 0 do i cells over + @ s>d <# # # # # bl hold #> type loop
            drop decimal ;
 
-7 cells 80 chars + constant _begin
 : words    _latest @ begin
            dup @ dup 31 &
            2 pick cell+ \ lt l len ws

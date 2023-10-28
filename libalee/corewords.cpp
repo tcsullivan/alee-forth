@@ -155,6 +155,7 @@ execute:
         break;
     case 22: // colon
         state.push(state.dict.alignhere());
+        state.dict.write(Dictionary::CompToken, state.top());
         while (!state.dict.hasInput())
             state.input();
         state.dict.addDefinition(state.dict.input());
