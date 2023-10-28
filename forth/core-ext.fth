@@ -74,3 +74,4 @@
             rot dup >r c! r> char+ swap repeat
             2drop r> tuck - ;
 
+: source-id _source @ _begin < if 0 else -1 then ;
