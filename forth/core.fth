@@ -138,10 +138,12 @@
            begin dup c@ 0 = while _in repeat
            c@ 1 >in +! ;
 : key?     _source @ >in @ + c@ 0 <> ;
-: word     here dup >r char+ >r
-           begin key? if key 2dup <> else 0 0 then while
-           r> swap over c! char+ >r repeat
-           2drop r> r> swap over - 1- over c! ;
+: word     begin key? if key else -1 then 2dup <> until
+           key? 0= if 2drop 0 here c! here exit then
+           here begin char+ swap over c! swap
+           key? if key else dup then
+           2dup <> while rot repeat
+           2drop here - here c! here ;
 : count    dup char+ swap c@ ;
 : char     bl word char+ c@ ;
 : [char]   char postpone literal ; imm
@@ -166,7 +168,7 @@
            ['] _jmp over ! cell+ r> cell+ swap ! ;
 
 : does>    state @ if
-           here 3 cells + postpone literal ['] _does> , ['] exit , else
+           ['] _lit , here 2 cells + , ['] _does> , ['] exit , else
            here dup _does> dup _compxt ! 0 , ] then ; imm
 
 : variable create 1 cells allot ;

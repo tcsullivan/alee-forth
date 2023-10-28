@@ -28,7 +28,10 @@
 
 : .(        [char] ) word count type ; imm
 : c"        state @ if ['] _jmp , here 0 , then
-            [char] " word
+            [char] " here char+ begin
+            key dup 3 pick <> while
+            over c! char+ repeat drop
+            swap drop here - here c! here
             state @ 0= if exit then
             dup count nip 1+ allot
             here rot !
@@ -38,7 +41,7 @@
 : value     constant ;
 : to        ' 4 cells + state @ if postpone literal ['] ! , else ! then ; imm
 
-: defer     create does> @ execute ;
+: defer     create ['] exit , does> @ execute ;
 : defer@    >body @ ;
 : defer!    >body ! ;
 : is        state @ if postpone ['] postpone defer! else ' defer! then ; imm
@@ -65,4 +68,9 @@
 
 ( WORD uses HERE and must be at least 33 characters. )
 : pad      here 50 chars + align ;
+
+: parse     here dup >r swap begin
+            key? if key else dup then 2dup <> while
+            rot dup >r c! r> char+ swap repeat
+            2drop r> tuck - ;
 
