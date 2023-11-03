@@ -35,7 +35,8 @@ static void parseFile(State&, std::istream&);
 
 int main(int argc, char *argv[])
 {
-    SplitMemDict<alee_dat_len> dict (alee_dat);
+    (void)alee_dat_len;
+    SplitMemDict<sizeof(alee_dat)> dict (alee_dat);
     State state (dict, readchar);
 
     std::vector args (argv + 1, argv + argc);
