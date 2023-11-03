@@ -178,6 +178,13 @@ void initGPIO()
     P5DIR |= BIT5 | BIT6 | BIT7;
     P5OUT |= BIT5 | BIT6 | BIT7;
 
+    // Setup buttons w/ pullups
+    P3DIR &= ~BIT4; P3REN |= BIT4; P3OUT |= BIT4;
+    P2DIR &= ~BIT3; P2REN |= BIT3; P2OUT |= BIT3;
+
+    // XT1 pins (P2.0 and P2.1)
+    //P2SEL1 |= BIT0 | BIT1;
+
     // Allow GPIO configurations to be applied
     PM5CTL0 &= ~LOCKLPM5;
 
@@ -198,6 +205,19 @@ void initClock()
 
     CSCTL4 = SELMS__DCOCLKDIV | SELA__REFOCLK; // set default REFO(~32768Hz) as ACLK source, ACLK = 32768Hz
                                                // default DCODIV as MCLK and SMCLK source
+
+//    // ACLK to XT1
+//    do
+//    {
+//        CSCTL7 &= ~(XT1OFFG | DCOFFG);                // Clear XT1 and DCO fault flag
+//        SFRIFG1 &= ~OFIFG;
+//    }while (SFRIFG1 & OFIFG);                         // Test oscillator fault flag
+//
+//    CSCTL4 = SELMS__DCOCLKDIV | SELA__XT1CLK;  // set ACLK = XT1CLK = 32768Hz
+//                                               // DCOCLK = MCLK and SMCLK source
+//
+//    // Now that osc is running enable fault interrupt
+//    SFRIE1 |= OFIE;
 }
 
 void initUART()

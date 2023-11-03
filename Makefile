@@ -18,7 +18,7 @@ msp430: CXXFLAGS += -DMEMDICTSIZE=1024 -flto -fno-asynchronous-unwind-tables -fn
 msp430: LDFLAGS += -L/usr/msp430-elf/usr/include -Tmsp430/msp430fr2476.ld -Wl,-gc-sections
 msp430: msp430/alee-msp430
 
-msp430-prep: STANDALONE += forth/msp430.fth
+msp430-prep: STANDALONE += forth/core-ext.fth forth/tools.fth forth/msp430.fth
 msp430-prep: core.fth.h
 msp430-prep: clean-lib
 

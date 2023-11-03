@@ -11,14 +11,3 @@
            >r cell+ rot drop r> @ then
            -rot swap type space \ lt adv
            over _begin <> while - repeat 2drop ;
-
-( xt -- caddr u )
-: _nameof  _latest @ begin \ xt lt
-           2dup < while \ xt lt
-           dup @ \ xt lt l
-           dup 6 >> 1023 < if \ xt lt l
-           6 >> - else
-           drop dup cell+ @ - then \ xt lt
-           repeat nip \ lt
-           dup @ swap cell+ over 31 & \ l lt len
-           rot 6 >> 1023 = if swap cell+ swap then ; \ lt len
