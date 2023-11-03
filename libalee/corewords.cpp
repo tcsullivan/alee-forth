@@ -180,13 +180,10 @@ execute:
         cell = state.pop();
         dcell = cell - state.dict.latest();
         if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
-            state.dict.write(cell,
-                (state.dict.read(cell) & 0x1F) | static_cast<Cell>(((1 << (sizeof(Cell) * 8 - 6)) - 1) << 6));
             state.dict.write(static_cast<Addr>(cell) + sizeof(Cell), static_cast<Cell>(dcell));
-        } else {
-            state.dict.write(cell,
-                (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
+            dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
         }
+        state.dict.write(cell, (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
         state.dict.latest(cell);
         break;
     case 27: // _jmp0

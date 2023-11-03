@@ -16,10 +16,11 @@ msp430: CXXFLAGS += -I. -I/usr/msp430-elf/usr/include
 msp430: CXXFLAGS += -Os -mmcu=msp430fr2476 -ffunction-sections -fdata-sections
 msp430: CXXFLAGS += -DMEMDICTSIZE=1024 -flto -fno-asynchronous-unwind-tables -fno-threadsafe-statics -fno-stack-protector
 msp430: LDFLAGS += -L/usr/msp430-elf/usr/include -Tmsp430/msp430fr2476.ld -Wl,-gc-sections
-msp430: clean-lib msp430/alee-msp430
+msp430: msp430/alee-msp430
 
 msp430-prep: STANDALONE += forth/msp430.fth
 msp430-prep: core.fth.h
+msp430-prep: clean-lib
 
 small: CXXFLAGS += -Os -fno-asynchronous-unwind-tables -fno-threadsafe-statics -fno-stack-protector
 small: alee
@@ -45,7 +46,7 @@ $(LIBFILE): $(OBJFILES)
 
 core.fth.h: alee.dat
 	xxd -i $< > $@
-	sed -i "s/unsigned /static const &/" $@
+	sed -i "s/unsigned /static &/" $@
 
 alee.dat: alee $(STANDALONE)
 	echo "3 sys" | ./alee $(STANDALONE)

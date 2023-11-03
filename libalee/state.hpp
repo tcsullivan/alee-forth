@@ -25,8 +25,8 @@
 #include <csetjmp>
 #include <cstddef>
 
-constexpr unsigned DataStackSize = 16;
-constexpr unsigned ReturnStackSize = 16;
+constexpr unsigned DataStackSize = 64;
+constexpr unsigned ReturnStackSize = 64;
 
 class State
 {

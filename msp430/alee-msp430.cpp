@@ -18,14 +18,16 @@
 
 #include "alee.hpp"
 #include "libalee/ctype.hpp"
-#include "splitmemdict.hpp"
 
 #include <msp430.h>
 
+#include "splitmemdictrw.hpp"
+
 alignas(sizeof(Cell))
+__attribute__((section(".text")))
 #include "core.fth.h"
 
-static char strbuf[32];
+static char strbuf[80];
 
 static void readchar(State& state);
 static void serput(int c);
@@ -38,14 +40,19 @@ static void initUART();
 static void Software_Trim();
 #define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
 
+//__attribute__((section(".upper.bss")))
+//static uint8_t hidict[16384];
+
 int main()
 {
     WDTCTL = WDTPW | WDTHOLD;
     initGPIO();
     initClock();
     initUART();
+    SYSCFG0 = FRWPPW;
 
-    static SplitMemDict<alee_dat_len> dict (alee_dat);
+    (void)alee_dat_len;
+    static SplitMemDictRW<sizeof(alee_dat), /*sizeof(hidict)*/16384> dict (alee_dat, 0x10000/*(uint32_t)hidict*/);
     State state (dict, readchar);
 
     serputs("alee forth\n\r");

@@ -224,11 +224,6 @@ SECTIONS
     KEEP (*(.dtors))
   } > FRAM
 
-  .upper.rodata :
-  {
-    *(.upper.rodata.* .upper.rodata)
-  } > HIFRAM
-
   /* This section contains data that is initialised during load
      but not on application reset.  */
   .persistent :
@@ -281,19 +276,6 @@ SECTIONS
   PROVIDE(__romdatastart = LOADADDR(.lower.data));
   PROVIDE (__romdatacopysize = SIZEOF(.lower.data) + SIZEOF(.data));
 
-  .upper.data :
-  {
-    __upper_data_init = LOADADDR (.upper.data);
-    /* Status word.  */
-    SHORT(1);
-    __high_datastart = .;
-    *(.upper.data.* .upper.data)
-    __high_dataend = .;
-  } > HIFRAM AT> FRAM
-
-  __rom_highdatacopysize = SIZEOF(.upper.data) - 2;
-  __rom_highdatastart = LOADADDR(.upper.data) + 2;
-
   .lower.bss :
   {
     . = ALIGN(2);
@@ -312,16 +294,6 @@ SECTIONS
     PROVIDE (__bssend = .);
   } > RAM
   PROVIDE (__bsssize = SIZEOF(.lower.bss) + SIZEOF(.bss));
-
-  .upper.bss :
-  {
-    . = ALIGN(2);
-    __high_bssstart = .;
-    *(.upper.bss.* .upper.bss)
-    . = ALIGN(2);
-    __high_bssend = .;
-  } > HIFRAM
-  __high_bsssize = SIZEOF(.upper.bss);
 
   /* This section contains data that is not initialised during load
      or application reset.  */
@@ -394,12 +366,6 @@ SECTIONS
     KEEP (*(.fini))
     KEEP (*(.tm_clone_table))
   } > FRAM
-
-  .upper.text :
-  {
-    . = ALIGN(2);
-    *(.upper.text.* .upper.text)
-  } > HIFRAM
 
   .info (NOLOAD) : {} > INFOMEM              /* MSP430 INFO FLASH MEMORY SEGMENTS */
 
