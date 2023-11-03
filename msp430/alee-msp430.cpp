@@ -43,6 +43,9 @@ static void Software_Trim();
 //__attribute__((section(".upper.bss")))
 //static uint8_t hidict[16384];
 
+static Addr isr_list[24] = {};
+static SplitMemDictRW<sizeof(alee_dat), 16384> dict (alee_dat, 0x10000);
+
 int main()
 {
     WDTCTL = WDTPW | WDTHOLD;
@@ -52,7 +55,6 @@ int main()
     SYSCFG0 = FRWPPW;
 
     (void)alee_dat_len;
-    static SplitMemDictRW<sizeof(alee_dat), /*sizeof(hidict)*/16384> dict (alee_dat, 0x10000/*(uint32_t)hidict*/);
     State state (dict, readchar);
 
     serputs("alee forth\n\r");
@@ -153,12 +155,29 @@ void user_sys(State& state)
     case 2: // emit
         serput(state.pop());
         break;
-    case 3:
+    case 10:
+        { auto index = state.pop();
+          isr_list[index] = state.pop(); }
+        break;
+    case 11:
         { auto addr = state.pop();
           *reinterpret_cast<uint8_t *>(addr) = state.pop() & 0xFFu; }
         break;
-    case 4:
+    case 12:
         state.push(*reinterpret_cast<uint8_t *>(state.pop()));
+        break;
+    case 13:
+        { auto addr = state.pop();
+          *reinterpret_cast<uint16_t *>(addr) = state.pop() & 0xFFFFu; }
+        break;
+    case 14:
+        state.push(*reinterpret_cast<uint16_t *>(state.pop()));
+        break;
+    case 15:
+        _bis_SR_register(state.pop());
+        break;
+    case 16:
+        _bic_SR_register(state.pop());
         break;
     default:
         break;
@@ -309,4 +328,43 @@ void Software_Trim()
     CSCTL1 = csCtl1Copy;                       // Reload locked DCOFTRIM
     while(CSCTL7 & (FLLUNLOCK0 | FLLUNLOCK1)); // Poll until FLL is locked
 }
+
+void alee_isr_handle(unsigned index)
+{
+    const Addr isr = isr_list[index];
+
+    if (isr != 0) {
+        State isrstate (dict, readchar);
+        isrstate.execute(isr);
+    }
+}
+
+#define DEFINE_ISR(VVV, III) \
+    __attribute__((interrupt(VVV))) \
+    void VVV##_ISR() { alee_isr_handle(III); }
+
+DEFINE_ISR(ECOMP0_VECTOR, 0)
+DEFINE_ISR(PORT6_VECTOR, 1)
+DEFINE_ISR(PORT5_VECTOR, 2)
+DEFINE_ISR(PORT4_VECTOR, 3)
+DEFINE_ISR(PORT3_VECTOR, 4)
+DEFINE_ISR(PORT2_VECTOR, 5)
+DEFINE_ISR(PORT1_VECTOR, 6)
+DEFINE_ISR(ADC_VECTOR, 7)
+DEFINE_ISR(EUSCI_B1_VECTOR, 8)
+DEFINE_ISR(EUSCI_B0_VECTOR, 9)
+DEFINE_ISR(EUSCI_A1_VECTOR, 10)
+DEFINE_ISR(EUSCI_A0_VECTOR, 11)
+DEFINE_ISR(WDT_VECTOR, 12)
+DEFINE_ISR(RTC_VECTOR, 13)
+DEFINE_ISR(TIMER0_B1_VECTOR, 14)
+DEFINE_ISR(TIMER0_B0_VECTOR, 15)
+DEFINE_ISR(TIMER3_A1_VECTOR, 16)
+DEFINE_ISR(TIMER3_A0_VECTOR, 17)
+DEFINE_ISR(TIMER2_A1_VECTOR, 18)
+DEFINE_ISR(TIMER2_A0_VECTOR, 19)
+DEFINE_ISR(TIMER1_A1_VECTOR, 20)
+DEFINE_ISR(TIMER1_A0_VECTOR, 21)
+DEFINE_ISR(TIMER0_A1_VECTOR, 22)
+DEFINE_ISR(TIMER0_A0_VECTOR, 23)
 

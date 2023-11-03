@@ -1,9 +1,20 @@
-: r! 3 sys ;
-: r@ 4 sys ;
+: vector! 10 sys ;
+: reg!    11 sys ;
+: reg@    12 sys ;
+: 2reg!   13 sys ;
+: 2reg@   14 sys ;
+: sr+     15 sys ;
+: sr-     16 sys ;
 
-: rset dup r@ rot | swap r! ;
-: rclr dup r@ rot invert & swap r! ;
-: rtgl dup r@ rot ^ swap r! ;
+: reg [ ' reg@ ' reg! ] literal literal ;
+: 2reg [ ' 2reg@ ' 2reg! ] literal literal ;
+
+: set ( b r reg/wreg -- )
+  >r over r> execute >r rot r> | -rot execute ;
+: clear ( b r reg/wreg -- )
+  >r over r> execute >r rot invert r> & -rot execute ;
+: toggle ( b r reg/wreg -- )
+  >r over r> execute >r rot r> ^ -rot execute ;
 
 16 base !
 
@@ -840,4 +851,29 @@
 : UCB1IV_H           05AF ;
 
 decimal
+
+: ECOMP0_VECTOR    0 ;
+: PORT6_VECTOR     1 ;
+: PORT5_VECTOR     2 ;
+: PORT4_VECTOR     3 ;
+: PORT3_VECTOR     4 ;
+: PORT2_VECTOR     5 ;
+: PORT1_VECTOR     6 ;
+: ADC_VECTOR       7 ;
+: EUSCI_B1_VECTOR  8 ;
+: EUSCI_B0_VECTOR  9 ;
+: EUSCI_A1_VECTOR  10 ;
+: EUSCI_A0_VECTOR  11 ;
+: WDT_VECTOR       12 ;
+: RTC_VECTOR       13 ;
+: TIMER0_B1_VECTOR 14 ;
+: TIMER0_B0_VECTOR 15 ;
+: TIMER3_A1_VECTOR 16 ;
+: TIMER3_A0_VECTOR 17 ;
+: TIMER2_A1_VECTOR 18 ;
+: TIMER2_A0_VECTOR 19 ;
+: TIMER1_A1_VECTOR 20 ;
+: TIMER1_A0_VECTOR 21 ;
+: TIMER0_A1_VECTOR 22 ;
+: TIMER0_A0_VECTOR 23 ;
 
