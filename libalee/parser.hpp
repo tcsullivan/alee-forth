@@ -26,6 +26,8 @@
 class Parser
 {
 public:
+    static Error (*customParse)(State&, Word);
+
     /**
      * Parses (and evaluates) the given string using the given state.
      * The string is stored in the state's input buffer, then parseSource()
@@ -39,6 +41,8 @@ public:
      * buffer.
      */
     static Error parseSource(State&);
+
+    static void processLiteral(State&, Cell);
 
 private:
     /**

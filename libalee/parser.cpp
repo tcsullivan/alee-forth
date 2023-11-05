@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <cstring>
 
+Error (*Parser::customParse)(State&, Word) = nullptr;
+
 Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
@@ -60,7 +62,11 @@ Error Parser::parseWord(State& state, Word word)
         auto cw = CoreWords::findi(state, word);
 
         if (cw < 0) {
-            return parseNumber(state, word);
+            auto r = parseNumber(state, word);
+            if (r != Error::none)
+                return customParse ? customParse(state, word) : r;
+            else
+                return r;
         } else {
             ins = cw;
             imm = ins == CoreWords::Semicolon;
@@ -106,9 +112,14 @@ Error Parser::parseNumber(State& state, Word word)
     if (inv)
         result *= -1;
 
-    auto value = static_cast<Cell>(result);
+    processLiteral(state, static_cast<Cell>(result));
+    return Error::none;
+}
+
+void Parser::processLiteral(State& state, Cell value)
+{
     if (state.compiling()) {
-        auto ins = CoreWords::findi("_lit");
+        constexpr auto ins = CoreWords::findi("_lit");
 
         const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
         if (value >= 0 && value < maxlit)
@@ -120,7 +131,5 @@ Error Parser::parseNumber(State& state, Word word)
     } else {
         state.push(value);
     }
-
-    return Error::none;
 }
 
