@@ -18,13 +18,17 @@
 
 #include "alee.hpp"
 #include "libalee/ctype.hpp"
+#include "lzss.h"
+static const
+#include "msp430fr2476_all.h"
 
+#include <cstring>
 #include <msp430.h>
 
 #include "splitmemdictrw.hpp"
 
 alignas(sizeof(Cell))
-__attribute__((section(".text")))
+__attribute__((section(".lodict")))
 #include "core.fth.h"
 
 static char strbuf[80];
@@ -33,6 +37,7 @@ static void readchar(State& state);
 static void serput(int c);
 static void serputs(const char *s);
 static void printint(DoubleCell n, char *buf);
+static Error findword(State&, Word);
 
 static void initGPIO();
 static void initClock();
@@ -40,7 +45,7 @@ static void initUART();
 static void Software_Trim();
 #define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
 
-//__attribute__((section(".upper.bss")))
+//__attribute__((section(".hidict")))
 //static uint8_t hidict[16384];
 
 static Addr isr_list[24] = {};
@@ -56,6 +61,7 @@ int main()
 
     (void)alee_dat_len;
     State state (dict, readchar);
+    Parser::customParse = findword;
 
     serputs("alee forth\n\r");
 
@@ -156,7 +162,7 @@ void user_sys(State& state)
         serput(state.pop());
         break;
     case 10:
-        { auto index = state.pop();
+        { auto index = state.pop() - 20;
           isr_list[index] = state.pop(); }
         break;
     case 11:
@@ -184,6 +190,49 @@ void user_sys(State& state)
     }
 }
 
+#define LZSS_MAGIC_SEPARATOR (0xFB)
+
+static char lzword[32];
+static int lzwlen;
+static char lzbuf[32];
+static char *lzptr;
+
+Error findword(State& state, Word word)
+{
+    char *ptr = lzword;
+    for (auto it = word.begin(&state.dict); it != word.end(&state.dict); ++it) {
+        *ptr = *it;
+        if (islower(*ptr))
+            *ptr -= 32;
+        ++ptr;
+    }
+    lzwlen = (int)(ptr - lzword);
+
+    lzptr = lzbuf;
+    lzssinit(msp430fr2476_all_lzss, msp430fr2476_all_lzss_len);
+
+    auto ret = decode([](int c) {
+        if (c != LZSS_MAGIC_SEPARATOR) {
+            *lzptr++ = (char)c;
+        } else {
+            if (lzwlen == lzptr - lzbuf - 2 && strncmp(lzword, lzbuf, lzptr - lzbuf - 2) == 0) {
+                lzwlen = (*(lzptr - 2) << 8) | *(lzptr - 1);
+                return 1;
+            } else {
+                lzptr = lzbuf;
+            }
+        }
+        return 0;
+    });
+
+    if (ret == EOF) {
+        return Error::noword;
+    } else {
+        Parser::processLiteral(state, (Cell)lzwlen);
+        return Error::none;
+    }
+}
+
 void initGPIO()
 {
     // Unnecessary, but done by TI example
@@ -200,9 +249,6 @@ void initGPIO()
     // Setup buttons w/ pullups
     P3DIR &= ~BIT4; P3REN |= BIT4; P3OUT |= BIT4;
     P2DIR &= ~BIT3; P2REN |= BIT3; P2OUT |= BIT3;
-
-    // XT1 pins (P2.0 and P2.1)
-    //P2SEL1 |= BIT0 | BIT1;
 
     // Allow GPIO configurations to be applied
     PM5CTL0 &= ~LOCKLPM5;
@@ -224,19 +270,6 @@ void initClock()
 
     CSCTL4 = SELMS__DCOCLKDIV | SELA__REFOCLK; // set default REFO(~32768Hz) as ACLK source, ACLK = 32768Hz
                                                // default DCODIV as MCLK and SMCLK source
-
-//    // ACLK to XT1
-//    do
-//    {
-//        CSCTL7 &= ~(XT1OFFG | DCOFFG);                // Clear XT1 and DCO fault flag
-//        SFRIFG1 &= ~OFIFG;
-//    }while (SFRIFG1 & OFIFG);                         // Test oscillator fault flag
-//
-//    CSCTL4 = SELMS__DCOCLKDIV | SELA__XT1CLK;  // set ACLK = XT1CLK = 32768Hz
-//                                               // DCOCLK = MCLK and SMCLK source
-//
-//    // Now that osc is running enable fault interrupt
-//    SFRIE1 |= OFIE;
 }
 
 void initUART()

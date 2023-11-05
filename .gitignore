@@ -1,8 +1,12 @@
 .*
 *.o
 *.dat
+*.bin
+*.lzss
 alee
 alee-msp430
 alee-standalone
 libalee.a
 core.fth.h
+msp430/lzss
+msp430/msp430fr2476_all.h
