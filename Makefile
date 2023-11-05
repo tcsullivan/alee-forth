@@ -14,8 +14,8 @@ msp430: CXX := msp430-elf-g++
 msp430: AR := msp430-elf-gcc-ar
 msp430: CXXFLAGS += -I. -I/usr/msp430-elf/usr/include
 msp430: CXXFLAGS += -Os -mmcu=msp430fr2476 -ffunction-sections -fdata-sections
-msp430: CXXFLAGS += -DMEMDICTSIZE=1024 -flto -fno-asynchronous-unwind-tables -fno-threadsafe-statics -fno-stack-protector
-msp430: LDFLAGS += -L/usr/msp430-elf/usr/include -Tmsp430/msp430fr2476.ld -Wl,-gc-sections
+msp430: CXXFLAGS += -flto -fno-asynchronous-unwind-tables -fno-threadsafe-statics -fno-stack-protector
+msp430: LDFLAGS += -L msp430 -T msp430fr2476.ld -Wl,-gc-sections
 msp430: msp430/alee-msp430
 
 msp430-prep: STANDALONE += forth/core-ext.fth forth/tools.fth forth/msp430.fth
