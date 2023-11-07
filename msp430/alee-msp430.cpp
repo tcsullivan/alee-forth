@@ -48,6 +48,7 @@ static void Software_Trim();
 //__attribute__((section(".hidict")))
 //static uint8_t hidict[16384];
 
+static bool inISR = false;
 static Addr isr_list[24] = {};
 static SplitMemDictRW<sizeof(alee_dat), 16384> dict (alee_dat, 0x10000);
 
@@ -180,10 +181,16 @@ void user_sys(State& state)
         state.push(*reinterpret_cast<uint16_t *>(state.pop()));
         break;
     case 15:
-        _bis_SR_register(state.pop());
+        if (!inISR)
+            _bis_SR_register(state.pop());
+        else
+            _bis_SR_register_on_exit(state.pop());
         break;
     case 16:
-        _bic_SR_register(state.pop());
+        if (!inISR)
+            _bic_SR_register(state.pop());
+        else
+            _bic_SR_register_on_exit(state.pop());
         break;
     default:
         break;
@@ -368,7 +375,9 @@ void alee_isr_handle(unsigned index)
 
     if (isr != 0) {
         State isrstate (dict, readchar);
+        inISR = true;
         isrstate.execute(isr);
+        inISR = false;
     }
 }
 
