@@ -20,6 +20,7 @@
 #include "memdict.hpp"
 
 #include <charconv>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -82,6 +83,8 @@ static void load(State& state)
 
 void user_sys(State& state)
 {
+    static std::chrono::time_point<std::chrono::high_resolution_clock> last;
+    static bool start = false;
     char buf[32] = {0};
 
     switch (state.pop()) {
@@ -101,6 +104,20 @@ void user_sys(State& state)
         break;
     case 4: // load
         load(state);
+        break;
+    case 5: // time
+        if (!start) {
+            start = true;
+            last = std::chrono::high_resolution_clock::now();
+        } else {
+            start = false;
+            auto diff = std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::high_resolution_clock::now() - last);
+            state.push((Cell)diff.count());
+        }
+        break;
+    case 6: // double-add
+        { auto sum = state.popd() + state.popd(); state.pushd(sum); }
         break;
     default:
         break;

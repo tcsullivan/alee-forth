@@ -87,9 +87,21 @@ public:
         *dsp++ = value;
     }
 
-    inline Cell pop() {
+    inline const Cell& pop() {
         verify(dsp > dstack, Error::pop);
         return *--dsp;
+    }
+
+    inline DoubleCell popd() {
+        DoubleCell dcell = pop();
+        dcell <<= sizeof(Cell) * 8;
+        dcell |= static_cast<Addr>(pop());
+        return dcell;
+    }
+
+    inline void pushd(DoubleCell d) {
+        push(static_cast<Cell>(d));
+        push(static_cast<Cell>(d >> (sizeof(Cell) * 8)));
     }
 
     inline void pushr(Cell value) {
@@ -97,19 +109,18 @@ public:
         *rsp++ = value;
     }
 
-    inline Cell popr() {
+    inline const Cell& popr() {
         verify(rsp > rstack, Error::popr);
         return *--rsp;
-    }
-
-    inline Cell& top() {
-        verify(dsp > dstack, Error::top);
-        return *(dsp - 1);
     }
 
     inline Cell& pick(std::size_t i) {
         verify(dsp - i > dstack, Error::pick);
         return *(dsp - i - 1);
+    }
+
+    inline Cell& top() {
+        return pick(0);
     }
 
     // Advances the instruction pointer and returns that cell's contents.

@@ -39,31 +39,17 @@ void find(State& state, Word word)
 
 void CoreWords::run(Cell ins, State& state)
 {
-    Cell cell;
     DoubleCell dcell;
-
-    Addr index = ins;
-
+    const Addr index = ins;
     auto& ip = state.ip();
 
-    auto popd = [](State& s) {
-        DoubleCell dcell = s.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(s.pop());
-        return dcell;
-    };
-
-    auto pushd = [](State& s, DoubleCell d) {
-        s.push(static_cast<Cell>(d));
-        s.push(static_cast<Cell>(d >> (sizeof(Cell) * 8)));
-    };
-
-execute:
     if (index >= Dictionary::Begin) {
         // must be calling a defined subroutine
         state.pushr(ip);
         ip = index;
         return;
+    } else if (index >= WordCount) {
+        state.push(index - WordCount);
     } else switch (index) {
     case 0: // _lit
         state.push(state.beyondip());
@@ -84,27 +70,25 @@ execute:
         user_sys(state);
         break;
     case 6: // add
-        cell = state.pop();
-        state.top() += cell;
+        { auto& cell = state.pop(); state.top() += cell; }
         break;
     case 7: // sub
-        cell = state.pop();
-        state.top() -= cell;
+        { auto& cell = state.pop(); state.top() -= cell; }
         break;
     case 8: // mul ( n n -- d )
-        cell = state.pop();
-        dcell = state.pop() * cell;
-        pushd(state, dcell);
+        { auto& cell = state.pop();
+          dcell = state.pop() * cell;
+          state.pushd(dcell); }
         break;
     case 9: // div ( d n -- n )
-        cell = state.pop();
-        dcell = popd(state);
-        state.push(static_cast<Cell>(dcell / cell));
+        { auto& cell = state.pop();
+          dcell = state.popd();
+          state.push(static_cast<Cell>(dcell / cell)); }
         break;
     case 10: // mod ( d n -- n )
-        cell = state.pop();
-        dcell = popd(state);
-        state.push(static_cast<Cell>(dcell % cell));
+        { auto& cell = state.pop();
+          dcell = state.popd();
+          state.push(static_cast<Cell>(dcell % cell)); }
         break;
     case 11: // peek
         if (state.pop())
@@ -113,11 +97,11 @@ execute:
             state.push(state.dict.readbyte(state.pop()));
         break;
     case 12: // poke
-        cell = state.pop();
-        if (auto addr = state.pop(); cell)
-            state.dict.write(addr, state.pop());
-        else
-            state.dict.writebyte(addr, state.pop() & 0xFFu);
+        { auto& cell = state.pop();
+          if (auto addr = state.pop(); cell)
+              state.dict.write(addr, state.pop());
+          else
+              state.dict.writebyte(addr, state.pop() & 0xFFu); }
         break;
     case 13: // pushr
         state.pushr(state.pop());
@@ -126,32 +110,29 @@ execute:
         state.push(state.popr());
         break;
     case 15: // equal
-        cell = state.pop();
-        state.top() = state.top() == cell ? -1 : 0;
+        { auto& cell = state.pop();
+          state.top() = state.top() == cell ? -1 : 0; }
         break;
     case 16: // lt
-        cell = state.pop();
-        state.top() = state.top() < cell ? -1 : 0;
+        { auto& cell = state.pop();
+          state.top() = state.top() < cell ? -1 : 0; }
         break;
     case 17: // and
-        cell = state.pop();
-        state.top() &= cell;
+        { auto& cell = state.pop(); state.top() &= cell; }
         break;
     case 18: // or
-        cell = state.pop();
-        state.top() |= cell;
+        { auto& cell = state.pop(); state.top() |= cell; }
         break;
     case 19: // xor
-        cell = state.pop();
-        state.top() ^= cell;
+        { auto& cell = state.pop(); state.top() ^= cell; }
         break;
     case 20: // shl
-        cell = state.pop();
-        reinterpret_cast<Addr&>(state.top()) <<= static_cast<Addr>(cell);
+        { auto& cell = state.pop();
+          reinterpret_cast<Addr&>(state.top()) <<= static_cast<Addr>(cell); }
         break;
     case 21: // shr
-        cell = state.pop();
-        reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell);
+        { auto& cell = state.pop();
+          reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell); }
         break;
     case 22: // colon
         state.push(state.dict.alignhere());
@@ -167,8 +148,8 @@ execute:
         find(state, state.dict.input());
         break;
     case 24: // execute
-        index = state.pop();
-        goto execute;
+        ip = state.pop();
+        return;
     case 25: // exit
         ip = state.popr();
         state.verify(ip != 0, Error::exit);
@@ -177,14 +158,18 @@ execute:
         state.dict.add(findi("exit"));
         state.compiling(false);
 
-        cell = state.pop();
-        dcell = cell - state.dict.latest();
-        if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
-            state.dict.write(static_cast<Addr>(cell) + sizeof(Cell), static_cast<Cell>(dcell));
-            dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
+        {
+            auto& cell = state.pop();
+            dcell = cell - state.dict.latest();
+            if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
+                state.dict.write(static_cast<Addr>(cell) + sizeof(Cell),
+                    static_cast<Cell>(dcell));
+                dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
+            }
+            state.dict.write(cell,
+                (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
+            state.dict.latest(cell);
         }
-        state.dict.write(cell, (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
-        state.dict.latest(cell);
         break;
     case 27: // _jmp0
         if (state.pop()) {
@@ -213,39 +198,38 @@ execute:
         }
         break;
     case 33: // find
-        cell = state.pop();
-        find(state,
-             Word::fromLength(static_cast<Addr>(cell + 1),
-                              state.dict.readbyte(cell)));
+        { auto& cell = state.pop();
+          find(state,
+               Word::fromLength(static_cast<Addr>(cell + 1),
+                                state.dict.readbyte(cell))); }
         break;
     case 34: // _uma
         {
-        const auto plus = state.pop();
-        cell = state.pop();
-        dcell = popd(state);
-        dcell *= static_cast<Addr>(cell);
-        dcell += static_cast<Addr>(plus);
-        pushd(state, dcell);
+            const auto& plus = state.pop();
+            const auto& cell = state.pop();
+            dcell = state.popd();
+            dcell *= static_cast<Addr>(cell);
+            dcell += static_cast<Addr>(plus);
+            state.pushd(dcell);
         }
         break;
     case 35: // u<
-        cell = state.pop();
-        state.top() = static_cast<Addr>(state.top()) <
-                      static_cast<Addr>(cell) ? -1 : 0;
+        { auto& cell = state.pop();
+          state.top() = static_cast<Addr>(state.top()) <
+                        static_cast<Addr>(cell) ? -1 : 0; }
         break;
     case 36: // um/mod
-        cell = state.pop();
-        dcell = popd(state);
+        {
+            const auto& cell = state.pop();
+            dcell = state.popd();
 
-        state.push(static_cast<Cell>(
-            static_cast<DoubleAddr>(dcell) %
-            static_cast<Addr>(cell)));
-        state.push(static_cast<Cell>(
-            static_cast<DoubleAddr>(dcell) /
-            static_cast<Addr>(cell)));
-        break;
-    default:
-        state.push(ins - WordCount);
+            state.push(static_cast<Cell>(
+                static_cast<DoubleAddr>(dcell) %
+                static_cast<Addr>(cell)));
+            state.push(static_cast<Cell>(
+                static_cast<DoubleAddr>(dcell) /
+                static_cast<Addr>(cell)));
+        }
         break;
     }
 
