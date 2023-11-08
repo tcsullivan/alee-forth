@@ -6,6 +6,8 @@
 
 : cell+    2 + ;
 : cells    2 * ;
+: char+    1 + ;
+: chars    ;
 
 : .        0 sys ;
 : emit     2 sys ;
@@ -13,38 +15,40 @@
 : 1+       1 + ;
 : 1-       1 - ;
 
+: over     1 pick ;
+: rot      >r swap r> swap ;
+: -rot     rot rot ;
+
 : '        _' drop ;
 : !        1 _! ;
 : @        1 _@ ;
 : +!       dup >r swap r> @ + swap ! ;
 
+: _latest  2 cells ;
+: imm      _latest @ dup @ 1 5 << | swap ! ;
+: immediate imm ;
+
+: [        0 3 cells ! ; imm
+: ]        1 3 cells ! ;
+
+: ,        1 cells dup >r @ ! r> dup +! ;
+
+: literal  [ ' _lit dup , , ] , , ; imm
+: [']      ' [ ' literal , ] ; imm
+
 : base     0 ;
-: here     1 cells @ ;
-: allot    1 cells +! ;
+: here     [ 1 cells ] literal @ ;
+: allot    [ 1 cells ] literal +! ;
+: state    [ 3 cells ] literal ;
+: _compxt  [ 4 cells ] literal ;
+: _source  [ 5 cells ] literal ;
+: _sourceu [ 6 cells ] literal ;
+: >in      [ 7 cells ] literal ;
+: _begin   [ 8 cells 80 chars + ] literal ;
 
 : c!       0 _! ;
 : c@       0 _@ ;
 : c,       here c! 1 allot ;
-: char+    1+ ;
-: chars    ;
-
-: _latest  2 cells ;
-: imm      _latest @ dup @ 1 5 << | swap ! ;
-: immediate imm ;
-: state    3 cells ;
-: _compxt  4 cells ;
-: _source  5 cells ;
-: _sourceu 6 cells ;
-: >in      7 cells ;
-: _begin   8 cells 80 chars + ;
-
-: ,        here ! 1 cells allot ;
-
-: [        0 state ! ; imm
-: ]        1 state ! ;
-
-: literal  [ ' _lit dup , , ] , , ; imm
-: [']      ' [ ' literal , ] ; imm
 
 : if       ['] _jmp0 , here 0 , ; imm
 : then     here swap ! ; imm
@@ -53,10 +57,6 @@
 : postpone _' dup 0 = if exit then
            1 = swap ['] _lit , , if ['] execute ,
            else ['] , , then ; imm
-
-: over     1 pick ;
-: rot      >r swap r> swap ;
-: -rot     rot rot ;
 
 : 2drop    drop drop ;
 : 2dup     over over ;
@@ -99,7 +99,8 @@
 : j        postpone 2r> ['] r> , postpone r@ ['] swap ,
            ['] >r , ['] -rot , postpone 2>r ; imm
 
-: aligned  dup 1 cells 1- swap over & if 1 cells swap - + else drop then ;
+: aligned  dup [ 1 cells 1- ] literal swap over & if [ 1 cells ] literal
+           swap - + else drop then ;
 : align    here dup aligned swap - allot ;
 
 : and      & ;
@@ -110,7 +111,7 @@
 : invert   -1 ^ ;
 : mod      % ;
 : 2*       2 * ;
-: _msb     1 1 cells 8 * 1- << ;
+: _msb     [ 1 1 cells 8 * 1- << ] literal ;
 : 2/       dup 1 >> swap 0< if _msb or then ;
 
 : /mod     2dup % -rot / ;
@@ -161,17 +162,17 @@
 
 : :noname  here dup _compxt ! 0 , here swap ] ;
 
-: create   : here 4 cells + postpone literal postpone ; 0 , ;
+: create   : here [ 4 cells ] literal + postpone literal postpone ; 0 , ;
 : >body    cell+ @ ;
 
-: _does>   >r _latest @ dup @ 31 & + cell+ aligned 2 cells +
+: _does>   >r _latest @ dup @ 31 & + cell+ aligned [ 2 cells ] literal +
            ['] _jmp over ! cell+ r> cell+ swap ! ;
 
 : does>    state @ if
            ['] _lit , here 2 cells + , ['] _does> , ['] exit , else
            here dup _does> dup _compxt ! 0 , ] then ; imm
 
-: variable create 1 cells allot ;
+: variable create [ 1 cells ] literal allot ;
 : constant create , does> @ ;
 
 : quit     begin _rdepth 1 > while r> drop repeat postpone [ ;
@@ -197,7 +198,7 @@
 : accept   over >r begin dup 0 > while
            key dup 32 < if 2drop 0
            else dup emit rot 2dup c! char+ swap drop swap 1- then
-           repeat drop r> - 1 chars / ;
+           repeat drop r> - [ 1 chars ] literal / ;
 
 : evaluate _source @ >r _sourceu @ >r >in @ >r
            0 >in ! _sourceu ! _source ! _ev

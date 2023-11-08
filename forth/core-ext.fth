@@ -67,7 +67,7 @@
            drop - spaces u. ;
 
 ( WORD uses HERE and must be at least 33 characters. )
-: pad      here 50 chars + align ;
+: pad      here [ 50 chars ] literal + align ;
 
 : parse     here dup >r swap begin
             key? if key else dup then 2dup <> while
