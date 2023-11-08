@@ -21,21 +21,9 @@
 
 #include <utility>
 
-void find(State& state, Word word)
-{
-    Cell tok = 0;
-    Cell imm = 0;
-
-    if (auto j = state.dict.find(word); j > 0) {
-        tok = state.dict.getexec(j);
-        imm = (state.dict.read(j) & Dictionary::Immediate) ? 1 : -1;
-    } else if (tok = CoreWords::findi(state, word); tok >= 0) {
-        imm = (tok == CoreWords::Semicolon) ? 1 : -1;
-    }
-
-    state.push(tok);
-    state.push(imm);
-}
+static void find(State&, Word);
+static DoubleCell popd(State&);
+static void pushd(State&, DoubleCell);
 
 void CoreWords::run(Cell ins, State& state)
 {
@@ -43,20 +31,7 @@ void CoreWords::run(Cell ins, State& state)
     DoubleCell dcell;
 
     Addr index = ins;
-
     auto& ip = state.ip();
-
-    auto popd = [](State& s) {
-        DoubleCell dcell = s.pop();
-        dcell <<= sizeof(Cell) * 8;
-        dcell |= static_cast<Addr>(s.pop());
-        return dcell;
-    };
-
-    auto pushd = [](State& s, DoubleCell d) {
-        s.push(static_cast<Cell>(d));
-        s.push(static_cast<Cell>(d >> (sizeof(Cell) * 8)));
-    };
 
 execute:
     if (index >= Dictionary::Begin) {
@@ -65,7 +40,7 @@ execute:
         ip = index;
         return;
     } else switch (index) {
-    case 0: // _lit
+    case 0: // _lit: Execution semantics of `literal`.
         state.push(state.beyondip());
         break;
     case 1: // drop
@@ -80,7 +55,7 @@ execute:
     case 4: // pick
         state.push(state.pick(state.pop()));
         break;
-    case 5: // sys
+    case 5: // sys: Calls user-defined "system" handler.
         user_sys(state);
         break;
     case 6: // add
@@ -106,13 +81,13 @@ execute:
         dcell = popd(state);
         state.push(static_cast<Cell>(dcell % cell));
         break;
-    case 11: // peek
+    case 11: // peek ( addr cell? -- n )
         if (state.pop())
             state.push(state.dict.read(state.pop()));
         else
             state.push(state.dict.readbyte(state.pop()));
         break;
-    case 12: // poke
+    case 12: // poke ( n addr cell? -- )
         cell = state.pop();
         if (auto addr = state.pop(); cell)
             state.dict.write(addr, state.pop());
@@ -153,7 +128,7 @@ execute:
         cell = state.pop();
         reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell);
         break;
-    case 22: // colon
+    case 22: // colon: Begins definition/compilation of new word.
         state.push(state.dict.alignhere());
         state.dict.write(Dictionary::CompToken, state.top());
         while (!state.dict.hasInput())
@@ -161,7 +136,7 @@ execute:
         state.dict.addDefinition(state.dict.input());
         state.compiling(true);
         break;
-    case 23: // tick
+    case 23: // tick: Collects word from input and finds execution token.
         while (!state.dict.hasInput())
             state.input();
         find(state, state.dict.input());
@@ -173,26 +148,27 @@ execute:
         ip = state.popr();
         state.verify(ip != 0, Error::exit);
         break;
-    case 26: // semic
+    case 26: // semic: Concludes word definition.
         state.dict.add(findi("exit"));
         state.compiling(false);
 
         cell = state.pop();
         dcell = cell - state.dict.latest();
         if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
+            // Large distance to previous entry: store in dedicated cell.
             state.dict.write(static_cast<Addr>(cell) + sizeof(Cell), static_cast<Cell>(dcell));
             dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
         }
         state.dict.write(cell, (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
         state.dict.latest(cell);
         break;
-    case 27: // _jmp0
+    case 27: // _jmp0: Jump if popped value equals zero.
         if (state.pop()) {
             state.beyondip();
             break;
         }
         [[fallthrough]];
-    case 28: // _jmp
+    case 28: // _jmp: Unconditional jump.
         ip = state.beyondip();
         return;
     case 29: // depth
@@ -201,10 +177,10 @@ execute:
     case 30: // _rdepth
         state.push(static_cast<Cell>(state.rsize()));
         break;
-    case 31: // _in
+    case 31: // _in: Fetches more input from the user input source.
         state.input();
         break;
-    case 32: // _ex
+    case 32: // _ev: Evaluates words from current input source.
         {
         const auto st = state.save();
         ip = 0;
@@ -218,7 +194,7 @@ execute:
              Word::fromLength(static_cast<Addr>(cell + 1),
                               state.dict.readbyte(cell)));
         break;
-    case 34: // _uma
+    case 34: // _uma ( d u u -- d ): Unsigned multiply-add.
         {
         const auto plus = state.pop();
         cell = state.pop();
@@ -244,7 +220,7 @@ execute:
             static_cast<DoubleAddr>(dcell) /
             static_cast<Addr>(cell)));
         break;
-    default:
+    default: // Compacted literals (WordCount <= ins < Begin).
         state.push(ins - WordCount);
         break;
     }
@@ -255,5 +231,35 @@ execute:
 Cell CoreWords::findi(State& state, Word word)
 {
     return findi(word.begin(&state.dict), word.size());
+}
+
+void find(State& state, Word word)
+{
+    Cell tok = 0;
+    Cell imm = 0;
+
+    if (auto j = state.dict.find(word); j > 0) {
+        tok = state.dict.getexec(j);
+        imm = (state.dict.read(j) & Dictionary::Immediate) ? 1 : -1;
+    } else if (tok = CoreWords::findi(state, word); tok >= 0) {
+        imm = (tok == CoreWords::Semicolon) ? 1 : -1;
+    }
+
+    state.push(tok);
+    state.push(imm);
+}
+
+DoubleCell popd(State& s)
+{
+    DoubleCell dcell = s.pop();
+    dcell <<= sizeof(Cell) * 8;
+    dcell |= static_cast<Addr>(s.pop());
+    return dcell;
+}
+
+void pushd(State& s, DoubleCell d)
+{
+    s.push(static_cast<Cell>(d));
+    s.push(static_cast<Cell>(d >> (sizeof(Cell) * 8)));
 }
 
