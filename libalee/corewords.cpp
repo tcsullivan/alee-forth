@@ -40,16 +40,17 @@ void find(State& state, Word word)
 void CoreWords::run(Cell ins, State& state)
 {
     DoubleCell dcell;
-    const Addr index = ins;
+    Addr index = ins;
     auto& ip = state.ip();
 
+execute:
     if (index >= Dictionary::Begin) {
         // must be calling a defined subroutine
         state.pushr(ip);
         ip = index;
         return;
     } else if (index >= WordCount) {
-        state.push(index - WordCount);
+        state.push(static_cast<Cell>(index - WordCount));
     } else switch (index) {
     case 0: // _lit
         state.push(state.beyondip());
@@ -148,11 +149,12 @@ void CoreWords::run(Cell ins, State& state)
         find(state, state.dict.input());
         break;
     case 24: // execute
-        ip = state.pop();
-        return;
+        index = state.pop();
+        goto execute;
     case 25: // exit
         ip = state.popr();
-        state.verify(ip != 0, Error::exit);
+        if (ip == 0)
+            state.exit();
         break;
     case 26: // semic
         state.dict.add(findi("exit"));

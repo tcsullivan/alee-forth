@@ -25,6 +25,8 @@
 #include <csetjmp>
 #include <cstddef>
 
+#define verify(C, E)
+
 constexpr unsigned DataStackSize = 64;
 constexpr unsigned ReturnStackSize = 64;
 
@@ -56,6 +58,10 @@ public:
      * compiling flag.
      */
     void reset();
+
+    void exit() {
+        std::longjmp(context.jmpbuf, static_cast<int>(Error::exit));
+    }
 
     Addr& ip() noexcept {
         return context.ip;
@@ -129,10 +135,10 @@ public:
         return dict.read(context.ip);
     }
 
-    inline void verify(bool condition, Error error) {
-        if (!condition)
-            std::longjmp(context.jmpbuf, static_cast<int>(error));
-    }
+//    inline void verify(bool condition, Error error) {
+//        if (!condition)
+//            std::longjmp(context.jmpbuf, static_cast<int>(error));
+//    }
 
 private:
     InputFunc inputfunc; // User-provided function to collect "stdin" input.

@@ -36,7 +36,7 @@ class SplitMemDict : public Dictionary
     uint8_t extra[Dictionary::Begin];
 
     Addr convertAddress(Addr addr) const noexcept {
-        return addr < RON ? addr : static_cast<Addr>(addr - RON);
+        return static_cast<Addr>(addr - (addr >= RON) * RON);
     }
 
 public:
