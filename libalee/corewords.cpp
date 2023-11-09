@@ -40,95 +40,95 @@ execute:
         ip = index;
         return;
     } else switch (index) {
-    case 0: // _lit: Execution semantics of `literal`.
+    case token("_lit"): // Execution semantics of `literal`.
         state.push(state.beyondip());
         break;
-    case 1: // drop
+    case token("drop"):
         state.pop();
         break;
-    case 2: // dup
+    case token("dup"):
         state.push(state.top());
         break;
-    case 3: // swap
+    case token("swap"):
         std::swap(state.top(), state.pick(1));
         break;
-    case 4: // pick
+    case token("pick"):
         state.push(state.pick(state.pop()));
         break;
-    case 5: // sys: Calls user-defined "system" handler.
+    case token("sys"): // Calls user-defined "system" handler.
         user_sys(state);
         break;
-    case 6: // add
+    case token("+"):
         cell = state.pop();
         state.top() += cell;
         break;
-    case 7: // sub
+    case token("-"):
         cell = state.pop();
         state.top() -= cell;
         break;
-    case 8: // mul ( n n -- d )
+    case token("m*"): // ( n n -- d )
         cell = state.pop();
         dcell = state.pop() * cell;
         pushd(state, dcell);
         break;
-    case 9: // div ( d n -- n )
+    case token("_/"): // ( d n -- n )
         cell = state.pop();
         dcell = popd(state);
         state.push(static_cast<Cell>(dcell / cell));
         break;
-    case 10: // mod ( d n -- n )
+    case token("_%"): // ( d n -- n )
         cell = state.pop();
         dcell = popd(state);
         state.push(static_cast<Cell>(dcell % cell));
         break;
-    case 11: // peek ( addr cell? -- n )
+    case token("_@"): // ( addr cell? -- n )
         if (state.pop())
             state.push(state.dict.read(state.pop()));
         else
             state.push(state.dict.readbyte(state.pop()));
         break;
-    case 12: // poke ( n addr cell? -- )
+    case token("_!"): // ( n addr cell? -- )
         cell = state.pop();
         if (auto addr = state.pop(); cell)
             state.dict.write(addr, state.pop());
         else
             state.dict.writebyte(addr, state.pop() & 0xFFu);
         break;
-    case 13: // pushr
+    case token(">r"):
         state.pushr(state.pop());
         break;
-    case 14: // popr
+    case token("r>"):
         state.push(state.popr());
         break;
-    case 15: // equal
+    case token("="):
         cell = state.pop();
         state.top() = state.top() == cell ? -1 : 0;
         break;
-    case 16: // lt
+    case token("<"):
         cell = state.pop();
         state.top() = state.top() < cell ? -1 : 0;
         break;
-    case 17: // and
+    case token("&"):
         cell = state.pop();
         state.top() &= cell;
         break;
-    case 18: // or
+    case token("|"):
         cell = state.pop();
         state.top() |= cell;
         break;
-    case 19: // xor
+    case token("^"):
         cell = state.pop();
         state.top() ^= cell;
         break;
-    case 20: // shl
+    case token("<<"):
         cell = state.pop();
         reinterpret_cast<Addr&>(state.top()) <<= static_cast<Addr>(cell);
         break;
-    case 21: // shr
+    case token(">>"):
         cell = state.pop();
         reinterpret_cast<Addr&>(state.top()) >>= static_cast<Addr>(cell);
         break;
-    case 22: // colon: Begins definition/compilation of new word.
+    case token(":"): // Begins definition/compilation of new word.
         state.push(state.dict.alignhere());
         state.dict.write(Dictionary::CompToken, state.top());
         while (!state.dict.hasInput())
@@ -136,51 +136,53 @@ execute:
         state.dict.addDefinition(state.dict.input());
         state.compiling(true);
         break;
-    case 23: // tick: Collects word from input and finds execution token.
+    case token("_'"): // Collects input word and finds execution token.
         while (!state.dict.hasInput())
             state.input();
         find(state, state.dict.input());
         break;
-    case 24: // execute
+    case token("execute"):
         index = state.pop();
         goto execute;
-    case 25: // exit
+    case token("exit"):
         ip = state.popr();
         state.verify(ip != 0, Error::exit);
         break;
-    case 26: // semic: Concludes word definition.
-        state.dict.add(findi("exit"));
+    case token(";"): // Concludes word definition.
+        state.dict.add(token("exit"));
         state.compiling(false);
 
         cell = state.pop();
         dcell = cell - state.dict.latest();
         if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
             // Large distance to previous entry: store in dedicated cell.
-            state.dict.write(static_cast<Addr>(cell) + sizeof(Cell), static_cast<Cell>(dcell));
+            state.dict.write(static_cast<Addr>(cell) + sizeof(Cell),
+                static_cast<Cell>(dcell));
             dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
         }
-        state.dict.write(cell, (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
+        state.dict.write(cell,
+            (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
         state.dict.latest(cell);
         break;
-    case 27: // _jmp0: Jump if popped value equals zero.
+    case token("_jmp0"): // Jump if popped value equals zero.
         if (state.pop()) {
             state.beyondip();
             break;
         }
         [[fallthrough]];
-    case 28: // _jmp: Unconditional jump.
+    case token("_jmp"): // Unconditional jump.
         ip = state.beyondip();
         return;
-    case 29: // depth
+    case token("depth"):
         state.push(static_cast<Cell>(state.size()));
         break;
-    case 30: // _rdepth
+    case token("_rdepth"):
         state.push(static_cast<Cell>(state.rsize()));
         break;
-    case 31: // _in: Fetches more input from the user input source.
+    case token("_in"): // Fetches more input from the user input source.
         state.input();
         break;
-    case 32: // _ev: Evaluates words from current input source.
+    case token("_ev"): // Evaluates words from current input source.
         {
         const auto st = state.save();
         ip = 0;
@@ -188,13 +190,13 @@ execute:
         state.load(st);
         }
         break;
-    case 33: // find
+    case token("find"):
         cell = state.pop();
         find(state,
              Word::fromLength(static_cast<Addr>(cell + 1),
                               state.dict.readbyte(cell)));
         break;
-    case 34: // _uma ( d u u -- d ): Unsigned multiply-add.
+    case token("_uma"): // ( d u u -- d ): Unsigned multiply-add.
         {
         const auto plus = state.pop();
         cell = state.pop();
@@ -204,12 +206,12 @@ execute:
         pushd(state, dcell);
         }
         break;
-    case 35: // u<
+    case token("u<"):
         cell = state.pop();
         state.top() = static_cast<Addr>(state.top()) <
                       static_cast<Addr>(cell) ? -1 : 0;
         break;
-    case 36: // um/mod
+    case token("um/mod"):
         cell = state.pop();
         dcell = popd(state);
 
@@ -242,7 +244,7 @@ void find(State& state, Word word)
         tok = state.dict.getexec(j);
         imm = (state.dict.read(j) & Dictionary::Immediate) ? 1 : -1;
     } else if (tok = CoreWords::findi(state, word); tok >= 0) {
-        imm = (tok == CoreWords::Semicolon) ? 1 : -1;
+        imm = (tok == CoreWords::token(";")) ? 1 : -1;
     }
 
     state.push(tok);

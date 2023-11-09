@@ -24,6 +24,7 @@
 #include "types.hpp"
 #include "state.hpp"
 
+#include <algorithm>
 #include <cstring>
 
 /**
@@ -41,16 +42,6 @@ class CoreWords
 {
 public:
     /**
-     * Count of total fundamental words.
-     */
-    constexpr static Cell WordCount = 37;
-
-    /**
-     * Token/index of the semicolon word (";").
-     */
-    constexpr static Cell Semicolon = 26;
-
-    /**
      * Searches for the token/index of the given word if it is part of the
      * fundamental word-set.
      * @param state Current execution state object.
@@ -61,11 +52,11 @@ public:
 
     /**
      * Looks up the token/index of the given fundamental word.
-     * Can evaluate at compile-time.
+     * Primarily used for compile-time lookup.
      * @param word The word to look up.
      * @return The token/index of the word or -1 if not found.
      */
-    consteval static Cell findi(const char *word) {
+    consteval static Cell token(const char *word) {
         return findi(word, std::strlen(word));
     }
 
@@ -78,6 +69,7 @@ public:
 
     /**
      * String lookup table for the fundamental word-set.
+     * This also determines the opcode (index) of these words.
      */
     constexpr static char wordsarr[] =
         "_lit\0drop\0dup\0swap\0pick\0sys\0"
@@ -88,6 +80,12 @@ public:
         "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0_in\0_ev\0find\0"
         "_uma\0u<\0um/mod\0";
+
+    /**
+     * Count of total fundamental words.
+     */
+    constexpr static Cell WordCount = [] {
+        return std::count(wordsarr, wordsarr + sizeof(wordsarr), '\0'); }();
 
 private:
     /**

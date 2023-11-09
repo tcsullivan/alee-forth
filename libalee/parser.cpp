@@ -69,7 +69,7 @@ Error Parser::parseWord(State& state, Word word)
                 return r;
         } else {
             ins = cw;
-            imm = ins == CoreWords::Semicolon;
+            imm = ins == CoreWords::token(";");
         }
     } else {
         imm = state.dict.read(ins) & Dictionary::Immediate;
@@ -119,7 +119,7 @@ Error Parser::parseNumber(State& state, Word word)
 void Parser::processLiteral(State& state, Cell value)
 {
     if (state.compiling()) {
-        constexpr auto ins = CoreWords::findi("_lit");
+        constexpr auto ins = CoreWords::token("_lit");
 
         const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
         if (value >= 0 && value < maxlit)
