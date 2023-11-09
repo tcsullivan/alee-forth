@@ -29,14 +29,17 @@ Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
 
+    // Set source and input length
     const auto len = static_cast<Cell>(std::strlen(str));
     state.dict.write(addr, 0);
     state.dict.write(Dictionary::SourceLen, len);
 
+    // Fill input buffer with string contents
     addr += sizeof(Cell);
     while (*str)
         state.dict.writebyte(addr++, *str++);
 
+    // Zero the remaining input buffer
     while (addr < Dictionary::Input + Dictionary::InputCells)
         state.dict.writebyte(addr++, '\0');
 
@@ -56,8 +59,10 @@ Error Parser::parseSource(State& state)
 Error Parser::parseWord(State& state, Word word)
 {
     bool imm;
-    Addr ins = state.dict.find(word);
+    Addr ins;
 
+    // Search order: dictionary, core word-set, number, custom parse.
+    ins = state.dict.find(word);
     if (ins == 0) {
         auto cw = CoreWords::findi(state, word);
 
@@ -121,6 +126,9 @@ void Parser::processLiteral(State& state, Cell value)
     if (state.compiling()) {
         constexpr auto ins = CoreWords::token("_lit");
 
+        // Literal compression: opcodes between WordCount and Begin are unused,
+        // so we assign literals to them to save space. Opcode "WordCount"
+        // pushes zero to the stack, "WordCount + 1" pushes a one, etc.
         const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
         if (value >= 0 && value < maxlit)
             value += CoreWords::WordCount;

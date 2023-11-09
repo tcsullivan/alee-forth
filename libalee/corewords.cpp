@@ -154,11 +154,11 @@ execute:
 
         cell = state.pop();
         dcell = cell - state.dict.latest();
-        if (dcell > (1 << (sizeof(Cell) * 8 - 6)) - 1) {
+        if (dcell >= Dictionary::MaxDistance) {
             // Large distance to previous entry: store in dedicated cell.
             state.dict.write(static_cast<Addr>(cell) + sizeof(Cell),
                 static_cast<Cell>(dcell));
-            dcell = ((1 << (sizeof(Cell) * 8 - 6)) - 1);
+            dcell = Dictionary::MaxDistance;
         }
         state.dict.write(cell,
             (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));

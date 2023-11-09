@@ -41,7 +41,7 @@
  *    - bits 0..4: Length of name
  *    - bit 5: Set if word is immediate
  *    - bits 6..15: Distance (backwards) to the next entry
- *    - If bits 6..15 are all one-bits then distance is in the following cell.
+ *    - If bits 6..15 are all one-bits then "long" distance in following cell.
  *  - "Length" bytes of name
  *  - Zero or more bytes for address alignment
  *  - Zero or more bytes of the definition's contents
@@ -70,10 +70,10 @@ public:
     /** Stores the dictionary's "beginning" i.e. where new definitions begin. */
     constexpr static Addr Begin      = sizeof(Cell) * 8 + InputCells;
 
-    /**
-     * The "immediate" identifier bit used in a definition's information cell.
-     */
+    /** "Immediate" marker bit for a word's definition. */
     constexpr static Cell Immediate = (1 << 5);
+    /** Maximum "short" distance between two definitions. */
+    constexpr static Cell MaxDistance = (1 << (sizeof(Cell) * 8 - 6)) - 1;
 
     /** Returns the value of the cell at the given address. */
     virtual Cell read(Addr) const noexcept = 0;

@@ -56,3 +56,4 @@ bool Word::iterator::operator!=(const iterator& other)
 {
     return dict != other.dict || addr != other.addr;
 }
+
