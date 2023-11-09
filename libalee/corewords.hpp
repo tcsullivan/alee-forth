@@ -48,7 +48,7 @@ public:
     /**
      * Executes the given CoreWord execution token using the given state.
      */
-    static void run(Cell, State&);
+    static bool run(Cell, State&);
 
     constexpr static char wordsarr[] =
         "_lit\0drop\0dup\0swap\0pick\0sys\0"

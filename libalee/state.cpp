@@ -42,17 +42,39 @@ void State::load(const State::Context& ctx)
     context = ctx;
 }
 
+void State::execute1(Addr ins)
+{
+repeat:
+    if (ins >= Dictionary::Begin) [[likely]] {
+        // Subroutine call
+        pushr(context.ip);
+        context.ip = ins;
+    } else {
+        if (ins < CoreWords::WordCount) {
+            if (CoreWords::run(ins, *this)) [[unlikely]] {
+                ins = pop();
+                goto repeat;
+            }
+        } else {
+            push(static_cast<Cell>(ins - CoreWords::WordCount));
+        }
+
+        context.ip += sizeof(Cell);
+    }
+}
+
 Error State::execute(Addr addr)
 {
     auto stat = static_cast<Error>(setjmp(context.jmpbuf));
 
     if (stat == Error::none) {
-        CoreWords::run(addr, *this);
+        context.ip = 0;
+        execute1(addr);
 
         if (context.ip >= Dictionary::Begin) {
             // longjmp will exit this loop.
             for (;;)
-                CoreWords::run(dict.read(context.ip), *this);
+                execute1(dict.read(context.ip));
         } else {
             // addr was a CoreWord, all done now.
             context.ip = 0;

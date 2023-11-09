@@ -51,8 +51,8 @@
 : else     ['] _jmp , here 0 , swap here swap ! ; imm
 
 : postpone _' dup 0 = if exit then
-           1 = swap ['] _lit , , if ['] execute ,
-           else ['] , , then ; imm
+           1 = swap ['] _lit , , if ['] execute
+           else ['] , then , ; imm
 
 : over     1 pick ;
 : rot      >r swap r> swap ;

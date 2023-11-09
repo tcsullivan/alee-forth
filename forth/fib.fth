@@ -9,10 +9,10 @@
   5 sys fib 5 sys >r 2drop r> ;
 
 variable avg 0 avg !
-2000 constant iters
+1000 constant iters
 
 : bench ( -- )
-  iters 0 do 100 fibbench avg +! loop
+  iters 0 do 1000 fibbench avg +! loop
   avg @ iters / avg ! ;
 
 bench ." avg time: " avg @ . ." us" cr
