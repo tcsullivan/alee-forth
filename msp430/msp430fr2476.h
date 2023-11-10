@@ -4232,32 +4232,32 @@ sfr_b(UCB1IV_H);
 * Interrupt Vectors (offset from 0xFF80 + 0x10 for Password)
 ************************************************************/
 
-#define ECOMP0_VECTOR          (20)                     /* 0xFFCA */
-#define PORT6_VECTOR           (21)                     /* 0xFFCC */
-#define PORT5_VECTOR           (22)                     /* 0xFFCE */
-#define PORT4_VECTOR           (23)                     /* 0xFFD0 */
-#define PORT3_VECTOR           (24)                     /* 0xFFD2 */
-#define PORT2_VECTOR           (25)                     /* 0xFFD4 */
-#define PORT1_VECTOR           (26)                     /* 0xFFD6 */
-#define ADC_VECTOR             (27)                     /* 0xFFD8 */
-#define EUSCI_B1_VECTOR        (28)                     /* 0xFFDA */
-#define EUSCI_B0_VECTOR        (29)                     /* 0xFFDC */
-#define EUSCI_A1_VECTOR        (30)                     /* 0xFFDE */
-#define EUSCI_A0_VECTOR        (31)                     /* 0xFFE0 */
-#define WDT_VECTOR             (32)                     /* 0xFFE2 */
-#define RTC_VECTOR             (33)                     /* 0xFFE4 */
-#define TIMER0_B1_VECTOR       (34)                     /* 0xFFE6 */
-#define TIMER0_B0_VECTOR       (35)                     /* 0xFFE8 */
-#define TIMER3_A1_VECTOR       (36)                     /* 0xFFEA */
-#define TIMER3_A0_VECTOR       (37)                     /* 0xFFEC */
-#define TIMER2_A1_VECTOR       (38)                     /* 0xFFEE */
-#define TIMER2_A0_VECTOR       (39)                     /* 0xFFF0 */
-#define TIMER1_A1_VECTOR       (40)                     /* 0xFFF2 */
-#define TIMER1_A0_VECTOR       (41)                     /* 0xFFF4 */
-#define TIMER0_A1_VECTOR       (42)                     /* 0xFFF6 */
-#define TIMER0_A0_VECTOR       (43)                     /* 0xFFF8 */
-#define UNMI_VECTOR            (44)                     /* 0xFFFA */
-#define SYSNMI_VECTOR          (45)                     /* 0xFFFC */
+#define ECOMP0_VECTOR          (0x14)                     /* 0xFFCA */
+#define PORT6_VECTOR           (0x15)                     /* 0xFFCC */
+#define PORT5_VECTOR           (0x16)                     /* 0xFFCE */
+#define PORT4_VECTOR           (0x17)                     /* 0xFFD0 */
+#define PORT3_VECTOR           (0x18)                     /* 0xFFD2 */
+#define PORT2_VECTOR           (0x19)                     /* 0xFFD4 */
+#define PORT1_VECTOR           (0x1A)                     /* 0xFFD6 */
+#define ADC_VECTOR             (0x1B)                     /* 0xFFD8 */
+#define EUSCI_B1_VECTOR        (0x1C)                     /* 0xFFDA */
+#define EUSCI_B0_VECTOR        (0x1D)                     /* 0xFFDC */
+#define EUSCI_A1_VECTOR        (0x1E)                     /* 0xFFDE */
+#define EUSCI_A0_VECTOR        (0x1F)                     /* 0xFFE0 */
+#define WDT_VECTOR             (0x20)                     /* 0xFFE2 */
+#define RTC_VECTOR             (0x21)                     /* 0xFFE4 */
+#define TIMER0_B1_VECTOR       (0x22)                     /* 0xFFE6 */
+#define TIMER0_B0_VECTOR       (0x23)                     /* 0xFFE8 */
+#define TIMER3_A1_VECTOR       (0x24)                     /* 0xFFEA */
+#define TIMER3_A0_VECTOR       (0x25)                     /* 0xFFEC */
+#define TIMER2_A1_VECTOR       (0x26)                     /* 0xFFEE */
+#define TIMER2_A0_VECTOR       (0x27)                     /* 0xFFF0 */
+#define TIMER1_A1_VECTOR       (0x28)                     /* 0xFFF2 */
+#define TIMER1_A0_VECTOR       (0x29)                     /* 0xFFF4 */
+#define TIMER0_A1_VECTOR       (0x2A)                     /* 0xFFF6 */
+#define TIMER0_A0_VECTOR       (0x2B)                     /* 0xFFF8 */
+#define UNMI_VECTOR            (0x2C)                     /* 0xFFFA */
+#define SYSNMI_VECTOR          (0x2D)                     /* 0xFFFC */
 #define RESET_VECTOR           ("reset")                /* 0xFFFE Reset (Highest Priority) */
 
 

@@ -36,7 +36,8 @@ static char strbuf[80];
 static void readchar(State& state);
 static void serput(int c);
 static void serputs(const char *s);
-static void printint(DoubleCell n, char *buf);
+static void printint(DoubleCell n, char *buf, int base);
+
 static Error findword(State&, Word);
 
 static void initGPIO();
@@ -46,11 +47,11 @@ static void Software_Trim();
 #define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
 
 //__attribute__((section(".hidict")))
-//static uint8_t hidict[16384];
+//static uint8_t hidict[32767];
 
-static bool inISR = false;
+static bool exitLpm;
 static Addr isr_list[24] = {};
-static SplitMemDictRW<sizeof(alee_dat), 16384> dict (alee_dat, 0x10000);
+static SplitMemDictRW<sizeof(alee_dat), 32767> dict (alee_dat, 0x10000);
 
 int main()
 {
@@ -129,8 +130,10 @@ void serputs(const char *s)
         serput(*s++);
 }
 
-void printint(DoubleCell n, char *buf)
+void printint(DoubleCell n, char *buf, int base)
 {
+    static const char digit[] = "0123456789ABCDEF";
+
     char *ptr = buf;
     bool neg = n < 0;
 
@@ -138,8 +141,8 @@ void printint(DoubleCell n, char *buf)
         n = -n;
 
     do {
-        *ptr++ = static_cast<char>((n % 10) + '0');
-    } while ((n /= 10));
+        *ptr++ = digit[n % base];
+    } while ((n /= base));
 
     if (neg)
         serput('-');
@@ -154,7 +157,7 @@ void user_sys(State& state)
 {
     switch (state.pop()) {
     case 0: // .
-        printint(state.pop(), strbuf);
+        printint(state.pop(), strbuf, state.dict.read(Dictionary::Base));
         break;
     case 1: // unused
         state.push(static_cast<Addr>(state.dict.capacity() - state.dict.here()));
@@ -181,16 +184,13 @@ void user_sys(State& state)
         state.push(*reinterpret_cast<uint16_t *>(state.pop()));
         break;
     case 15:
-        if (!inISR)
-            _bis_SR_register(state.pop());
-        else
-            _bis_SR_register_on_exit(state.pop());
+        _bis_SR_register(state.pop());
         break;
     case 16:
-        if (!inISR)
-            _bic_SR_register(state.pop());
-        else
-            _bic_SR_register_on_exit(state.pop());
+        _bic_SR_register(state.pop());
+        break;
+    case 17:
+        exitLpm |= true;
         break;
     default:
         break;
@@ -369,21 +369,25 @@ void Software_Trim()
     while(CSCTL7 & (FLLUNLOCK0 | FLLUNLOCK1)); // Poll until FLL is locked
 }
 
-void alee_isr_handle(unsigned index)
+bool alee_isr_handle(unsigned index)
 {
     const Addr isr = isr_list[index];
 
     if (isr != 0) {
         State isrstate (dict, readchar);
-        inISR = true;
+        exitLpm = false;
         isrstate.execute(isr);
-        inISR = false;
+        return exitLpm;
     }
+
+    return false;
 }
 
 #define DEFINE_ISR(VVV, III) \
     __attribute__((interrupt(VVV))) \
-    void VVV##_ISR() { alee_isr_handle(III); }
+    void VVV##_ISR() { \
+        if (alee_isr_handle(III)) \
+            _low_power_mode_off_on_exit(); }
 
 DEFINE_ISR(ECOMP0_VECTOR, 0)
 DEFINE_ISR(PORT6_VECTOR, 1)
