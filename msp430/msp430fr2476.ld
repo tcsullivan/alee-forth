@@ -46,9 +46,8 @@ MEMORY {
   BSL1             : ORIGIN = 0xFFC00, LENGTH = 0x0400 /* END=0xFFFFF, size 1024 */
   RAM              : ORIGIN = 0x2000, LENGTH = 0x2000 /* END=0x3FFF, size 8192 */
   INFOMEM          : ORIGIN = 0x1800, LENGTH = 0x0200 /* END=0x19FF, size 512 */
-  FRAM (rx)        : ORIGIN = 0x8000, LENGTH = 0x6600 /* END=0xAFFF, size 9216 */
-  LOFRAM (rxw)     : ORIGIN = 0xE600, LENGTH = 0x1980 /* END=0xFF7F, size 23424 */
-  HIFRAM (rxw)     : ORIGIN = 0x00010000, LENGTH = 0x00007FFF
+  FRAM (rwx)       : ORIGIN = 0x8000, LENGTH = 0x7F80 /* END=0xFF7F, size 32640 */
+  HIFRAM (rxw)     : ORIGIN = 0x10000, LENGTH = 0x00007FFF
   JTAGSIGNATURE    : ORIGIN = 0xFF80, LENGTH = 0x0004
   BSLSIGNATURE     : ORIGIN = 0xFF84, LENGTH = 0x0004
   BSLCONFIGURATIONSIGNATURE : ORIGIN = 0xFF88, LENGTH = 0x0002
@@ -164,12 +163,6 @@ SECTIONS
     KEEP (*(.resetvec))
   } > RESETVEC
 
-  .lower.rodata :
-  {
-    . = ALIGN(2);
-    *(.lower.rodata.* .lower.rodata)
-  } > FRAM
-
   .rodata :
   {
     . = ALIGN(2);
@@ -238,16 +231,10 @@ SECTIONS
 
   .tinyram : {} > TINYRAM
 
-  .lower.data :
-  {
-    . = ALIGN(2);
-    PROVIDE (__datastart = .);
-    *(.lower.data.* .lower.data)
-  } > RAM AT> FRAM
-
   .data :
   {
     . = ALIGN(2);
+    PROVIDE (__datastart = .);
 
     KEEP (*(.jcr))
     *(.data.rel.ro.local) *(.data.rel.ro*)
@@ -274,19 +261,13 @@ SECTIONS
 
   /* Note that crt0 assumes this is a multiple of two; all the
      start/stop symbols are also assumed word-aligned.  */
-  PROVIDE(__romdatastart = LOADADDR(.lower.data));
-  PROVIDE (__romdatacopysize = SIZEOF(.lower.data) + SIZEOF(.data));
-
-  .lower.bss :
-  {
-    . = ALIGN(2);
-    PROVIDE (__bssstart = .);
-    *(.lower.bss.* .lower.bss)
-  } > RAM
+  PROVIDE(__romdatastart = LOADADDR(.data));
+  PROVIDE (__romdatacopysize = SIZEOF(.data));
 
   .bss :
   {
     . = ALIGN(2);
+    PROVIDE (__bssstart = .);
     *(.dynbss)
     *(.sbss .sbss.*)
     *(.bss .bss.* .gnu.linkonce.b.*)
@@ -294,7 +275,7 @@ SECTIONS
     *(COMMON)
     PROVIDE (__bssend = .);
   } > RAM
-  PROVIDE (__bsssize = SIZEOF(.lower.bss) + SIZEOF(.bss));
+  PROVIDE (__bsssize = SIZEOF(.bss));
 
   /* This section contains data that is not initialised during load
      or application reset.  */
@@ -336,18 +317,6 @@ SECTIONS
     *(.stack)
   }
 
-  .lower.text :
-  {
-    . = ALIGN(2);
-    *(.lower.text.* .lower.text)
-  } > FRAM
-
-  .lodict :
-  {
-      . = ALIGN(2);
-      *(.lodict)
-  } > LOFRAM
-
   .hidict :
   {
       . = ALIGN(2);
@@ -378,6 +347,12 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
     KEEP (*(.tm_clone_table))
+  } > FRAM
+
+  .lodict :
+  {
+      . = ALIGN(2);
+      *(.lodict)
   } > FRAM
 
   .info (NOLOAD) : {} > INFOMEM              /* MSP430 INFO FLASH MEMORY SEGMENTS */
@@ -430,7 +405,7 @@ SECTIONS
   /* DWARF Extension.  */
   .debug_macro    0 : { *(.debug_macro) }
 
-  /DISCARD/ : { *(.note.GNU-stack) }
+  /DISCARD/ : { *(.note.GNU-stack .debug_loclists) }
 }
 
 

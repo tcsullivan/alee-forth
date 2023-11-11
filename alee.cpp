@@ -24,6 +24,14 @@
 #include <iostream>
 #include <vector>
 
+#ifdef ALEE_MSP430
+#include <cstring>
+#include "lzss.h"
+static const
+#include "msp430fr2476_all.h"
+static Error findword(State&, Word);
+#endif // ALEE_MSP430
+
 static bool okay = false;
 
 static void readchar(State&);
@@ -34,6 +42,9 @@ int main(int argc, char *argv[])
 {
     MemDict dict;
     State state (dict, readchar);
+#ifdef ALEE_MSP430
+    Parser::customParse = findword;
+#endif // ALEE_MSP430
 
     dict.initialize();
 
@@ -152,4 +163,49 @@ void parseFile(State& state, std::istream& file)
         parseLine(state, line);
     }
 }
+
+#ifdef ALEE_MSP430
+#define LZSS_MAGIC_SEPARATOR (0xFB)
+
+static char lzword[32];
+static int lzwlen;
+static char lzbuf[32];
+static char *lzptr;
+
+Error findword(State& state, Word word)
+{
+    char *ptr = lzword;
+    for (auto it = word.begin(&state.dict); it != word.end(&state.dict); ++it) {
+        *ptr = *it;
+        if (islower(*ptr))
+            *ptr -= 32;
+        ++ptr;
+    }
+    lzwlen = (int)(ptr - lzword);
+
+    lzptr = lzbuf;
+    lzssinit(msp430fr2476_all_lzss, msp430fr2476_all_lzss_len);
+
+    auto ret = decode([](int c) {
+        if (c != LZSS_MAGIC_SEPARATOR) {
+            *lzptr++ = (char)c;
+        } else {
+            if (lzwlen == lzptr - lzbuf - 2 && strncmp(lzword, lzbuf, lzptr - lzbuf - 2) == 0) {
+                lzwlen = (*(lzptr - 2) << 8) | *(lzptr - 1);
+                return 1;
+            } else {
+                lzptr = lzbuf;
+            }
+        }
+        return 0;
+    });
+
+    if (ret == EOF) {
+        return Error::noword;
+    } else {
+        Parser::processLiteral(state, (Cell)lzwlen);
+        return Error::none;
+    }
+}
+#endif // ALEE_MSP430
 

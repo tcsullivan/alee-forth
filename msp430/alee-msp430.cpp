@@ -27,10 +27,6 @@ static const
 
 #include "splitmemdictrw.hpp"
 
-alignas(sizeof(Cell))
-__attribute__((section(".lodict")))
-#include "core.fth.h"
-
 static char strbuf[80];
 
 static void readchar(State& state);
@@ -46,12 +42,13 @@ static void initUART();
 static void Software_Trim();
 #define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
 
-//__attribute__((section(".hidict")))
-//static uint8_t hidict[32767];
+#define ALEE_RODICTSIZE (7000)
+__attribute__((section(".lodict")))
+#include "core.fth.h"
 
 static bool exitLpm;
 static Addr isr_list[24] = {};
-static SplitMemDictRW<sizeof(alee_dat), 32767> dict (alee_dat, 0x10000);
+static SplitMemDictRW<ALEE_RODICTSIZE, 32767> dict (alee_dat, 0x10000);
 
 int main()
 {

@@ -19,12 +19,13 @@
 #include "alee.hpp"
 #include "splitmemdict.hpp"
 
+#include <array>
 #include <charconv>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-alignas(sizeof(Cell))
+#define ALEE_RODICTSIZE
 #include "core.fth.h"
 
 static bool okay = false;

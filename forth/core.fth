@@ -151,7 +151,9 @@
 
 : (        begin [char] ) key <> while repeat ; imm
 
-: type     begin dup 0 > while swap dup c@ emit char+ swap 1- repeat 2drop ;
+: _type    >r begin dup 0 > while
+           swap dup c@ r@ execute char+ swap 1- repeat 2drop r> drop ;
+: type     [ ' emit ] literal _type ;
 : s"       state @ if ['] _jmp , here 0 , then
            [char] " word count
            state @ 0= if exit then
