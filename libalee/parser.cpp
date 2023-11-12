@@ -20,16 +20,13 @@
 #include "ctype.hpp"
 #include "parser.hpp"
 
-#include <algorithm>
-#include <cstring>
-
 Error (*Parser::customParse)(State&, Word) = nullptr;
 
 Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
 
-    const auto len = static_cast<Cell>(std::strlen(str));
+    const auto len = static_cast<Cell>(strlen(str));
     state.dict.write(addr, 0);
     state.dict.write(Dictionary::SourceLen, len);
 
@@ -95,7 +92,7 @@ Error Parser::parseNumber(State& state, Word word)
         ++it;
 
     const auto end = word.end(&state.dict);
-    for (char c; it != end; ++it) {
+    for (uint8_t c; it != end; ++it) {
         c = *it;
 
         if (isdigit(c)) {

@@ -214,7 +214,9 @@ SECTIONS
     KEEP (*(.dtors))
   } > FRAM
 
-  .tinyram : {} > TINYRAM
+  .tinyram : {
+    PROVIDE (__dict = .);
+  } > TINYRAM
 
   .data :
   {

@@ -25,7 +25,6 @@
 #include <vector>
 
 #ifdef ALEE_MSP430
-#include <cstring>
 #include "lzss.h"
 static const
 #include "msp430fr2476_all.h"
@@ -190,7 +189,7 @@ Error findword(State& state, Word word)
         if (c != LZSS_MAGIC_SEPARATOR) {
             *lzptr++ = (char)c;
         } else {
-            if (lzwlen == lzptr - lzbuf - 2 && strncmp(lzword, lzbuf, lzptr - lzbuf - 2) == 0) {
+            if (lzwlen == lzptr - lzbuf - 2 && std::equal(lzbuf, lzptr - 2, lzword)) {
                 lzwlen = (*(lzptr - 2) << 8) | *(lzptr - 1);
                 return 1;
             } else {

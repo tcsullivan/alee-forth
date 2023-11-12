@@ -18,8 +18,6 @@
 
 #include "dictionary.hpp"
 
-#include <cstring>
-
 void Dictionary::initialize()
 {
     write(Base, 10);

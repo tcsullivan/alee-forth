@@ -40,7 +40,6 @@ public:
         return *this;
     }
 
-
     virtual Cell read(Addr addr) const noexcept final {
         if (addr < LON)
             return *reinterpret_cast<const Cell *>(lodict + addr);
@@ -72,6 +71,9 @@ public:
     virtual unsigned long int capacity() const noexcept final {
         return LON + HIN;
     }
+
+private:
+    virtual ~SplitMemDictRW() override {};
 };
 
 #endif // ALEEFORTH_SPLITMEMDICTRW_HPP

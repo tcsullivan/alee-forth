@@ -22,7 +22,6 @@
 static const
 #include "msp430fr2476_all.h"
 
-#include <cstring>
 #include <msp430.h>
 
 #include "splitmemdictrw.hpp"
@@ -40,9 +39,9 @@ static void initGPIO();
 static void initClock();
 static void initUART();
 static void Software_Trim();
-#define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
+#define MCLK_FREQ_MHZ (16)
 
-#define ALEE_RODICTSIZE (9200)
+#define ALEE_RODICTSIZE (9400)
 __attribute__((section(".lodict")))
 #include "core.fth.h"
 
@@ -50,10 +49,8 @@ static bool exitLpm;
 static Addr isr_list[24] = {};
 
 using DictType = SplitMemDictRW<ALEE_RODICTSIZE, 32767>;
-
-alignas(DictType)
-static unsigned char dictbuf[sizeof(DictType)];
-static auto dict = reinterpret_cast<DictType *>(dictbuf);
+extern char __dict[sizeof(DictType)];
+static auto& dict = *(new (__dict) DictType (alee_dat, 0x10000));
 
 int main()
 {
@@ -64,9 +61,7 @@ int main()
     SYSCFG0 = FRWPPW;
 
     (void)alee_dat_len;
-    dict->lodict = alee_dat;
-    dict->hidict = 0x10000;
-    State state (*dict, readchar);
+    State state (dict, readchar);
     Parser::customParse = findword;
 
     serputs("alee forth\n\r");
@@ -203,17 +198,17 @@ void user_sys(State& state)
 
 #define LZSS_MAGIC_SEPARATOR (0xFB)
 
-static char lzword[32];
+static uint8_t lzword[32];
 static int lzwlen;
-static char lzbuf[32];
-static char *lzptr;
+static uint8_t lzbuf[32];
+static uint8_t *lzptr;
 
 Error findword(State& state, Word word)
 {
-    char *ptr = lzword;
+    uint8_t *ptr = lzword;
     for (auto it = word.begin(&state.dict); it != word.end(&state.dict); ++it) {
         *ptr = *it;
-        if (islower(*ptr))
+        if (!isupper(*ptr))
             *ptr -= 32;
         ++ptr;
     }
@@ -224,9 +219,9 @@ Error findword(State& state, Word word)
 
     auto ret = decode([](int c) {
         if (c != LZSS_MAGIC_SEPARATOR) {
-            *lzptr++ = (char)c;
+            *lzptr++ = (uint8_t)c;
         } else {
-            if (lzwlen == lzptr - lzbuf - 2 && strncmp(lzword, lzbuf, lzptr - lzbuf - 2) == 0) {
+            if (lzwlen == lzptr - lzbuf - 2 && std::equal(lzbuf, lzptr - 2, lzword)) {
                 lzwlen = (*(lzptr - 2) << 8) | *(lzptr - 1);
                 return 1;
             } else {
@@ -271,35 +266,47 @@ void initGPIO()
 
 void initClock()
 {
-    __bis_SR_register(SCG0);                 // disable FLL
-    CSCTL3 |= SELREF__REFOCLK;               // Set REFO as FLL reference source
-    CSCTL1 = DCOFTRIMEN_1 | DCOFTRIM0 | DCOFTRIM1 | DCORSEL_3;// DCOFTRIM=3, DCO Range = 8MHz
-    CSCTL2 = FLLD_0 + 243;                   // DCODIV = 8MHz
-    __delay_cycles(3);
-    __bic_SR_register(SCG0);                // enable FLL
-    Software_Trim();                        // Software Trim to get the best DCOFTRIM value
+    static_assert(MCLK_FREQ_MHZ == 16);
 
-    CSCTL4 = SELMS__DCOCLKDIV | SELA__REFOCLK; // set default REFO(~32768Hz) as ACLK source, ACLK = 32768Hz
-                                               // default DCODIV as MCLK and SMCLK source
+    // Configure one FRAM waitstate as required by the device datasheet for MCLK
+    // operation beyond 8MHz _before_ configuring the clock system.
+    FRCTL0 = FRCTLPW | NWAITS_1;
+
+    P2SEL0 |= BIT0 | BIT1;                       // P2.0~P2.1: crystal pins
+    do
+    {
+        CSCTL7 &= ~(XT1OFFG | DCOFFG);           // Clear XT1 and DCO fault flag
+        SFRIFG1 &= ~OFIFG;
+    } while (SFRIFG1 & OFIFG);                   // Test oscillator fault flag
+
+    __bis_SR_register(SCG0);                     // disable FLL
+    CSCTL3 |= SELREF__XT1CLK;                    // Set XT1 as FLL reference source
+    CSCTL1 = DCOFTRIMEN_1 | DCOFTRIM0 | DCOFTRIM1 | DCORSEL_5;// DCOFTRIM=5, DCO Range = 16MHz
+    CSCTL2 = FLLD_0 + 487;                       // DCOCLKDIV = 16MHz
+    __delay_cycles(3);
+    __bic_SR_register(SCG0);                     // enable FLL
+    Software_Trim();                             // Software Trim to get the best DCOFTRIM value
+
+    CSCTL4 = SELMS__DCOCLKDIV | SELA__XT1CLK;    // set XT1 (~32768Hz) as ACLK source, ACLK = 32768Hz
+                                                 // default DCOCLKDIV as MCLK and SMCLK source
+
 }
 
 void initUART()
 {
     // Configure UART pins
-    P5SEL0 |= BIT1 | BIT2;                    // set 2-UART pin as second function
-    SYSCFG3|=USCIA0RMP;                       //Set the remapping source
-    // Configure UART
+    P5SEL0 |= BIT1 | BIT2;
+    SYSCFG3 |= USCIA0RMP; // Set the remapping source
+
     UCA0CTLW0 |= UCSWRST;
-    UCA0CTLW0 |= UCSSEL__SMCLK;
+    UCA0CTLW0 |= UCSSEL__SMCLK; // 16 MHz
 
     // Baud Rate calculation
-    // 8000000/(16*9600) = 52.083
-    // Fractional portion = 0.083
-    // User's Guide Table 17-4: UCBRSx = 0x49
-    // UCBRFx = int ( (52.083-52)*16) = 1
-    UCA0BR0 = 52;                             // 8000000/16/9600
-    UCA0BR1 = 0x00;
-    UCA0MCTLW = 0x4900 | UCOS16 | UCBRF_1;
+    // N = 16MHz / 115200 = 138.888
+    // OS16 = 1, UCBRx = INT(N/16) = 8(.6806)
+    // UCBRFx = INT( ((N/16) - UCBRx) * 16) = 10(.8896)
+    UCA0BRW = 8;
+    UCA0MCTLW = 0xD600 | 0x00A0 | UCOS16;
 
     UCA0CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
 }
@@ -378,7 +385,7 @@ bool alee_isr_handle(unsigned index)
     const Addr isr = isr_list[index];
 
     if (isr != 0) {
-        State isrstate (*dict, readchar);
+        State isrstate (dict, readchar);
         exitLpm = false;
         isrstate.execute(isr);
         return exitLpm;
@@ -417,4 +424,7 @@ DEFINE_ISR(TIMER1_A1_VECTOR, 20)
 DEFINE_ISR(TIMER1_A0_VECTOR, 21)
 DEFINE_ISR(TIMER0_A1_VECTOR, 22)
 DEFINE_ISR(TIMER0_A0_VECTOR, 23)
+
+// Override newlib's free to save hundreds of bytes
+extern "C" void free(void *) {}
 

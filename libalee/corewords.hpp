@@ -19,10 +19,9 @@
 #ifndef ALEEFORTH_COREWORDS_HPP
 #define ALEEFORTH_COREWORDS_HPP
 
+#include "ctype.hpp"
 #include "types.hpp"
 #include "state.hpp"
-
-#include <cstring>
 
 /**
  * To be implemented by the user, this function is called when the `sys` word
@@ -42,7 +41,7 @@ public:
      */
     static Cell findi(State&, Word);
     consteval static Cell findi(const char *word) {
-        return findi(word, std::strlen(word));
+        return findi(word, strlen(word));
     }
 
     /**
@@ -67,7 +66,7 @@ private:
         const char *ptr = CoreWords::wordsarr;
 
         for (Cell wordsi = 0; wordsi < WordCount; ++wordsi) {
-            std::size_t wordsize = std::strlen(ptr);
+            std::size_t wordsize = strlen(ptr);
 
             if (wordsize == size && Dictionary::equal(ptr, ptr + wordsize, it))
                 return wordsi;

@@ -19,7 +19,6 @@
 #include "corewords.hpp"
 #include "state.hpp"
 
-#include <cstring>
 #include <iterator>
 
 bool State::compiling() const

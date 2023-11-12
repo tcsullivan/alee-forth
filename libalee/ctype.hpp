@@ -25,6 +25,12 @@
 
 #include <cstdint>
 
+constexpr inline unsigned strlen(const char * const s) {
+    unsigned i = 0;
+    while (s[i]) i++;
+    return i;
+}
+
 constexpr inline bool isspace(uint8_t c) {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
