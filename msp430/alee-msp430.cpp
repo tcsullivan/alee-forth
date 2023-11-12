@@ -42,13 +42,18 @@ static void initUART();
 static void Software_Trim();
 #define MCLK_FREQ_MHZ (8)    // MCLK = 8MHz
 
-#define ALEE_RODICTSIZE (7000)
+#define ALEE_RODICTSIZE (9200)
 __attribute__((section(".lodict")))
 #include "core.fth.h"
 
 static bool exitLpm;
 static Addr isr_list[24] = {};
-static SplitMemDictRW<ALEE_RODICTSIZE, 32767> dict (alee_dat, 0x10000);
+
+using DictType = SplitMemDictRW<ALEE_RODICTSIZE, 32767>;
+
+alignas(DictType)
+static unsigned char dictbuf[sizeof(DictType)];
+static auto dict = reinterpret_cast<DictType *>(dictbuf);
 
 int main()
 {
@@ -59,7 +64,9 @@ int main()
     SYSCFG0 = FRWPPW;
 
     (void)alee_dat_len;
-    State state (dict, readchar);
+    dict->lodict = alee_dat;
+    dict->hidict = 0x10000;
+    State state (*dict, readchar);
     Parser::customParse = findword;
 
     serputs("alee forth\n\r");
@@ -371,7 +378,7 @@ bool alee_isr_handle(unsigned index)
     const Addr isr = isr_list[index];
 
     if (isr != 0) {
-        State isrstate (dict, readchar);
+        State isrstate (*dict, readchar);
         exitLpm = false;
         isrstate.execute(isr);
         return exitLpm;

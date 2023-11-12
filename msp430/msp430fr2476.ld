@@ -166,10 +166,8 @@ SECTIONS
   .rodata :
   {
     . = ALIGN(2);
-    *(.plt)
     *(.rodata .rodata.* .gnu.linkonce.r.* .const .const:*)
     *(.rodata1)
-    KEEP (*(.gcc_except_table)) *(.gcc_except_table.*)
   } > FRAM
 
   /* Note: This is a separate .rodata section for sections which are
@@ -193,8 +191,6 @@ SECTIONS
     KEEP (*(SORT(.fini_array.*)))
     PROVIDE (__fini_array_end = .);
     . = ALIGN(2);
-    *(.eh_frame_hdr)
-    KEEP (*(.eh_frame))
 
     /* gcc uses crtbegin.o to find the start of the constructors, so
        we make sure it is first.  Because this is a wildcard, it
@@ -218,17 +214,6 @@ SECTIONS
     KEEP (*(.dtors))
   } > FRAM
 
-  /* This section contains data that is initialised during load
-     but not on application reset.  */
-  .persistent :
-  {
-    . = ALIGN(2);
-    PROVIDE (__persistent_start = .);
-    *(.persistent)
-    . = ALIGN(2);
-    PROVIDE (__persistent_end = .);
-  } > FRAM
-
   .tinyram : {} > TINYRAM
 
   .data :
@@ -236,15 +221,10 @@ SECTIONS
     . = ALIGN(2);
     PROVIDE (__datastart = .);
 
-    KEEP (*(.jcr))
-    *(.data.rel.ro.local) *(.data.rel.ro*)
-    *(.dynamic)
-
     *(.data .data.* .gnu.linkonce.d.*)
     KEEP (*(.gnu.linkonce.d.*personality*))
     SORT(CONSTRUCTORS)
     *(.data1)
-    *(.got.plt) *(.got)
 
     /* We want the small data sections together, so single-instruction offsets
        can access them all, and initialized data all before uninitialized, so
@@ -268,7 +248,6 @@ SECTIONS
   {
     . = ALIGN(2);
     PROVIDE (__bssstart = .);
-    *(.dynbss)
     *(.sbss .sbss.*)
     *(.bss .bss.* .gnu.linkonce.b.*)
     . = ALIGN(2);
@@ -287,29 +266,6 @@ SECTIONS
     . = ALIGN(2);
     PROVIDE (__noinit_end = .);
   } > RAM
-
-  /* We create this section so that "end" will always be in the
-     RAM region (matching .stack below), even if the .bss
-     section is empty.  */
-  .heap (NOLOAD) :
-  {
-    . = ALIGN(2);
-    __heap_start__ = .;
-    _end = __heap_start__;
-    PROVIDE (end = .);
-    KEEP (*(.heap))
-    _end = .;
-    PROVIDE (end = .);
-    /* This word is here so that the section is not empty, and thus
-       not discarded by the linker.  The actual value does not matter
-       and is ignored.  */
-    LONG(0);
-    __heap_end__ = .;
-    __HeapLimit = __heap_end__;
-  } > RAM
-  /* WARNING: Do not place anything in RAM here.
-     The heap section must be the last section in RAM and the stack
-     section must be placed at the very end of the RAM region.  */
 
   .stack (ORIGIN (RAM) + LENGTH(RAM)) :
   {
@@ -331,18 +287,8 @@ SECTIONS
     KEEP (*(SORT(.crt_*)))
 
     . = ALIGN(2);
-    KEEP (*(.lowtext))
-
-    . = ALIGN(2);
     *(.text .stub .text.* .gnu.linkonce.t.* .text:*)
 
-    KEEP (*(.text.*personality*))
-    /* .gnu.warning sections are handled specially by elf32.em.  */
-    *(.gnu.warning)
-    *(.interp .hash .dynsym .dynstr .gnu.version*)
-    PROVIDE (__etext = .);
-    PROVIDE (_etext = .);
-    PROVIDE (etext = .);
     . = ALIGN(2);
     KEEP (*(.init))
     KEEP (*(.fini))

@@ -37,9 +37,8 @@
  *  - 0+ bytes of entry's data...
  */
 
-class Dictionary
+struct Dictionary
 {
-public:
     /**
      * The beginning of the dictionary is used for "internal" variables.
      */
@@ -129,7 +128,7 @@ public:
         return std::equal(b1, e1, b2, eqchars);
     }
 
-    virtual ~Dictionary() = default;
+    virtual ~Dictionary() {};
 
 private:
     // Case-insensitive comparison.
