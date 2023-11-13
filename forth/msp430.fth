@@ -20,8 +20,6 @@
 create _outs p1out , p2out , p3out , p4out , p5out , p6out ,
 create _ins  p1in  , p2in  , p3in  , p4in  , p5in  , p6in  ,
 create _dirs p1dir , p2dir , p3dir , p4dir , p5dir , p6dir ,
-create _sel0 p1sel0 , p2sel0 , p3sel0 , p4sel0 , p5sel0 , p6sel0 ,
-create _sel1 p1sel1 , p2sel1 , p3sel1 , p4sel1 , p5sel1 , p6sel1 ,
 
 1 constant output
 0 constant input
@@ -41,6 +39,15 @@ create _sel1 p1sel1 , p2sel1 , p3sel1 , p4sel1 , p5sel1 , p6sel1 ,
   adcres adcctl2 reg clear
   adcres_2 adcctl2 reg set
   adcie0 adcie reg set ;
+
+: rtc-init
+  rtcps__10 rtcctl reg! ;
+
+: ms ( u -- )
+  rtcmod reg!
+  rtcss_3 rtcsr or rtcctl reg set
+  begin rtciv reg@ 0<> until
+  rtc-init ;
 
 : D0  bit5 1 ;
 : D1  bit6 1 ;
@@ -65,6 +72,19 @@ create _sel1 p1sel1 , p2sel1 , p3sel1 , p4sel1 , p5sel1 , p6sel1 ,
 : A5   bit3 0 ;
 : AREF bit4 0 ;
 
+: pin-analog
+  drop
+  dup p1sel0 reg set
+  p1sel1 reg set ;
+
+: analog-get
+  drop 0 begin
+  swap 2/ dup 0<> while
+  swap 1+ repeat
+  drop adcmctl0 reg!
+  adcenc adcsc or adcctl0 reg set
+  adcmem0 reg@ ;
+
 : LED1R bit1 5 ;
 : LED1G bit0 5 ;
 : LED1B bit2 5 ;
@@ -72,3 +92,6 @@ create _sel1 p1sel1 , p2sel1 , p3sel1 , p4sel1 , p5sel1 , p6sel1 ,
 : LED2R bit6 4 ;
 : LED2G bit5 4 ;
 : LED2B bit7 4 ;
+
+: SW2 bit3 1 ;
+: SW3 bit4 2 ;
