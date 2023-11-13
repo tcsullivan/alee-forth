@@ -146,7 +146,7 @@
            2dup <> while rot repeat
            2drop here - here c! here ;
 : count    dup char+ swap c@ ;
-: char     bl word char+ c@ ;
+: char     0 here char+ c! bl word char+ c@ ;
 : [char]   char postpone literal ; imm
 
 : (        begin [char] ) key <> while repeat ; imm
