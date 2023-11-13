@@ -43,6 +43,10 @@ constexpr inline bool isupper(uint8_t c) {
     return c >= 'A' && c <= 'Z';
 }
 
+constexpr inline bool islower(uint8_t c) {
+    return c >= 'a' && c <= 'z';
+}
+
 constexpr inline bool isalpha(uint8_t c) {
     return isupper(c) || (c >= 'a' && c <= 'z');
 }

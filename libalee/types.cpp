@@ -16,30 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "dictionary.hpp"
-#include "types.hpp"
+#include "alee.hpp"
 
+LIBALEE_SECTION
 Addr Word::size() const noexcept
 {
     return wend - start;
 }
 
+LIBALEE_SECTION
 Word::iterator Word::begin(const Dictionary *dict)
 {
     return iterator(start, dict);
 }
 
+LIBALEE_SECTION
 Word::iterator Word::end(const Dictionary *dict)
 {
     return iterator(wend, dict);
 }
 
+LIBALEE_SECTION
 Word::iterator& Word::iterator::operator++()
 {
     addr++;
     return *this;
 }
 
+LIBALEE_SECTION
 Word::iterator Word::iterator::operator++(int)
 {
     const auto copy = *this;
@@ -47,12 +51,15 @@ Word::iterator Word::iterator::operator++(int)
     return copy;
 }
 
+LIBALEE_SECTION
 Word::iterator::value_type Word::iterator::operator*()
 {
     return dict->readbyte(addr);
 }
 
+LIBALEE_SECTION
 bool Word::iterator::operator!=(const iterator& other)
 {
     return dict != other.dict || addr != other.addr;
 }
+

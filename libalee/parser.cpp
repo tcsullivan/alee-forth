@@ -16,12 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "corewords.hpp"
-#include "ctype.hpp"
-#include "parser.hpp"
+#include "alee.hpp"
 
 Error (*Parser::customParse)(State&, Word) = nullptr;
 
+LIBALEE_SECTION
 Error Parser::parse(State& state, const char *str)
 {
     auto addr = Dictionary::Input;
@@ -40,6 +39,7 @@ Error Parser::parse(State& state, const char *str)
     return parseSource(state);
 }
 
+LIBALEE_SECTION
 Error Parser::parseSource(State& state)
 {
     auto err = Error::none;
@@ -50,6 +50,7 @@ Error Parser::parseSource(State& state)
     return err;
 }
 
+LIBALEE_SECTION
 Error Parser::parseWord(State& state, Word word)
 {
     bool imm;
@@ -81,6 +82,7 @@ Error Parser::parseWord(State& state, Word word)
     return Error::none;
 }
 
+LIBALEE_SECTION
 Error Parser::parseNumber(State& state, Word word)
 {
     const auto base = state.dict.read(Dictionary::Base);
@@ -113,6 +115,7 @@ Error Parser::parseNumber(State& state, Word word)
     return Error::none;
 }
 
+LIBALEE_SECTION
 void Parser::processLiteral(State& state, Cell value)
 {
     if (state.compiling()) {

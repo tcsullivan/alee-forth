@@ -16,31 +16,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "corewords.hpp"
-#include "state.hpp"
+#include "alee.hpp"
 
 #include <iterator>
 
+LIBALEE_SECTION
 bool State::compiling() const
 {
     return dict.read(Dictionary::Compiling);
 }
 
+LIBALEE_SECTION
 void State::compiling(bool yes)
 {
     dict.write(Dictionary::Compiling, yes);
 }
 
+LIBALEE_SECTION
 State::Context State::save()
 {
     return context;
 }
 
+LIBALEE_SECTION
 void State::load(const State::Context& ctx)
 {
     context = ctx;
 }
 
+LIBALEE_SECTION
 Error State::execute(Addr addr)
 {
     auto stat = static_cast<Error>(setjmp(context.jmpbuf));
@@ -63,6 +67,7 @@ Error State::execute(Addr addr)
     return stat;
 }
 
+LIBALEE_SECTION
 void State::reset()
 {
     while (size())
@@ -74,11 +79,13 @@ void State::reset()
     context.ip = 0;
 }
 
+LIBALEE_SECTION
 std::size_t State::size() const noexcept
 {
     return dsp - dstack;
 }
 
+LIBALEE_SECTION
 std::size_t State::rsize() const noexcept
 {
     return rsp - rstack;

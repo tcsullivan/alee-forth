@@ -16,8 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "dictionary.hpp"
+#include "alee.hpp"
 
+LIBALEE_SECTION
 void Dictionary::initialize()
 {
     write(Base, 10);
@@ -27,6 +28,7 @@ void Dictionary::initialize()
     write(Source, Input + sizeof(Cell));
 }
 
+LIBALEE_SECTION
 Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here();
@@ -41,22 +43,26 @@ Addr Dictionary::allot(Cell amount) noexcept
     return old;
 }
 
+LIBALEE_SECTION
 void Dictionary::add(Cell value) noexcept
 {
     write(allot(sizeof(Cell)), value);
 }
 
+LIBALEE_SECTION
 Addr Dictionary::aligned(Addr addr)
 {
     return (addr + (sizeof(Cell) - 1)) & ~(sizeof(Cell) - 1);
 }
 
+LIBALEE_SECTION
 Addr Dictionary::alignhere() noexcept
 {
     here(aligned(here()));
     return here();
 }
 
+LIBALEE_SECTION
 void Dictionary::addDefinition(Word word) noexcept
 {
     Cell wsize = word.size();
@@ -75,6 +81,7 @@ void Dictionary::addDefinition(Word word) noexcept
     alignhere();
 }
 
+LIBALEE_SECTION
 Addr Dictionary::find(Word word) noexcept
 {
     Addr lt = latest();
@@ -106,6 +113,7 @@ Addr Dictionary::find(Word word) noexcept
     return 0;
 }
 
+LIBALEE_SECTION
 Addr Dictionary::getexec(Addr addr) noexcept
 {
     const Addr l = read(addr);
@@ -119,6 +127,7 @@ Addr Dictionary::getexec(Addr addr) noexcept
     return aligned(addr);
 }
 
+LIBALEE_SECTION
 bool Dictionary::hasInput() const noexcept
 {
     const Addr src = read(Dictionary::Source);
@@ -140,6 +149,7 @@ bool Dictionary::hasInput() const noexcept
     return false;
 }
 
+LIBALEE_SECTION
 Word Dictionary::input() noexcept
 {
     const Addr src = read(Dictionary::Source);
@@ -169,11 +179,13 @@ Word Dictionary::input() noexcept
     return Word(wstart, wend);
 }
 
+LIBALEE_SECTION
 bool Dictionary::equal(Word word, const char *str, unsigned len) const noexcept
 {
     return word.size() == len && equal(word.begin(this), word.end(this), str);
 }
 
+LIBALEE_SECTION
 bool Dictionary::equal(Word word, Word other) const noexcept
 {
     return word.size() == other.size() && equal(word.begin(this), word.end(this), other.begin(this));

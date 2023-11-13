@@ -19,6 +19,7 @@
 #ifndef ALEEFORTH_STATE_HPP
 #define ALEEFORTH_STATE_HPP
 
+#include "config.hpp"
 #include "dictionary.hpp"
 #include "types.hpp"
 
@@ -57,10 +58,12 @@ public:
      */
     void reset();
 
+    LIBALEE_SECTION
     Addr& ip() noexcept {
         return context.ip;
     }
 
+    LIBALEE_SECTION
     void input() noexcept {
         inputfunc(*this);
     }
@@ -82,42 +85,50 @@ public:
      */
     void load(const Context&);
 
+    LIBALEE_SECTION
     inline void push(Cell value) {
         verify(dsp < dstack + DataStackSize, Error::push);
         *dsp++ = value;
     }
 
+    LIBALEE_SECTION
     inline Cell pop() {
         verify(dsp > dstack, Error::pop);
         return *--dsp;
     }
 
+    LIBALEE_SECTION
     inline void pushr(Cell value) {
         verify(rsp < rstack + ReturnStackSize, Error::pushr);
         *rsp++ = value;
     }
 
+    LIBALEE_SECTION
     inline Cell popr() {
         verify(rsp > rstack, Error::popr);
         return *--rsp;
     }
 
+    LIBALEE_SECTION
     inline Cell& top() {
         verify(dsp > dstack, Error::top);
         return *(dsp - 1);
     }
 
+    LIBALEE_SECTION
     inline Cell& pick(std::size_t i) {
         verify(dsp - i > dstack, Error::pick);
         return *(dsp - i - 1);
     }
 
     // Advances the instruction pointer and returns that cell's contents.
+    LIBALEE_SECTION
     inline Cell beyondip() {
         context.ip += sizeof(Cell);
         return dict.read(context.ip);
     }
 
+    LIBALEE_SECTION
     inline void verify(bool condition, Error error) {
         if (!condition)
             std::longjmp(context.jmpbuf, static_cast<int>(error));

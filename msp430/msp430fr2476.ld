@@ -44,7 +44,7 @@ MEMORY {
   BOOTCODE         : ORIGIN = 0x1C00, LENGTH = 0x0400 /* END=0x1FFF, size 1024 */
   ROMLIB           : ORIGIN = 0xC0000, LENGTH = 0x4000 /* END=0xC3FFF, size 16384 */
   BSL1             : ORIGIN = 0xFFC00, LENGTH = 0x0400 /* END=0xFFFFF, size 1024 */
-  RAM              : ORIGIN = 0x2000, LENGTH = 0x2000 /* END=0x3FFF, size 8192 */
+  RAM (rwx)        : ORIGIN = 0x2000, LENGTH = 0x2000 /* END=0x3FFF, size 8192 */
   INFOMEM          : ORIGIN = 0x1800, LENGTH = 0x0200 /* END=0x19FF, size 512 */
   FRAM (rwx)       : ORIGIN = 0x8000, LENGTH = 0x7F80 /* END=0xFF7F, size 32640 */
   HIFRAM (rxw)     : ORIGIN = 0x10000, LENGTH = 0x00007FFF
@@ -218,6 +218,14 @@ SECTIONS
     PROVIDE (__dict = .);
   } > TINYRAM
 
+  .libalee : {
+    . = ALIGN(2);
+    PROVIDE (__libaleedst = .);
+    *(.libalee)
+  } > RAM AT> FRAM
+  PROVIDE(__libaleebegin = LOADADDR(.libalee));
+  PROVIDE (__libaleeend = LOADADDR(.libalee) + SIZEOF(.libalee));
+
   .data :
   {
     . = ALIGN(2);
@@ -295,11 +303,14 @@ SECTIONS
     KEEP (*(.init))
     KEEP (*(.fini))
     KEEP (*(.tm_clone_table))
+
+    . = ALIGN(2);
+    PROVIDE (_etext = .);
   } > FRAM
 
   .lodict :
   {
-      . = ALIGN(2);
+      . = ALIGN(1024);
       *(.lodict)
   } > FRAM
 

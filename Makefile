@@ -15,6 +15,7 @@ msp430: AR := msp430-elf-gcc-ar
 msp430: CXXFLAGS += -I. -I/usr/msp430-elf/usr/include
 msp430: CXXFLAGS += -Os -mmcu=msp430fr2476 -ffunction-sections -fdata-sections
 msp430: CXXFLAGS += -flto -fno-asynchronous-unwind-tables -fno-threadsafe-statics -fno-stack-protector
+msp430: CXXFLAGS += -DALEE_MSP430_HOST
 msp430: LDFLAGS += -L msp430 -T msp430fr2476.ld -Wl,-gc-sections -Wl,--no-warn-rwx-segments
 msp430: msp430/alee-msp430
 

@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "corewords.hpp"
-#include "parser.hpp"
+#include "alee.hpp"
 
 #include <utility>
 
+LIBALEE_SECTION
 void find(State& state, Word word)
 {
     Cell tok = 0;
@@ -37,6 +37,7 @@ void find(State& state, Word word)
     state.push(imm);
 }
 
+LIBALEE_SECTION
 void CoreWords::run(Cell ins, State& state)
 {
     Cell cell;
@@ -252,6 +253,7 @@ execute:
     ip += sizeof(Cell);
 }
 
+LIBALEE_SECTION
 Cell CoreWords::findi(State& state, Word word)
 {
     return findi(word.begin(&state.dict), word.size());

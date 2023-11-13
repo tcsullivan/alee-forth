@@ -1,0 +1,7 @@
+#include "config.hpp"
+#include "corewords.hpp"
+#include "ctype.hpp"
+#include "dictionary.hpp"
+#include "parser.hpp"
+#include "state.hpp"
+#include "types.hpp"

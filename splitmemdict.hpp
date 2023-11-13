@@ -19,7 +19,7 @@
 #ifndef ALEEFORTH_SPLITMEMDICT_HPP
 #define ALEEFORTH_SPLITMEMDICT_HPP
 
-#include "alee.hpp"
+#include "libalee/alee.hpp"
 
 #include <algorithm>
 

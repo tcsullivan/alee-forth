@@ -16,8 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "alee.hpp"
-#include "libalee/ctype.hpp"
+#include "libalee/alee.hpp"
 #include "lzss.h"
 static const
 #include "msp430fr2476_all.h"
@@ -41,7 +40,9 @@ static void initUART();
 static void Software_Trim();
 #define MCLK_FREQ_MHZ (16)
 
-#define ALEE_RODICTSIZE (9400)
+static void alee_main();
+
+#define ALEE_RODICTSIZE (9088)
 __attribute__((section(".lodict")))
 #include "core.fth.h"
 
@@ -55,11 +56,23 @@ static auto& dict = *(new (__dict) DictType (alee_dat, 0x10000));
 int main()
 {
     WDTCTL = WDTPW | WDTHOLD;
+
+    extern char __libaleebegin;
+    extern char __libaleeend;
+    extern char __libaleedst;
+    std::copy(&__libaleebegin, &__libaleeend, &__libaleedst);
+
     initGPIO();
     initClock();
     initUART();
     SYSCFG0 = FRWPPW;
 
+    alee_main();
+}
+
+LIBALEE_SECTION
+void alee_main()
+{
     (void)alee_dat_len;
     State state (dict, readchar);
     Parser::customParse = findword;
@@ -105,6 +118,7 @@ int main()
     }
 }
 
+LIBALEE_SECTION
 void readchar(State& state)
 {
     auto idx = state.dict.read(Dictionary::Input);
@@ -117,18 +131,21 @@ void readchar(State& state)
     state.dict.writebyte(addr, c ? c : ' ');
 }
 
+LIBALEE_SECTION
 void serput(int c)
 {
     while (!(UCA0IFG & UCTXIFG));
     UCA0TXBUF = static_cast<char>(c);
 }
 
+LIBALEE_SECTION
 void serputs(const char *s)
 {
     while (*s)
         serput(*s++);
 }
 
+LIBALEE_SECTION
 void printint(DoubleCell n, char *buf, int base)
 {
     static const char digit[] = "0123456789ABCDEF";
@@ -152,6 +169,7 @@ void printint(DoubleCell n, char *buf, int base)
     serput(' ');
 }
 
+LIBALEE_SECTION
 void user_sys(State& state)
 {
     switch (state.pop()) {
@@ -191,6 +209,11 @@ void user_sys(State& state)
     case 17:
         exitLpm |= true;
         break;
+    case 50:
+        Parser::customParse = nullptr;
+        extern char _etext;
+        state.push((Addr)&_etext);
+        break;
     default:
         break;
     }
@@ -208,7 +231,7 @@ Error findword(State& state, Word word)
     uint8_t *ptr = lzword;
     for (auto it = word.begin(&state.dict); it != word.end(&state.dict); ++it) {
         *ptr = *it;
-        if (!isupper(*ptr))
+        if (islower(*ptr))
             *ptr -= 32;
         ++ptr;
     }

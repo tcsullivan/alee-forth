@@ -19,7 +19,9 @@
 #ifndef ALEEFORTH_PARSER_HPP
 #define ALEEFORTH_PARSER_HPP
 
+#include "config.hpp"
 #include "types.hpp"
+#include "state.hpp"
 
 #include <string_view>
 

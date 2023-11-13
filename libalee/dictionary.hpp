@@ -19,8 +19,9 @@
 #ifndef ALEEFORTH_DICTIONARY_HPP
 #define ALEEFORTH_DICTIONARY_HPP
 
-#include "ctype.hpp"
+#include "config.hpp"
 #include "types.hpp"
+#include "ctype.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -72,10 +73,14 @@ struct Dictionary
      */
     void initialize();
 
+    LIBALEE_SECTION
     Addr here() const noexcept { return read(Here); }
+    LIBALEE_SECTION
     void here(Addr l) noexcept { write(Here, l); }
 
+    LIBALEE_SECTION
     Addr latest() const noexcept { return read(Latest); }
+    LIBALEE_SECTION
     void latest(Addr l) noexcept { write(Latest, l); }
 
     // Aligns the given address.
@@ -124,6 +129,7 @@ struct Dictionary
 
     // Used for case-insensitive comparison between two iterators.
     template<typename Iter1, typename Iter2>
+    LIBALEE_SECTION
     constexpr static bool equal(Iter1 b1, Iter1 e1, Iter2 b2) {
         return std::equal(b1, e1, b2, eqchars);
     }
@@ -132,6 +138,7 @@ struct Dictionary
 
 private:
     // Case-insensitive comparison.
+    LIBALEE_SECTION
     constexpr static bool eqchars(char c1, char c2) {
         if (isalpha(static_cast<uint8_t>(c1)))
             c1 |= 32;
@@ -140,7 +147,6 @@ private:
 
         return c1 == c2;
     }
-
 };
 
 #endif // ALEEFORTH_DICTIONARY_HPP

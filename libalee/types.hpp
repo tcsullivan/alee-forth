@@ -61,6 +61,7 @@ public:
     constexpr explicit Word(Addr s = 0, Addr e = 0):
         start(s), wend(e) {}
 
+    LIBALEE_SECTION
     static constexpr Word fromLength(Addr s, Addr l) {
         return Word(s, s + l);
     }

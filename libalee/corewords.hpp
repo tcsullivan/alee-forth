@@ -19,9 +19,9 @@
 #ifndef ALEEFORTH_COREWORDS_HPP
 #define ALEEFORTH_COREWORDS_HPP
 
-#include "ctype.hpp"
+#include "config.hpp"
 #include "types.hpp"
-#include "state.hpp"
+#include "dictionary.hpp"
 
 /**
  * To be implemented by the user, this function is called when the `sys` word
@@ -61,6 +61,7 @@ public:
 
 private:
     template<typename Iter>
+    LIBALEE_SECTION
     constexpr static Cell findi(Iter it, std::size_t size)
     {
         const char *ptr = CoreWords::wordsarr;
