@@ -1,0 +1,15 @@
+unsigned char RXData = 0;
+unsigned char TXData;
+
+: spi-init
+  bit2 bit5 or bit6 or p3sel0 byte set
+  ucb1ctlw0
+  ucswrst over reg set
+  ucmst ucsync or ucckpl or ucmsb or over reg set
+  ucssel__aclk over reg set
+  2 ucb1brw reg!
+  ucswrst swap reg clear ;
+
+: spi-emit
+  begin ucb1ifg reg@ uctxifg and until
+  ucb1txbuf reg! ;
