@@ -37,7 +37,7 @@ Addr Dictionary::allot(Cell amount) noexcept
     if (neww < capacity()) {
         write(Here, static_cast<Addr>(neww));
     } else {
-        // TODO
+        // TODO how to handle allot failure? Error code?
     }
 
     return old;
@@ -68,7 +68,7 @@ void Dictionary::addDefinition(Word word) noexcept
     Cell wsize = word.size();
     add(wsize);
 
-    if (alignhere() - latest() >= ((1 << (sizeof(Cell) * 8 - 6)) - 1))
+    if (alignhere() - latest() >= MaxDistance)
         add(0);
 
     auto addr = allot(wsize);
@@ -91,7 +91,7 @@ Addr Dictionary::find(Word word) noexcept
         const Addr len = l & 0x1F;
         Word lw;
 
-        if ((l >> 6) < 1023) {
+        if ((l >> 6) < MaxDistance) {
             lw = Word::fromLength(lt + sizeof(Cell), len);
             if (equal(word, lw))
                 return lt;
@@ -120,7 +120,7 @@ Addr Dictionary::getexec(Addr addr) noexcept
     const Addr len = l & 0x1Fu;
 
     addr += sizeof(Cell);
-    if ((l >> 6) == 1023)
+    if ((l >> 6) == MaxDistance)
         addr += sizeof(Cell);
 
     addr += len;
@@ -132,7 +132,7 @@ bool Dictionary::hasInput() const noexcept
 {
     const Addr src = read(Dictionary::Source);
     const Addr end = read(Dictionary::SourceLen);
-    uint8_t idx = read(Dictionary::Input) & 0xFFu;
+    auto idx = static_cast<uint8_t>(read(Dictionary::Input));
 
     while (idx < end) {
         auto ch = readbyte(src + idx);
@@ -154,7 +154,7 @@ Word Dictionary::input() noexcept
 {
     const Addr src = read(Dictionary::Source);
     const Addr end = read(Dictionary::SourceLen);
-    uint8_t idx = read(Dictionary::Input) & 0xFFu;
+    auto idx = static_cast<uint8_t>(read(Dictionary::Input));
 
     Addr wstart = src + idx;
     Addr wend = wstart;
