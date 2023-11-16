@@ -35,6 +35,7 @@ class SplitMemDict : public Dictionary
     uint8_t rwdict[MemDictSize - Dictionary::Begin] = {0};
     uint8_t extra[Dictionary::Begin];
 
+    LIBALEE_SECTION
     Addr convertAddress(Addr addr) const noexcept {
         return addr < RON ? addr : static_cast<Addr>(addr - RON);
     }
@@ -53,6 +54,7 @@ public:
         return *this;
     }
 
+    LIBALEE_SECTION
     virtual Cell read(Addr addr) const noexcept final {
         const uint8_t *dict;
         if (addr < RON)
@@ -63,6 +65,7 @@ public:
         return *reinterpret_cast<const Cell *>(dict + convertAddress(addr));
     }
 
+    LIBALEE_SECTION
     virtual void write(Addr addr, Cell value) noexcept final {
         if (addr >= RON)
             *reinterpret_cast<Cell *>(rwdict + addr - RON) = value;
@@ -70,6 +73,7 @@ public:
             *reinterpret_cast<Cell *>(extra + addr) = value;
     }
 
+    LIBALEE_SECTION
     virtual uint8_t readbyte(Addr addr) const noexcept final {
         const uint8_t *dict;
         if (addr < RON)
@@ -80,6 +84,7 @@ public:
         return dict[convertAddress(addr)];
     }
 
+    LIBALEE_SECTION
     virtual void writebyte(Addr addr, uint8_t value) noexcept final {
         if (addr >= RON)
             rwdict[addr - RON] = value;
@@ -87,6 +92,7 @@ public:
             extra[addr] = value;
     }
 
+    LIBALEE_SECTION
     virtual unsigned long int capacity() const noexcept final {
         return RON + sizeof(extra) + sizeof(rwdict);
     }
