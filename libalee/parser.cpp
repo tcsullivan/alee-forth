@@ -124,17 +124,7 @@ LIBALEE_SECTION
 void Parser::processLiteral(State& state, Cell value)
 {
     if (state.compiling()) {
-        constexpr auto ins = CoreWords::token("_lit");
-
-        // Literal compression: opcodes between WordCount and Begin are unused,
-        // so we assign literals to them to save space. Opcode "WordCount"
-        // pushes zero to the stack, "WordCount + 1" pushes a one, etc.
-        const Cell maxlit = Dictionary::Begin - CoreWords::WordCount;
-        if (value >= 0 && value < maxlit)
-            value += CoreWords::WordCount;
-        else
-            state.dict.add(ins);
-
+        state.dict.add(CoreWords::token("_lit"));
         state.dict.add(value);
     } else {
         state.push(value);
