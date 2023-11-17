@@ -113,6 +113,44 @@ private:
 
         return -1;
     }
+
+    static void word_lit(State&);
+    static void word_drop(State&);
+    static void word_dup(State&);
+    static void word_swap(State&);
+    static void word_pick(State&);
+    static void word_sys(State&);
+    static void word_add(State&);
+    static void word_sub(State&);
+    static void word_mul(State&);
+    static void word_div(State&);
+    static void word_mod(State&);
+    static void word_peek(State&);
+    static void word_poke(State&);
+    static void word_rpush(State&);
+    static void word_rpop(State&);
+    static void word_eq(State&);
+    static void word_lt(State&);
+    static void word_and(State&);
+    static void word_or(State&);
+    static void word_xor(State&);
+    static void word_shl(State&);
+    static void word_shr(State&);
+    static void word_colon(State&);
+    static void word_tick(State&);
+    static void word_execute(State&);
+    static void word_exit(State&);
+    static void word_semic(State&);
+    static void word_jmp0(State&);
+    static void word_jmp(State&);
+    static void word_depth(State&);
+    static void word_rdepth(State&);
+    static void word_in(State&);
+    static void word_ev(State&);
+    static void word_find(State&);
+    static void word_uma(State&);
+    static void word_ult(State&);
+    static void word_ummod(State&);
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP
