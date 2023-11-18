@@ -40,6 +40,9 @@ int main(int argc, char *argv[])
     SplitMemDict<sizeof(alee_dat)> dict (alee_dat);
     State state (dict, readchar);
 
+    dict.initialize();
+    CoreWords::initialize(state);
+
     std::vector args (argv + 1, argv + argc);
     for (const auto& a : args) {
         std::ifstream file (a);

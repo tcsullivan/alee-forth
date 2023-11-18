@@ -25,6 +25,48 @@ static DoubleCell popd(State&);
 static void pushd(State&, DoubleCell);
 
 LIBALEE_SECTION
+void CoreWords::initialize(State& state)
+{
+    auto& d = state.dict;
+    //d.addNativeWord("_lit", word_lit);
+    d.addNativeWord("drop", word_drop);
+    d.addNativeWord("dup", word_dup);
+    d.addNativeWord("swap", word_swap);
+    d.addNativeWord("pick", word_pick);
+    d.addNativeWord("sys", word_sys);
+    d.addNativeWord("+", word_add);
+    d.addNativeWord("-", word_sub);
+    d.addNativeWord("m*", word_mul);
+    d.addNativeWord("_/", word_div);
+    d.addNativeWord("_%", word_mod);
+    d.addNativeWord("_@", word_peek);
+    d.addNativeWord("_!", word_poke);
+    d.addNativeWord(">r", word_rpush);
+    d.addNativeWord("r>", word_rpop);
+    d.addNativeWord("=", word_eq);
+    d.addNativeWord("<", word_lt);
+    d.addNativeWord("&", word_and);
+    d.addNativeWord("|", word_or);
+    d.addNativeWord("^", word_xor);
+    d.addNativeWord("<<", word_shl);
+    d.addNativeWord(">>", word_shr);
+    d.addNativeWord(":", word_colon);
+    d.addNativeWord("_'", word_tick);
+    //d.addNativeWord("exit", word_exit);
+    //d.addNativeWord(";", word_semic);
+    d.addNativeWord("_jmp0", word_jmp0);
+    d.addNativeWord("_jmp", word_jmp);
+    d.addNativeWord("depth", word_depth);
+    d.addNativeWord("_rdepth", word_rdepth);
+    d.addNativeWord("_in", word_in);
+    d.addNativeWord("_ev", word_ev);
+    d.addNativeWord("find", word_find);
+    d.addNativeWord("_uma", word_uma);
+    d.addNativeWord("u<", word_ult);
+    d.addNativeWord("um/mod", word_ummod);
+}
+
+LIBALEE_SECTION
 void CoreWords::run(Cell ins, State& state)
 {
     Addr index = ins;
@@ -38,45 +80,18 @@ execute:
         return;
     } else switch (index) {
     case token("_lit"): word_lit(state); break;// Execution semantics of `literal`.
-    case token("drop"): word_drop(state); break;
-    case token("dup"): word_dup(state); break;
-    case token("swap"): word_swap(state); break;
-    case token("pick"): word_pick(state); break;
-    case token("sys"): word_sys(state); break; // Calls user-defined "system" handler.
-    case token("+"): word_add(state); break;
-    case token("-"): word_sub(state); break;
-    case token("m*"): word_mul(state); break; // ( n n -- d )
-    case token("_/"): word_div(state); break; // ( d n -- n )
-    case token("_%"): word_mod(state); break; // ( d n -- n )
-    case token("_@"): word_peek(state); break; // ( addr cell? -- n )
-    case token("_!"): word_poke(state); break; // ( n addr cell? -- )
-    case token(">r"): word_rpush(state); break;
-    case token("r>"): word_rpop(state); break;
-    case token("="): word_eq(state); break;
-    case token("<"): word_lt(state); break;
-    case token("&"): word_and(state); break;
-    case token("|"): word_or(state); break;
-    case token("^"): word_xor(state); break;
-    case token("<<"): word_shl(state); break;
-    case token(">>"): word_shr(state); break;
-    case token(":"): word_colon(state); break; // Begins definition/compilation of new word.
-    case token("_'"): word_tick(state); break; // Collects input word and finds execution token.
     case token("execute"):
         // TODO reimplement
         index = state.pop();
         goto execute;
     case token("exit"): word_exit(state); break;
     case token(";"): word_semic(state); break; // Concludes word definition.
-    case token("_jmp0"): word_jmp0(state); break; // Jump if popped value equals zero.
-    case token("_jmp"): word_jmp(state); break; // Unconditional jump.
-    case token("depth"): word_depth(state); break;
-    case token("_rdepth"): word_rdepth(state); break;
-    case token("_in"): word_in(state); break; // Fetches more input from the user input source.
-    case token("_ev"): word_ev(state); break; // Evaluates words from current input source.
-    case token("find"): word_find(state); break;
-    case token("_uma"): word_uma(state); break; // ( d u u -- d ): Unsigned multiply-add.
-    case token("u<"): word_ult(state); break;
-    case token("um/mod"): word_ummod(state); break;
+    case token("_nx"):
+        { auto f = state.beyondip();
+          state.ip() = state.popr();
+          ((void (*)(State&))f)(state);
+          state.verify(state.ip() != 0, Error::exit); }
+        break;
     }
 
     ip += sizeof(Cell);
