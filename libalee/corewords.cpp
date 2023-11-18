@@ -147,17 +147,17 @@ void CoreWords::word_sub(State& state) {
 }
 void CoreWords::word_mul(State& state) { // ( n n -- d )
     auto cell = state.pop();
-    auto dcell = state.pop() * cell;
+    auto dcell = (DoubleCell)state.pop() * cell;
     pushd(state, dcell);
 }
 void CoreWords::word_div(State& state) { // ( d n -- n )
     auto cell = state.pop();
-    auto dcell = popd(state);
+    auto dcell = (DoubleCell)popd(state);
     state.push(static_cast<Cell>(dcell / cell));
 }
 void CoreWords::word_mod(State& state) { // ( d n -- n )
     auto cell = state.pop();
-    auto dcell = popd(state);
+    auto dcell = (DoubleCell)popd(state);
     state.push(static_cast<Cell>(dcell % cell));
 }
 void CoreWords::word_peek(State& state) { // ( addr cell? -- n )
@@ -233,7 +233,7 @@ void CoreWords::word_semic(State& state) { // Concludes word definition.
     state.compiling(false);
 
     auto cell = state.pop();
-    auto dcell = cell - state.dict.latest();
+    auto dcell = (DoubleCell)cell - state.dict.latest();
     if (dcell >= Dictionary::MaxDistance) {
         // Large distance to previous entry: store in dedicated cell.
         state.dict.write(static_cast<Addr>(cell) + sizeof(Cell),

@@ -99,10 +99,6 @@
 : j        postpone 2r> ['] r> , postpone r@ ['] swap ,
            ['] >r , ['] -rot , postpone 2>r ; imm
 
-: aligned  dup [ 1 cells 1- ] literal swap over & if [ 1 cells ] literal
-           swap - + else drop then ;
-: align    here dup aligned swap - allot ;
-
 : and      & ;
 : or       | ;
 : xor      ^ ;
@@ -113,6 +109,9 @@
 : 2*       2 * ;
 : _msb     [ 1 1 cells 8 * 1- << ] literal ;
 : 2/       dup 1 >> swap 0< if _msb or then ;
+
+: aligned  [ 1 cells 1- ] literal swap over + swap invert and ;
+: align    here dup aligned swap - allot ;
 
 : /mod     2dup % -rot / ;
 : */       >r m* r> _/ ;
@@ -221,8 +220,8 @@
            dup _isdigit - _uma
            r> char+ r> 1- repeat ;
 
-: <#       40 here c! ;
-: #>       2drop here dup c@ + 40 here c@ - ;
+: <#       [ 20 cells ] literal here c! ;
+: #>       2drop here dup c@ + [ 20 cells ] literal here c@ - ;
 : hold     -1 here +! here dup c@ + c! ;
 : #        base @
            >r 0 i um/mod r> swap >r um/mod r>
