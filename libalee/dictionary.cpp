@@ -91,14 +91,14 @@ Addr Dictionary::find(Word word) noexcept
         const Addr len = l & 0x1F;
         Word lw;
 
-        if ((l >> 6) < MaxDistance) {
+        if ((l >> DistancePos) < MaxDistance) {
             lw = Word::fromLength(lt + sizeof(Cell), len);
             if (equal(word, lw))
                 return lt;
             else if (lt == Begin)
                 break;
             else
-                lt -= l >> 6;
+                lt -= l >> DistancePos;
         } else {
             lw = Word::fromLength(lt + 2 * sizeof(Cell), len);
             if (equal(word, lw))
@@ -120,7 +120,7 @@ Addr Dictionary::getexec(Addr addr) noexcept
     const Addr len = l & 0x1Fu;
 
     addr += sizeof(Cell);
-    if ((l >> 6) == MaxDistance)
+    if ((l >> DistancePos) == MaxDistance)
         addr += sizeof(Cell);
 
     addr += len;

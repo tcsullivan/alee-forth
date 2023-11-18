@@ -241,7 +241,7 @@ void CoreWords::word_semic(State& state) { // Concludes word definition.
         dcell = Dictionary::MaxDistance;
     }
     state.dict.write(cell,
-        (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << 6));
+        (state.dict.read(cell) & 0x1F) | static_cast<Cell>(dcell << Dictionary::DistancePos));
     state.dict.latest(cell);
 }
 void CoreWords::word_jmp0(State& state) { // Jump if popped value equals zero.
