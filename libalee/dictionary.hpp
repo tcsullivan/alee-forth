@@ -73,8 +73,10 @@ public:
 
     /** "Immediate" marker bit for a word's definition. */
     constexpr static Cell Immediate = (1 << 5);
+
+    constexpr static Cell DistancePos = 6;
     /** Maximum "short" distance between two definitions. */
-    constexpr static Cell MaxDistance = (1 << (sizeof(Cell) * 8 - 6)) - 1;
+    constexpr static Cell MaxDistance = (1 << (sizeof(Cell) * 8 - DistancePos)) - 1;
 
     /** Returns the value of the cell at the given address. */
     virtual Cell read(Addr) const noexcept = 0;
