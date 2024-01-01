@@ -29,22 +29,6 @@ void Dictionary::initialize()
 }
 
 LIBALEE_SECTION
-void Dictionary::addNativeWord(const char *s, void (*func)(State&))
-{
-    const Addr h = read(Here);
-    Addr n = h + sizeof(Cell);
-    for (; *s; ++s, ++n)
-        writebyte(n, *s);
-    addDefinition(Word(h + sizeof(Cell), n));
-    add(CoreWords::token("_nx"));
-    add((Cell)func);
-
-    const auto dcell = h - latest();
-    write(h, (read(h) & 0x1F) | Native | static_cast<Cell>(dcell << DistancePos));
-    latest(h);
-}
-
-LIBALEE_SECTION
 Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here();

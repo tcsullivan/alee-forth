@@ -158,8 +158,6 @@ public:
      */
     void addDefinition(Word word) noexcept;
 
-    void addNativeWord(const char *s, void (*func)(State&));
-
     /**
      * Searches the dictionary for an entry for the given word.
      * @param word The dictionary-stored word to search for.

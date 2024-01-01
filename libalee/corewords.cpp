@@ -25,76 +25,17 @@ static DoubleCell popd(State&);
 static void pushd(State&, DoubleCell);
 
 LIBALEE_SECTION
-void CoreWords::initialize(State& state)
-{
-    auto& d = state.dict;
-    //d.addNativeWord("_lit", word_lit);
-    d.addNativeWord("drop", word_drop);
-    d.addNativeWord("dup", word_dup);
-    d.addNativeWord("swap", word_swap);
-    d.addNativeWord("pick", word_pick);
-    d.addNativeWord("sys", word_sys);
-    d.addNativeWord("+", word_add);
-    d.addNativeWord("-", word_sub);
-    d.addNativeWord("m*", word_mul);
-    d.addNativeWord("_/", word_div);
-    d.addNativeWord("_%", word_mod);
-    d.addNativeWord("_@", word_peek);
-    d.addNativeWord("_!", word_poke);
-    d.addNativeWord(">r", word_rpush);
-    d.addNativeWord("r>", word_rpop);
-    d.addNativeWord("=", word_eq);
-    d.addNativeWord("<", word_lt);
-    d.addNativeWord("&", word_and);
-    d.addNativeWord("|", word_or);
-    d.addNativeWord("^", word_xor);
-    d.addNativeWord("<<", word_shl);
-    d.addNativeWord(">>", word_shr);
-    d.addNativeWord(":", word_colon);
-    d.addNativeWord("_'", word_tick);
-    //d.addNativeWord("exit", word_exit);
-    //d.addNativeWord(";", word_semic);
-    d.addNativeWord("_jmp0", word_jmp0);
-    d.addNativeWord("_jmp", word_jmp);
-    d.addNativeWord("depth", word_depth);
-    d.addNativeWord("_rdepth", word_rdepth);
-    d.addNativeWord("_in", word_in);
-    d.addNativeWord("_ev", word_ev);
-    d.addNativeWord("find", word_find);
-    d.addNativeWord("_uma", word_uma);
-    d.addNativeWord("u<", word_ult);
-    d.addNativeWord("um/mod", word_ummod);
-}
-
-LIBALEE_SECTION
 void CoreWords::run(Cell ins, State& state)
 {
     Addr index = ins;
-    auto& ip = state.ip();
 
-execute:
     if (index >= Dictionary::Begin) {
-        // must be calling a defined subroutine
+        auto& ip = state.ip();
         state.pushr(ip);
-        ip = index;
-        return;
-    } else switch (index) {
-    case token("_lit"): word_lit(state); break;// Execution semantics of `literal`.
-    case token("execute"):
-        // TODO reimplement
-        index = state.pop();
-        goto execute;
-    case token("exit"): word_exit(state); break;
-    case token(";"): word_semic(state); break; // Concludes word definition.
-    case token("_nx"):
-        { auto f = state.beyondip();
-          state.ip() = state.popr();
-          ((void (*)(State&))f)(state);
-          state.verify(state.ip() != 0, Error::exit); }
-        break;
+        ip = static_cast<Addr>(index - sizeof(Cell));
+    } else {
+        wordstbl[index](state);
     }
-
-    ip += sizeof(Cell);
 }
 
 LIBALEE_SECTION
@@ -236,8 +177,7 @@ void CoreWords::word_tick(State& state) { // Collects input word and finds execu
     find(state, state.dict.input());
 }
 void CoreWords::word_execute(State& state) {
-    /*index =*/ state.pop();
-    /* TODO goto execute; */
+    run(state.pop(), state);
 }
 void CoreWords::word_exit(State& state) {
     state.ip() = state.popr();

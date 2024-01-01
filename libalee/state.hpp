@@ -28,6 +28,8 @@
 #include <csetjmp>
 #include <cstddef>
 
+//#define verify(C, E)
+
 /**
  * Size of the primary data stack, number of cells.
  */
@@ -178,6 +180,8 @@ public:
         context.ip += sizeof(Cell);
         return dict.read(context.ip);
     }
+
+//#undef verify
 
     /**
      * Asserts the given condition is true, longjmp-ing if false.

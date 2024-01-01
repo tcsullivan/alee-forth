@@ -43,8 +43,6 @@ void user_sys(State& state);
 class CoreWords
 {
 public:
-    static void initialize(State& state);
-
     /**
      * Searches for the token/index of the given word if it is part of the
      * fundamental word-set.
@@ -154,6 +152,46 @@ public:
     static void word_uma(State&);
     static void word_ult(State&);
     static void word_ummod(State&);
+
+    constexpr static void (*wordstbl[])(State&) = {
+        word_lit,
+        word_drop,
+        word_dup,
+        word_swap,
+        word_pick,
+        word_sys,
+        word_add,
+        word_sub,
+        word_mul,
+        word_div,
+        word_mod,
+        word_peek,
+        word_poke,
+        word_rpush,
+        word_rpop,
+        word_eq,
+        word_lt,
+        word_and,
+        word_or,
+        word_xor,
+        word_shl,
+        word_shr,
+        word_colon,
+        word_tick,
+        word_execute,
+        word_exit,
+        word_semic,
+        word_jmp0,
+        word_jmp,
+        word_depth,
+        word_rdepth,
+        word_in,
+        word_ev,
+        word_find,
+        word_uma,
+        word_ult,
+        word_ummod
+    };
 };
 
 #endif // ALEEFORTH_COREWORDS_HPP

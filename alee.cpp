@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
 #endif // ALEE_MSP430
 
     dict.initialize();
-    CoreWords::initialize(state);
 
     {
         std::vector args (argv + 1, argv + argc);

@@ -54,8 +54,10 @@ Error State::execute(Addr addr)
 
         if (context.ip >= Dictionary::Begin) {
             // longjmp will exit this loop.
-            for (;;)
+            for (;;) {
+                context.ip += sizeof(Cell);
                 CoreWords::run(dict.read(context.ip), *this);
+            }
         } else {
             // addr was a CoreWord, all done now.
             context.ip = 0;
