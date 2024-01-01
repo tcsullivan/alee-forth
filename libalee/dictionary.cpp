@@ -29,6 +29,22 @@ void Dictionary::initialize()
 }
 
 LIBALEE_SECTION
+void Dictionary::addNativeWord(const char *s, void (*func)(State&))
+{
+    const Addr h = read(Here);
+    Addr n = h + sizeof(Cell);
+    for (; *s; ++s, ++n)
+        writebyte(n, *s);
+    addDefinition(Word(h + sizeof(Cell), n));
+    add(CoreWords::token("_nx"));
+    add((Cell)func);
+
+    const auto dcell = h - latest();
+    write(h, (read(h) & 0x1F) | Native | static_cast<Cell>(dcell << DistancePos));
+    latest(h);
+}
+
+LIBALEE_SECTION
 Addr Dictionary::allot(Cell amount) noexcept
 {
     Addr old = here();
@@ -91,14 +107,14 @@ Addr Dictionary::find(Word word) noexcept
         const Addr len = l & 0x1F;
         Word lw;
 
-        if ((l >> Dictionary::DistancePos) < MaxDistance) {
+        if ((l >> DistancePos) < MaxDistance) {
             lw = Word::fromLength(lt + sizeof(Cell), len);
             if (equal(word, lw))
                 return lt;
             else if (lt == Begin)
                 break;
             else
-                lt -= l >> Dictionary::DistancePos;
+                lt -= l >> DistancePos;
         } else {
             lw = Word::fromLength(lt + 2 * sizeof(Cell), len);
             if (equal(word, lw))
@@ -120,7 +136,7 @@ Addr Dictionary::getexec(Addr addr) noexcept
     const Addr len = l & 0x1Fu;
 
     addr += sizeof(Cell);
-    if ((l >> Dictionary::DistancePos) == MaxDistance)
+    if ((l >> DistancePos) == MaxDistance)
         addr += sizeof(Cell);
 
     addr += len;

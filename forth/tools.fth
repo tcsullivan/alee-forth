@@ -6,8 +6,8 @@
 : words    _latest @ begin
            dup @ dup 31 &
            2 pick cell+ \ lt l len ws
-           2 pick 6 >> 1023 < if \ lt l len ws
-           rot 6 >> else \ lt len ws adv
+           2 pick 7 >> 1023 < if \ lt l len ws
+           rot 7 >> else \ lt len ws adv
            >r cell+ rot drop r> @ then
            -rot swap type space \ lt adv
            over _begin <> while - repeat 2drop ;

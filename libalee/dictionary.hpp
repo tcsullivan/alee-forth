@@ -75,6 +75,7 @@ public:
     constexpr static Cell Immediate = (1 << 5);
 
     constexpr static Cell DistancePos = 6;
+
     /** Maximum "short" distance between two definitions. */
     constexpr static Cell MaxDistance = (1 << (sizeof(Cell) * 8 - DistancePos)) - 1;
 
@@ -156,6 +157,8 @@ public:
      * @param word The dictionary-stored name of the new word.
      */
     void addDefinition(Word word) noexcept;
+
+    void addNativeWord(const char *s, void (*func)(State&));
 
     /**
      * Searches the dictionary for an entry for the given word.

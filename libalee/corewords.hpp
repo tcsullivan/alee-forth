@@ -43,6 +43,8 @@ void user_sys(State& state);
 class CoreWords
 {
 public:
+    static void initialize(State& state);
+
     /**
      * Searches for the token/index of the given word if it is part of the
      * fundamental word-set.
@@ -81,7 +83,7 @@ public:
         "<<\0>>\0:\0_'\0execute\0"
         "exit\0;\0_jmp0\0_jmp\0"
         "depth\0_rdepth\0_in\0_ev\0find\0"
-        "_uma\0u<\0um/mod\0";
+        "_uma\0u<\0um/mod\0_nx\0";
 
     /**
      * Count of total fundamental words.
@@ -114,6 +116,7 @@ private:
         return -1;
     }
 
+public:
     static void word_lit(State&);
     static void word_drop(State&);
     static void word_dup(State&);
